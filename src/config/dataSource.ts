@@ -4,33 +4,26 @@ import { Location } from '../entities/location';
 import { Center } from '../entities/center';
 import { HealthcareProvider } from '../entities/healthcareProvider';
 import { License } from '../entities/license';
+import { ENV } from './env';
 
-const {
-  DB_HOST,
-  DB_PORT = '1433',
-  DB_USER,
-  DB_PASS,
-  DB_NAME,
-  DB_ENCRYPT = 'true', // Azure SQL requires encryption
-} = process.env;
+const { DB_HOST, DB_PORT, DB_USER, DB_PASS, DB_NAME, DB_ENCRYPT } = ENV;
 
 export const AppDataSource = new DataSource({
   type: 'mssql',
   host: DB_HOST,
-  port: parseInt(DB_PORT, 10),
+  port: DB_PORT,
   username: DB_USER,
   password: DB_PASS,
   database: DB_NAME,
-  synchronize: false,       // Always false in Functions; use migrations
+  synchronize: false, // Always false in Functions; use migrations
   logging: false,
-  entities: [Location, Center, HealthcareProvider, License],
+  entities: ['src/entities/*.ts'],
   migrations: ['src/migrations/*.ts'],
   options: {
     encrypt: DB_ENCRYPT === 'true',
-    trustServerCertificate: false,
+    trustServerCertificate: true,
   },
   extra: {
-    // conservative pool for serverless
     pool: {
       max: 5,
       min: 0,
