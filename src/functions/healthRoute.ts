@@ -1,4 +1,8 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { versionedRoute } from '../helpers/versionHelper';
+
+const path = 'health';
+const prefixRoute = versionedRoute(path);
 
 async function health(req: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
   context.log('Health check endpoint called.');
@@ -10,7 +14,9 @@ async function health(req: HttpRequest, context: InvocationContext): Promise<Htt
 }
 app.http('health', {
   methods: ['GET'],
-  route: 'health',
+  route: prefixRoute,
   authLevel: 'anonymous',
   handler: health,
 });
+
+export default health;
