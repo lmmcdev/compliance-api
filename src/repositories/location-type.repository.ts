@@ -8,6 +8,6 @@ export class LocationTypeRepository extends BaseRepository<LocationType> {
   }
 
   findByCode(code: LocationTypeCode) {
-    return this.findOne({ code } as any);
+    return this.findOne({ code });
   }
 }

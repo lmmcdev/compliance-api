@@ -1,7 +1,7 @@
 import { Entity, Column } from 'typeorm';
 import { BaseEntity } from './base.entity';
 
-export enum LicenseRecordType {
+export enum LicenseTypeCode {
   BTL = 'BTL',
   AHC = 'AHC',
   BIOMEDICAL_WASTE = 'Biomedical Waste',
@@ -28,12 +28,16 @@ export enum LicenseRecordType {
 @Entity('license_types')
 export class LicenseType extends BaseEntity {
   @Column({
+    name: 'code',
     type: 'nvarchar',
     length: 128,
-    enum: LicenseRecordType,
+    enum: LicenseTypeCode,
   })
-  name!: LicenseRecordType;
+  code!: LicenseTypeCode;
 
-  @Column({ type: 'nvarchar', length: 256, nullable: true })
+  @Column({ name: 'display_name', type: 'nvarchar', length: 128 })
+  displayName!: string;
+
+  @Column({ name: 'description', type: 'nvarchar', length: 256, nullable: true })
   description?: string | null;
 }

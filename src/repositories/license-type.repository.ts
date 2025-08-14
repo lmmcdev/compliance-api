@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm';
 import { BaseRepository } from './base.repository';
-import { LicenseType } from '../entities/license-type.entity';
+import { LicenseType, LicenseTypeCode } from '../entities/license-type.entity';
 
 export class LicenseTypeRepository extends BaseRepository<LicenseType> {
   constructor(ds: DataSource) {
@@ -8,5 +8,9 @@ export class LicenseTypeRepository extends BaseRepository<LicenseType> {
       defaultOrder: { createdAt: 'DESC' },
       maxPageSize: 50,
     });
+  }
+
+  findByCode(code: LicenseTypeCode) {
+    return this.findOne({ code });
   }
 }

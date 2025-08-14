@@ -1,8 +1,10 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
+
+import { join } from 'path';
+
 import { env } from './env';
 import { LicenseType } from '../entities/license-type.entity';
-import { join } from 'path';
 import { LocationType } from '../entities/location-type.entity';
 
 const { DB_HOST, DB_PORT, DB_USER, DB_PASS, DB_NAME, DB_ENCRYPT } = env;
@@ -17,7 +19,7 @@ const AppDataSource = new DataSource({
   synchronize: false,
   logging: ['query', 'error'],
   entities: [LicenseType, LocationType],
-  migrations: [join(__dirname, '..', 'migrations', '*.{js,cjs}')],
+  migrations: [],
   options: {
     encrypt: DB_ENCRYPT === 'true',
     trustServerCertificate: true,

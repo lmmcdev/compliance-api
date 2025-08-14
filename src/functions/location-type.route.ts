@@ -1,21 +1,21 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { getDataSource } from '../config/ds-runtime';
-import { LicenseTypeService } from '../services';
+import { LocationTypeService } from '../services';
 import { versionedRoute, logErr, logInfo, isJson, json } from '../helpers';
 
-const path = 'license-types';
-const prefixRoute = versionedRoute(path); // e.g. v1/license-types
-const itemRoute = `${prefixRoute}/{id}`; // e.g. v1/license-types/{id}
+const path = 'location-types';
+const prefixRoute = versionedRoute(path); // e.g. v1/location-types
+const itemRoute = `${prefixRoute}/{id}`; // e.g. v1/location-types/{id}
 
-// LIST
-async function getLicenseTypes(
+//LIST
+async function getLocationTypes(
   req: HttpRequest,
   context: InvocationContext,
 ): Promise<HttpResponseInit> {
   try {
-    logInfo(context, `[${req.method}] ${req.url} Fetching license types`);
+    logInfo(context, `[${req.method}] ${req.url} Fetching location types`);
     const ds = await getDataSource();
-    const service = new LicenseTypeService(ds);
+    const service = new LocationTypeService(ds);
     const url = new URL(req.url);
     const page = parseInt(url.searchParams.get('page') || '1', 10);
     const pageSize = parseInt(url.searchParams.get('pageSize') || '20', 10);
@@ -28,15 +28,15 @@ async function getLicenseTypes(
   }
 }
 
-// GET BY ID
-async function getLicenseTypeById(
+// get LocationType by ID
+async function getLocationTypeById(
   req: HttpRequest,
   context: InvocationContext,
 ): Promise<HttpResponseInit> {
   try {
     const id = req.params['id']!;
     const ds = await getDataSource();
-    const service = new LicenseTypeService(ds);
+    const service = new LocationTypeService(ds);
     const found = await service.get(id);
     if (!found) return json(404, { error: 'Not found' });
     return json(200, found);
@@ -46,8 +46,8 @@ async function getLicenseTypeById(
   }
 }
 
-// CREATE
-async function createLicenseType(
+// create
+async function createLocationType(
   req: HttpRequest,
   context: InvocationContext,
 ): Promise<HttpResponseInit> {
@@ -57,8 +57,8 @@ async function createLicenseType(
     if (!body) return json(400, { error: 'Invalid JSON body' });
 
     const ds = await getDataSource();
-    const service = new LicenseTypeService(ds);
-    const created = await service.create(body); // zod validation inside service
+    const service = new LocationTypeService(ds);
+    const created = await service.create(body);
     return json(201, created);
   } catch (err: any) {
     logErr(context, err);
@@ -67,8 +67,8 @@ async function createLicenseType(
   }
 }
 
-// UPDATE
-async function updateLicenseType(
+// update
+async function updateLocationType(
   req: HttpRequest,
   context: InvocationContext,
 ): Promise<HttpResponseInit> {
@@ -79,7 +79,7 @@ async function updateLicenseType(
 
     const id = req.params['id']!;
     const ds = await getDataSource();
-    const service = new LicenseTypeService(ds);
+    const service = new LocationTypeService(ds);
     const updated = await service.update(id, body);
     if (!updated) return json(404, { error: 'Not found' });
     return json(200, updated);
@@ -90,15 +90,15 @@ async function updateLicenseType(
   }
 }
 
-// DELETE (soft delete)
-async function deleteLicenseType(
+// delete (soft delete)
+async function deleteLocationType(
   req: HttpRequest,
   context: InvocationContext,
 ): Promise<HttpResponseInit> {
   try {
     const id = req.params['id']!;
     const ds = await getDataSource();
-    const service = new LicenseTypeService(ds);
+    const service = new LocationTypeService(ds);
 
     const exists = await service.get(id);
     if (!exists) return json(404, { error: 'Not found' });
@@ -111,38 +111,38 @@ async function deleteLicenseType(
   }
 }
 
-// ---- app routes ----
-app.http('getLicenseTypes', {
+// ------- app routes ----
+app.http('getLocationTypes', {
   methods: ['GET'],
   authLevel: 'anonymous',
   route: prefixRoute,
-  handler: getLicenseTypes,
+  handler: getLocationTypes,
 });
 
-app.http('getLicenseTypeById', {
+app.http('getLocationTypeById', {
   methods: ['GET'],
   authLevel: 'anonymous',
   route: itemRoute,
-  handler: getLicenseTypeById,
+  handler: getLocationTypeById,
 });
 
-app.http('createLicenseType', {
+app.http('createLocationType', {
   methods: ['POST'],
   authLevel: 'anonymous',
   route: prefixRoute,
-  handler: createLicenseType,
+  handler: createLocationType,
 });
 
-app.http('updateLicenseType', {
+app.http('updateLocationType', {
   methods: ['PUT'],
   authLevel: 'anonymous',
   route: itemRoute,
-  handler: updateLicenseType,
+  handler: updateLocationType,
 });
 
-app.http('deleteLicenseType', {
+app.http('deleteLocationType', {
   methods: ['DELETE'],
   authLevel: 'anonymous',
   route: itemRoute,
-  handler: deleteLicenseType,
+  handler: deleteLocationType,
 });
