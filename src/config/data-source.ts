@@ -6,6 +6,7 @@ import { join } from 'path';
 import { env } from './env';
 import { LicenseType } from '../entities/license-type.entity';
 import { LocationType } from '../entities/location-type.entity';
+import { Address } from '../entities/address.entity';
 
 const { DB_HOST, DB_PORT, DB_USER, DB_PASS, DB_NAME, DB_ENCRYPT } = env;
 
@@ -18,7 +19,7 @@ const AppDataSource = new DataSource({
   database: DB_NAME,
   synchronize: false,
   logging: ['query', 'error'],
-  entities: [LicenseType, LocationType],
+  entities: [LicenseType, LocationType, Address],
   migrations: [],
   options: {
     encrypt: DB_ENCRYPT === 'true',

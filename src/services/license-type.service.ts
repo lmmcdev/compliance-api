@@ -1,10 +1,10 @@
 import { DataSource } from 'typeorm';
-import { z } from 'zod';
+import { z, ZodError } from 'zod';
 import { LicenseType, LicenseTypeCode } from '../entities/license-type.entity';
 import { LicenseTypeRepository } from '../repositories/license-type.repository';
 
 export const createSchema = z.object({
-  code: z.enum(LicenseTypeCode),
+  code: z.nativeEnum(LicenseTypeCode),
   displayName: z.string().max(128),
   description: z.string().max(256).optional().nullable(),
 });
@@ -12,27 +12,62 @@ export const updateSchema = createSchema.partial();
 
 export class LicenseTypeService {
   private repo: LicenseTypeRepository;
+
   constructor(ds: DataSource) {
     this.repo = new LicenseTypeRepository(ds);
   }
-  list(page?: number, pageSize?: number) {
-    return this.repo.findPaged(page, pageSize);
+
+  private handleError(err: unknown, op: string): never {
+    // Let Zod errors bubble up so your route can return 400 with details
+    if (err instanceof ZodError) throw err;
+
+    const msg =
+      err instanceof Error ? err.message : typeof err === 'string' ? err : JSON.stringify(err);
+    throw new Error(`[LicenseTypeService] ${op} failed: ${msg}`);
   }
-  get(id: string) {
-    return this.repo.findById(id);
+
+  async list(page?: number, pageSize?: number) {
+    try {
+      return await this.repo.findPaged(page, pageSize);
+    } catch (err) {
+      this.handleError(err, 'list');
+    }
   }
-  create(payload: unknown) {
-    const data = createSchema.parse(payload) as Pick<
-      LicenseType,
-      'code' | 'displayName' | 'description'
-    >;
-    return this.repo.createOne(data);
+
+  async get(id: string) {
+    try {
+      return await this.repo.findById(id); // may return null
+    } catch (err) {
+      this.handleError(err, 'get');
+    }
   }
-  update(id: string, payload: unknown) {
-    const data = updateSchema.parse(payload) as Partial<LicenseType>;
-    return this.repo.updateOne(id, data);
+
+  async create(payload: unknown) {
+    try {
+      const data = createSchema.parse(payload) as Pick<
+        LicenseType,
+        'code' | 'displayName' | 'description'
+      >;
+      return await this.repo.createOne(data);
+    } catch (err) {
+      this.handleError(err, 'create');
+    }
   }
-  remove(id: string) {
-    return this.repo.softDelete(id);
+
+  async update(id: string, payload: unknown) {
+    try {
+      const data = updateSchema.parse(payload) as Partial<LicenseType>;
+      return await this.repo.updateOne(id, data); // may return null
+    } catch (err) {
+      this.handleError(err, 'update');
+    }
+  }
+
+  async remove(id: string) {
+    try {
+      await this.repo.softDelete(id);
+    } catch (err) {
+      this.handleError(err, 'remove');
+    }
   }
 }

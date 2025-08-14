@@ -1,31 +1,36 @@
+// src/functions/address.route.ts
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { getDataSource } from '../config/ds-runtime';
-import { LicenseTypeService } from '../services';
-import { versionedRoute, logErr, logInfo, isJson, json, toHttpError, isGuid } from '../helpers';
+import { AddressService } from '../services/address.service'; // or '../services' if you have a barrel
+import { versionedRoute, logErr, logInfo, isJson, json, isGuid, toHttpError } from '../helpers';
 
-const path = 'license-types';
-const prefixRoute = versionedRoute(path); // e.g. api/v1/license-types
-const itemRoute = `${prefixRoute}/{id}`; // e.g. api/v1/license-types/{id}`
+// ---- routing ---------------------------------------------------------------
+const path = 'addresses';
+const prefixRoute = versionedRoute(path); // e.g. api/v1/addresses
+const itemRoute = `${prefixRoute}/{id}`; // e.g. api/v1/addresses/{id}
 
-function parsePagination(urlStr: string) {
-  const url = new URL(urlStr);
-  const page = Math.max(1, Number.parseInt(url.searchParams.get('page') || '1', 10));
-  const rawSize = Number.parseInt(url.searchParams.get('pageSize') || '20', 10);
-  const pageSize = Math.max(1, Math.min(rawSize, 100));
-  return { page, pageSize };
-}
+// ---- handlers --------------------------------------------------------------
 
-// LIST
-async function getLicenseTypes(
+// LIST with filters & pagination
+async function getAddresses(
   req: HttpRequest,
   context: InvocationContext,
 ): Promise<HttpResponseInit> {
   try {
-    logInfo(context, `[${req.method}] ${req.url} Fetching license types`);
+    logInfo(context, `[${req.method}] ${req.url} Fetching addresses`);
     const ds = await getDataSource();
-    const service = new LicenseTypeService(ds);
-    const { page, pageSize } = parsePagination(req.url);
-    const result = await service.list(page, pageSize);
+    const service = new AddressService(ds);
+
+    const url = new URL(req.url);
+    const query = {
+      page: url.searchParams.get('page') ?? undefined,
+      pageSize: url.searchParams.get('pageSize') ?? undefined,
+      locationTypeId: url.searchParams.get('locationTypeId') ?? undefined,
+      city: url.searchParams.get('city') ?? undefined,
+      addressType: url.searchParams.get('addressType') ?? undefined,
+    };
+
+    const result = await service.list(query);
     return json(200, result);
   } catch (err: any) {
     logErr(context, err);
@@ -33,8 +38,8 @@ async function getLicenseTypes(
   }
 }
 
-// GET BY ID
-async function getLicenseTypeById(
+// GET by id
+async function getAddressById(
   req: HttpRequest,
   context: InvocationContext,
 ): Promise<HttpResponseInit> {
@@ -44,7 +49,7 @@ async function getLicenseTypeById(
       return json(400, { error: 'BadRequest', message: 'Invalid id format (GUID required).' });
 
     const ds = await getDataSource();
-    const service = new LicenseTypeService(ds);
+    const service = new AddressService(ds);
     const found = await service.get(id);
     if (!found) return json(404, { error: 'NotFound' });
     return json(200, found);
@@ -55,11 +60,12 @@ async function getLicenseTypeById(
 }
 
 // CREATE
-async function createLicenseType(
+async function createAddress(
   req: HttpRequest,
   context: InvocationContext,
 ): Promise<HttpResponseInit> {
   try {
+    context.log(`[${req.method}] ${req.url} Creating address`);
     if (!isJson(req))
       return json(415, {
         error: 'UnsupportedMediaType',
@@ -69,8 +75,8 @@ async function createLicenseType(
     if (!body) return json(400, { error: 'BadRequest', message: 'Invalid JSON body' });
 
     const ds = await getDataSource();
-    const service = new LicenseTypeService(ds);
-    const created = await service.create(body); // Zod validation inside service
+    const service = new AddressService(ds);
+    const created = await service.create(body);
     return json(201, created);
   } catch (err: any) {
     logErr(context, err);
@@ -79,7 +85,7 @@ async function createLicenseType(
 }
 
 // UPDATE
-async function updateLicenseType(
+async function updateAddress(
   req: HttpRequest,
   context: InvocationContext,
 ): Promise<HttpResponseInit> {
@@ -97,7 +103,7 @@ async function updateLicenseType(
       return json(400, { error: 'BadRequest', message: 'Invalid id format (GUID required).' });
 
     const ds = await getDataSource();
-    const service = new LicenseTypeService(ds);
+    const service = new AddressService(ds);
     const updated = await service.update(id, body);
     if (!updated) return json(404, { error: 'NotFound' });
     return json(200, updated);
@@ -108,7 +114,7 @@ async function updateLicenseType(
 }
 
 // DELETE (soft delete)
-async function deleteLicenseType(
+async function deleteAddress(
   req: HttpRequest,
   context: InvocationContext,
 ): Promise<HttpResponseInit> {
@@ -118,7 +124,7 @@ async function deleteLicenseType(
       return json(400, { error: 'BadRequest', message: 'Invalid id format (GUID required).' });
 
     const ds = await getDataSource();
-    const service = new LicenseTypeService(ds);
+    const service = new AddressService(ds);
     const exists = await service.get(id);
     if (!exists) return json(404, { error: 'NotFound' });
 
@@ -130,34 +136,34 @@ async function deleteLicenseType(
   }
 }
 
-// ---- app routes ----
-app.http('getLicenseTypes', {
+// ---- app routes ------------------------------------------------------------
+app.http('getAddresses', {
   methods: ['GET'],
   authLevel: 'anonymous',
   route: prefixRoute,
-  handler: getLicenseTypes,
+  handler: getAddresses,
 });
-app.http('getLicenseTypeById', {
+app.http('getAddressById', {
   methods: ['GET'],
   authLevel: 'anonymous',
   route: itemRoute,
-  handler: getLicenseTypeById,
+  handler: getAddressById,
 });
-app.http('createLicenseType', {
+app.http('createAddress', {
   methods: ['POST'],
   authLevel: 'anonymous',
   route: prefixRoute,
-  handler: createLicenseType,
+  handler: createAddress,
 });
-app.http('updateLicenseType', {
+app.http('updateAddress', {
   methods: ['PUT'],
   authLevel: 'anonymous',
   route: itemRoute,
-  handler: updateLicenseType,
+  handler: updateAddress,
 });
-app.http('deleteLicenseType', {
+app.http('deleteAddress', {
   methods: ['DELETE'],
   authLevel: 'anonymous',
   route: itemRoute,
-  handler: deleteLicenseType,
+  handler: deleteAddress,
 });

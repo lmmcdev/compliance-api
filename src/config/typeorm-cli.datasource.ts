@@ -6,7 +6,7 @@ import { env } from './env';
 // 👉 Import your entities (keep this in sync with runtime DS)
 import { LicenseType } from '../entities/license-type.entity';
 import { LocationType } from '../entities/location-type.entity';
-// import { AuditLog } from '../entities/audit-log.entity';
+import { Address } from '../entities/address.entity';
 
 export default new DataSource({
   type: 'mssql',
@@ -17,11 +17,7 @@ export default new DataSource({
   database: env.DB_NAME,
   synchronize: false,
   logging: true,
-  entities: [
-    LicenseType,
-    LocationType,
-    // AuditLog,
-  ],
+  entities: [LicenseType, LocationType, Address],
   // CLI uses TS migrations
   migrations: ['src/migrations/*.ts'],
   options: {

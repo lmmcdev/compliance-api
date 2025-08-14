@@ -1,5 +1,6 @@
-import { Entity, Column } from 'typeorm';
+import { Entity, Column, OneToMany } from 'typeorm';
 import { BaseEntity } from './base.entity';
+import { Address } from './address.entity';
 
 export enum LocationTypeCode {
   CORPORATE = 'Corporate',
@@ -25,4 +26,8 @@ export class LocationType extends BaseEntity {
 
   @Column({ name: 'description', type: 'nvarchar', length: 256, nullable: true })
   description?: string | null;
+
+  /** Inverse relation */
+  @OneToMany(() => Address, (addr) => addr.locationType)
+  addresses!: Address[];
 }
