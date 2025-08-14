@@ -22,7 +22,7 @@ export const createAddressSchema = z.object({
   drivingDirections: z.string().max(256).optional().nullable(),
   description: z.string().max(256).optional().nullable(),
   timeZone: z.string().max(256).optional().nullable(),
-  lead: z.string().max(20).optional().nullable(),
+  leadSource: z.string().max(20).optional().nullable(),
   locationTypeId: z.string().uuid(), // relation (FK)
 });
 
@@ -80,7 +80,7 @@ export class AddressService {
         drivingDirections: data.drivingDirections ?? null,
         description: data.description ?? null,
         timeZone: data.timeZone ?? null,
-        lead: data.lead ?? null,
+        leadSource: data.leadSource ?? null,
         locationType: { id: data.locationTypeId } as any,
       };
 
@@ -104,7 +104,7 @@ export class AddressService {
         drivingDirections: data.drivingDirections ?? undefined,
         description: data.description ?? undefined,
         timeZone: data.timeZone ?? undefined,
-        lead: data.lead ?? undefined,
+        leadSource: data.leadSource ?? undefined,
       };
 
       if (data.locationTypeId) {

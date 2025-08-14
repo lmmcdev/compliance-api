@@ -39,7 +39,7 @@ export class Address extends BaseEntity {
   timeZone?: string | null;
 
   @Column({ type: 'nvarchar', length: 20, nullable: true })
-  lead?: string | null; // dudas
+  leadSource?: string | null; // dudas
 
   /** ---- Relationship to LocationType ---- */
   @Index('IX_addresses_location_type_id')
