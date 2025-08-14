@@ -22,8 +22,7 @@ project.lock.json
 appsettings.json
 local.settings.json
 
-node_modules
-dist
+node_modules/
 
 # Local python packages
 .python_packages/

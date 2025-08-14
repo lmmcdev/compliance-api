@@ -1,0 +1,1 @@
+{"version":3,"file":"versioned-route.helper.js","sourceRoot":"","sources":["../../src/helpers/versioned-route.helper.ts"],"names":[],"mappings":";;;AAAA,uCAAoC;AAE7B,MAAM,cAAc,GAAG,CAAC,IAAY,EAAE,UAAkB,SAAG,CAAC,WAAW,EAAE,EAAE;IAChF,IAAI,CAAC,IAAI;QAAE,MAAM,IAAI,KAAK,CAAC,kBAAkB,CAAC,CAAC;IAC/C,OAAO,GAAG,OAAO,IAAI,IAAI,EAAE,CAAC;AAC9B,CAAC,CAAC;AAHW,QAAA,cAAc,kBAGzB"}
