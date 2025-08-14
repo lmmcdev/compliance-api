@@ -48,3 +48,6 @@ __azurite_db*__.json
 
 # typescript
 dist/
+
+# mock
+mocks/
