@@ -1,10 +1,11 @@
+// src/repositories/business-license.repository.ts
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { BusinessLicense } from '../entities';
 import { ListBusinessLicensesQuery, PageResult } from '../dtos';
 
 export interface IBusinessLicenseRepository {
   createAndSave(data: Partial<BusinessLicense>): Promise<BusinessLicense>;
-  updateAndSave(id: string, patch: Partial<BusinessLicense>): Promise<BusinessLicense>;
+  updateAndSave(id: string, patch: Partial<BusinessLicense>): Promise<BusinessLicense | null>;
   findById(id: string): Promise<BusinessLicense | null>;
   findByLicenseNumber(
     licenseNumber: string,
@@ -23,22 +24,15 @@ export class BusinessLicenseRepository implements IBusinessLicenseRepository {
 
   async createAndSave(data: Partial<BusinessLicense>): Promise<BusinessLicense> {
     const entity = this.repo.create(data);
-    return await this.repo.save(entity);
+    return this.repo.save(entity);
   }
 
-  async updateAndSave(id: string, patch: Partial<BusinessLicense>): Promise<BusinessLicense> {
+  async updateAndSave(
+    id: string,
+    patch: Partial<BusinessLicense>,
+  ): Promise<BusinessLicense | null> {
     await this.repo.update({ id }, patch);
-    const updated = await this.repo.findOne({
-      where: { id },
-      relations: {
-        licenseType: true,
-        healthcareFacility: true,
-        healthcareProvider: true,
-        account: true,
-      },
-    });
-    if (!updated) return null as unknown as BusinessLicense;
-    return updated;
+    return this.findById(id);
   }
 
   async findById(id: string): Promise<BusinessLicense | null> {
@@ -57,14 +51,26 @@ export class BusinessLicenseRepository implements IBusinessLicenseRepository {
     licenseNumber: string,
     accountId?: string | null,
   ): Promise<BusinessLicense | null> {
-    return this.repo.findOne({
-      where: accountId ? { licenseNumber, account: { id: accountId } } : { licenseNumber },
-      relations: { account: true },
-    });
+    if (accountId) {
+      return this.repo.findOne({
+        where: { licenseNumber, account: { id: accountId } },
+        relations: { account: true },
+      });
+    }
+    return this.repo.findOne({ where: { licenseNumber } });
   }
 
   async list(q: ListBusinessLicensesQuery): Promise<PageResult<BusinessLicense>> {
     const { page, pageSize, sort, order } = q;
+
+    const sortMap: Record<ListBusinessLicensesQuery['sort'], string> = {
+      createdAt: 'bl.createdAt',
+      updatedAt: 'bl.updatedAt',
+      issueDate: 'bl.issueDate',
+      renewalDate: 'bl.renewalDate',
+      name: 'bl.name',
+      licenseNumber: 'bl.licenseNumber',
+    };
 
     let qb: SelectQueryBuilder<BusinessLicense> = this.repo
       .createQueryBuilder('bl')
@@ -73,15 +79,25 @@ export class BusinessLicenseRepository implements IBusinessLicenseRepository {
       .leftJoinAndSelect('bl.healthcareProvider', 'hp')
       .leftJoinAndSelect('bl.account', 'acc');
 
+    // Free-text search
     if (q.q) {
       qb = qb.andWhere(
-        '(bl.name LIKE :q OR bl.licenseNumber LIKE :q OR bl.certificateNumber LIKE :q OR bl.description LIKE :q)',
+        '(' +
+          'bl.name LIKE :q OR ' +
+          'bl.licenseNumber LIKE :q OR ' +
+          'bl.certificateNumber LIKE :q OR ' +
+          'bl.description LIKE :q' +
+          ')',
         { q: `%${q.q}%` },
       );
     }
+
+    // Scalar filters
+    if (q.status) qb = qb.andWhere('bl.status = :status', { status: q.status });
     if (typeof q.isActive === 'boolean')
       qb = qb.andWhere('bl.isActive = :isActive', { isActive: q.isActive });
-    if (q.status) qb = qb.andWhere('bl.status = :status', { status: q.status });
+
+    // FK filters
     if (q.licenseTypeId)
       qb = qb.andWhere('lt.id = :licenseTypeId', { licenseTypeId: q.licenseTypeId });
     if (q.healthcareFacilityId)
@@ -94,8 +110,20 @@ export class BusinessLicenseRepository implements IBusinessLicenseRepository {
       });
     if (q.accountId) qb = qb.andWhere('acc.id = :accountId', { accountId: q.accountId });
 
+    // Date ranges
+    if (q.issueDateFrom)
+      qb = qb.andWhere('bl.issueDate >= :issueDateFrom', { issueDateFrom: q.issueDateFrom });
+    if (q.issueDateTo)
+      qb = qb.andWhere('bl.issueDate <= :issueDateTo', { issueDateTo: q.issueDateTo });
+    if (q.renewalDateFrom)
+      qb = qb.andWhere('bl.renewalDate >= :renewalDateFrom', {
+        renewalDateFrom: q.renewalDateFrom,
+      });
+    if (q.renewalDateTo)
+      qb = qb.andWhere('bl.renewalDate <= :renewalDateTo', { renewalDateTo: q.renewalDateTo });
+
     qb = qb
-      .orderBy(`bl.${sort}`, order)
+      .orderBy(sortMap[sort], order)
       .skip((page - 1) * pageSize)
       .take(pageSize);
 

@@ -1,23 +1,29 @@
+// src/services/business-license.service.ts
 import { DataSource } from 'typeorm';
 import {
-  CreateBusinessLicenseDto,
   CreateBusinessLicenseSchema,
-  UpdateBusinessLicenseDto,
   UpdateBusinessLicenseSchema,
-  ListBusinessLicensesQuery,
   ListBusinessLicensesSchema,
-  PageResult,
-} from '../dtos';
+  SetBusinessLicenseStatusSchema,
+  type CreateBusinessLicenseDto,
+  type UpdateBusinessLicenseDto,
+  type ListBusinessLicensesQuery,
+  type SetBusinessLicenseStatusDto,
+} from '../dtos/business-license.dto';
+import { PageResult } from '../dtos/pagination';
 import { BusinessLicense } from '../entities/business-license.entity';
-import { BusinessLicenseRepository, IBusinessLicenseRepository } from '../repositories';
-import { ConflictError, NotFoundError } from '../http';
+import {
+  BusinessLicenseRepository,
+  type IBusinessLicenseRepository,
+} from '../repositories/business-license.repository';
+import { NotFoundError, ConflictError } from '../http/app-error';
 
 export interface IBusinessLicenseService {
   create(payload: unknown): Promise<BusinessLicense>;
   update(id: string, payload: unknown): Promise<BusinessLicense>;
   get(id: string): Promise<BusinessLicense>;
   list(query: unknown): Promise<PageResult<BusinessLicense>>;
-  setStatus(id: string, status: string, isActive?: boolean): Promise<BusinessLicense>;
+  setStatus(id: string, statusPayload: unknown): Promise<BusinessLicense>;
   remove(id: string): Promise<void>;
 }
 
@@ -29,9 +35,9 @@ export class BusinessLicenseService implements IBusinessLicenseService {
   }
 
   async create(payload: unknown): Promise<BusinessLicense> {
-    const dto = CreateBusinessLicenseSchema.parse(payload);
+    const dto: CreateBusinessLicenseDto = CreateBusinessLicenseSchema.parse(payload);
 
-    // Optional uniqueness check per account + licenseNumber
+    // Optional uniqueness check per (accountId, licenseNumber)
     if (dto.licenseNumber) {
       const existing = await this.repo.findByLicenseNumber(
         dto.licenseNumber,
@@ -55,7 +61,7 @@ export class BusinessLicenseService implements IBusinessLicenseService {
       isActive: dto.isActive ?? false,
       description: dto.description ?? null,
 
-      // relations by id (TypeORM will map via RelationId on save if you include stubs)
+      // relations by id (stubs)
       licenseType: dto.licenseTypeId ? ({ id: dto.licenseTypeId } as any) : null,
       healthcareFacility: dto.healthcareFacilityId
         ? ({ id: dto.healthcareFacilityId } as any)
@@ -70,9 +76,9 @@ export class BusinessLicenseService implements IBusinessLicenseService {
   }
 
   async update(id: string, payload: unknown): Promise<BusinessLicense> {
-    const dto = UpdateBusinessLicenseSchema.parse(payload);
+    const dto: UpdateBusinessLicenseDto = UpdateBusinessLicenseSchema.parse(payload);
     const current = await this.repo.findById(id);
-    if (!current) throw new NotFoundError('BusinessLicense not found');
+    if (!current) throw new NotFoundError('Business license not found');
 
     if (dto.licenseNumber && dto.licenseNumber !== current.licenseNumber) {
       const existing = await this.repo.findByLicenseNumber(
@@ -124,35 +130,38 @@ export class BusinessLicenseService implements IBusinessLicenseService {
     };
 
     const updated = await this.repo.updateAndSave(id, patch);
-    if (!updated) throw new NotFoundError('BusinessLicense not found after update');
+    if (!updated) throw new NotFoundError('Business license not found after update');
     return updated;
   }
 
   async get(id: string): Promise<BusinessLicense> {
     const entity = await this.repo.findById(id);
-    if (!entity) throw new NotFoundError('BusinessLicense not found');
+    if (!entity) throw new NotFoundError('Business license not found');
     return entity;
   }
 
-  async list(query: unknown) {
-    const q = ListBusinessLicensesSchema.parse(query);
+  async list(query: unknown): Promise<PageResult<BusinessLicense>> {
+    const q: ListBusinessLicensesQuery = ListBusinessLicensesSchema.parse(query);
     return this.repo.list(q);
   }
 
-  async setStatus(id: string, status: string, isActive?: boolean): Promise<BusinessLicense> {
-    const entity = await this.repo.findById(id);
-    if (!entity) throw new NotFoundError('BusinessLicense not found');
+  async setStatus(id: string, statusPayload: unknown): Promise<BusinessLicense> {
+    const { status, isActive }: SetBusinessLicenseStatusDto =
+      SetBusinessLicenseStatusSchema.parse(statusPayload);
+    const current = await this.repo.findById(id);
+    if (!current) throw new NotFoundError('Business license not found');
 
-    const patch: Partial<BusinessLicense> = { status };
-    if (typeof isActive === 'boolean') patch.isActive = isActive;
-
-    const updated = await this.repo.updateAndSave(id, patch);
+    const updated = await this.repo.updateAndSave(id, {
+      status,
+      ...(typeof isActive === 'boolean' ? { isActive } : {}),
+    });
+    if (!updated) throw new NotFoundError('Business license not found after status update');
     return updated;
   }
 
   async remove(id: string): Promise<void> {
     const found = await this.repo.findById(id);
-    if (!found) throw new NotFoundError('BusinessLicense not found');
+    if (!found) throw new NotFoundError('Business license not found');
     await this.repo.deleteHard(id);
   }
 }
