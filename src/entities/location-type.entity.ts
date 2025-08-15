@@ -13,7 +13,6 @@ export class LocationType extends BaseEntity {
   @Column({ name: 'description', type: 'nvarchar', length: 256, nullable: true })
   description?: string | null;
 
-  /** Inverse relation */
   @OneToMany(() => Address, (addr) => addr.locationType)
   addresses!: Address[];
 }

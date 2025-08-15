@@ -1,6 +1,6 @@
 import { DataSource, FindOptionsWhere } from 'typeorm';
 import { BaseRepository } from './base.repository';
-import { Address } from '../entities/address.entity';
+import { Address } from '../entities';
 
 export class AddressRepository extends BaseRepository<Address> {
   constructor(ds: DataSource) {

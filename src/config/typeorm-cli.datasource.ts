@@ -7,6 +7,10 @@ import { env } from './env';
 import { LicenseType } from '../entities/license-type.entity';
 import { LocationType } from '../entities/location-type.entity';
 import { Address } from '../entities/address.entity';
+import { HealthcareFacility } from '../entities/healthcare-facility.entity';
+import { HealthcareProvider } from '../entities/healthcare-provider.entity';
+import { BusinessLicense } from '../entities/business-license.entity';
+import { Account } from '../entities/account.entity';
 
 export default new DataSource({
   type: 'mssql',
@@ -17,8 +21,16 @@ export default new DataSource({
   database: env.DB_NAME,
   synchronize: false,
   logging: true,
-  entities: [LicenseType, LocationType, Address],
-  // CLI uses TS migrations
+  entities: [
+    LicenseType,
+    LocationType,
+    Address,
+    HealthcareFacility,
+    HealthcareProvider,
+    BusinessLicense,
+    Account,
+  ],
+
   migrations: ['src/migrations/*.ts'],
   options: {
     encrypt: env.DB_ENCRYPT === 'true',
