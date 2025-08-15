@@ -10,7 +10,7 @@ import {
 } from '../dtos';
 import { BusinessLicense } from '../entities/business-license.entity';
 import { BusinessLicenseRepository, IBusinessLicenseRepository } from '../repositories';
-import { ConflictError, NotFoundError } from '../errors/http-errors';
+import { ConflictError, NotFoundError } from '../http';
 
 export interface IBusinessLicenseService {
   create(payload: unknown): Promise<BusinessLicense>;

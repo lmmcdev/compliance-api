@@ -10,7 +10,7 @@ import {
 } from '../dtos/account.dto';
 import { Account } from '../entities/account.entity';
 import { AccountRepository, IAccountRepository } from '../repositories/account.repository';
-import { ConflictError, NotFoundError } from '../errors/http-errors';
+import { ConflictError, NotFoundError } from '../http';
 
 export interface IAccountService {
   create(payload: unknown): Promise<Account>;
