@@ -45,4 +45,13 @@ export {
   type ListHealthcareFacilitiesQuery,
 } from './healthcare-facility.dto';
 
+export {
+  CreateHealthcareProviderSchema,
+  UpdateHealthcareProviderSchema,
+  ListHealthcareProvidersSchema,
+  type CreateHealthcareProviderDto,
+  type UpdateHealthcareProviderDto,
+  type ListHealthcareProvidersQuery,
+} from './healthcare-provider.dto';
+
 export type { PageResult } from './pagination';
