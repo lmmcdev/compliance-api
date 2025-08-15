@@ -21,9 +21,7 @@ import {
 import { getDataSource } from '../config/ds-runtime';
 import { HealthcareFacilityService } from '../services/healthcare-facility.service';
 
-// Routes (no leading slash; works with routePrefix: "api")
 const { prefixRoute, itemRoute } = createPrefixRoute('healthcare-facilities');
-// e.g. "v1/healthcare-facilities" and "v1/healthcare-facilities/{id}"
 
 // -------- Handlers --------
 
