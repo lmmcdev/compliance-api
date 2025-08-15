@@ -8,15 +8,6 @@ export {
 } from './account.dto';
 
 export {
-  CreateBusinessLicenseSchema,
-  UpdateBusinessLicenseSchema,
-  ListBusinessLicensesSchema,
-  type CreateBusinessLicenseDto,
-  type UpdateBusinessLicenseDto,
-  type ListBusinessLicensesQuery,
-} from './business-license.dto';
-
-export {
   CreateAddressSchema,
   UpdateAddressSchema,
   ListAddressesSchema,
@@ -33,5 +24,16 @@ export {
   type UpdateLocationTypeDto,
   type ListLocationTypesQuery,
 } from './location-type.dto';
+
+export {
+  CreateBusinessLicenseSchema,
+  UpdateBusinessLicenseSchema,
+  ListBusinessLicensesSchema,
+  SetBusinessLicenseStatusSchema,
+  type CreateBusinessLicenseDto,
+  type UpdateBusinessLicenseDto,
+  type ListBusinessLicensesQuery,
+  type SetBusinessLicenseStatusDto,
+} from './business-license.dto';
 
 export type { PageResult } from './pagination';
