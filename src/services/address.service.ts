@@ -9,7 +9,7 @@ export const listAddressSchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
   locationTypeId: z.string().uuid().optional(),
   city: z.string().max(128).optional(),
-  addressType: z.nativeEnum(AddressType).optional(),
+  addressType: z.enum(AddressType).optional(),
 });
 
 export const createAddressSchema = z.object({
@@ -22,8 +22,8 @@ export const createAddressSchema = z.object({
   drivingDirections: z.string().max(256).optional().nullable(),
   description: z.string().max(256).optional().nullable(),
   timeZone: z.string().max(256).optional().nullable(),
-  leadSource: z.string().max(20).optional().nullable(),
-  locationTypeId: z.string().uuid(), // relation (FK)
+  lead: z.string().max(20).optional().nullable(),
+  locationTypeId: z.uuid(), // relation (FK)
 });
 
 export const updateAddressSchema = createAddressSchema.partial();
@@ -80,7 +80,7 @@ export class AddressService {
         drivingDirections: data.drivingDirections ?? null,
         description: data.description ?? null,
         timeZone: data.timeZone ?? null,
-        leadSource: data.leadSource ?? null,
+        lead: data.lead ?? null,
         locationType: { id: data.locationTypeId } as any,
       };
 
@@ -104,7 +104,7 @@ export class AddressService {
         drivingDirections: data.drivingDirections ?? undefined,
         description: data.description ?? undefined,
         timeZone: data.timeZone ?? undefined,
-        leadSource: data.leadSource ?? undefined,
+        lead: data.lead ?? undefined,
       };
 
       if (data.locationTypeId) {

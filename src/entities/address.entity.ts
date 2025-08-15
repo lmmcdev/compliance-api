@@ -26,10 +26,10 @@ export class Address extends BaseEntity {
   @Column({ type: 'nvarchar', length: 128, default: 'United States' })
   country!: string;
 
-  @Column({ type: 'nvarchar', length: 50, enum: AddressType })
+  @Column({ name: 'address_type', type: 'nvarchar', length: 20 })
   addressType!: AddressType;
 
-  @Column({ type: 'nvarchar', length: 256, nullable: true })
+  @Column({ name: 'driving_direction', type: 'nvarchar', length: 256, nullable: true })
   drivingDirections?: string | null;
 
   @Column({ type: 'nvarchar', length: 256, nullable: true })
@@ -39,7 +39,7 @@ export class Address extends BaseEntity {
   timeZone?: string | null;
 
   @Column({ type: 'nvarchar', length: 20, nullable: true })
-  leadSource?: string | null; // dudas
+  lead?: string | null;
 
   /** ---- Relationship to LocationType ---- */
   @Index('IX_addresses_location_type_id')
