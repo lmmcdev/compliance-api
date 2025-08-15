@@ -76,34 +76,34 @@ export const addressesDeleteHandler = withHttp(
 app.http('addresses-list', {
   methods: ['GET'],
   route: prefixRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: addressesListHandler,
 });
 
 app.http('addresses-create', {
   methods: ['POST'],
   route: prefixRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: addressesCreateHandler,
 });
 
 app.http('addresses-getById', {
   methods: ['GET'],
   route: itemRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: addressesGetByIdHandler,
 });
 
 app.http('addresses-update', {
   methods: ['PUT'], // keep PUT to match your route catalog; add 'PATCH' if desired
   route: itemRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: addressesUpdateHandler,
 });
 
 app.http('addresses-delete', {
   methods: ['DELETE'],
   route: itemRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: addressesDeleteHandler,
 });

@@ -36,4 +36,13 @@ export {
   type SetBusinessLicenseStatusDto,
 } from './business-license.dto';
 
+export {
+  CreateHealthcareFacilitySchema,
+  UpdateHealthcareFacilitySchema,
+  ListHealthcareFacilitiesSchema,
+  type CreateHealthcareFacilityDto,
+  type UpdateHealthcareFacilityDto,
+  type ListHealthcareFacilitiesQuery,
+} from './healthcare-facility.dto';
+
 export type { PageResult } from './pagination';

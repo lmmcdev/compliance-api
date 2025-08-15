@@ -21,9 +21,7 @@ import {
 import { getDataSource } from '../config/ds-runtime';
 import { BusinessLicenseService } from '../services';
 
-// Build routes without leading slash; works with routePrefix: "api"
 const { prefixRoute, itemRoute } = createPrefixRoute('business-licenses');
-// e.g. prefixRoute => "v1/business-licenses", itemRoute => "v1/business-licenses/{id}"
 
 // ---------- Handlers ----------
 
@@ -94,41 +92,41 @@ export const businessLicensesSetStatusHandler = withHttp(
 app.http('business-licenses-list', {
   methods: ['GET'],
   route: prefixRoute, // v1/business-licenses
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: businessLicensesListHandler,
 });
 
 app.http('business-licenses-create', {
   methods: ['POST'],
   route: prefixRoute, // v1/business-licenses
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: businessLicensesCreateHandler,
 });
 
 app.http('business-licenses-get', {
   methods: ['GET'],
   route: itemRoute, // v1/business-licenses/{id}
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: businessLicensesGetHandler,
 });
 
 app.http('business-licenses-update', {
   methods: ['PUT', 'PATCH'],
   route: itemRoute, // v1/business-licenses/{id}
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: businessLicensesUpdateHandler,
 });
 
 app.http('business-licenses-delete', {
   methods: ['DELETE'],
   route: itemRoute, // v1/business-licenses/{id}
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: businessLicensesDeleteHandler,
 });
 
 app.http('business-licenses-set-status', {
   methods: ['PATCH'],
   route: `${itemRoute}/status`, // v1/business-licenses/{id}/status
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: businessLicensesSetStatusHandler,
 });
