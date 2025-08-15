@@ -1,8 +1,8 @@
 import { Entity, Column } from 'typeorm';
 import { BaseEntity } from './base.entity';
-import { EntityName } from './enum.type';
+import { EntityName } from '../types/enum.type';
 
-@Entity('audit_logs')
+@Entity({ name: 'audit_logs', schema: 'dbo' })
 export class AuditLog extends BaseEntity {
   @Column({ type: 'nvarchar', length: 128 })
   action!: string;

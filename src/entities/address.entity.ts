@@ -2,14 +2,7 @@ import { Entity, Column, Index, ManyToOne, JoinColumn, RelationId } from 'typeor
 import { BaseEntity } from './base.entity';
 import { LocationType } from './location-type.entity';
 
-export enum AddressType {
-  MAILING = 'Mailing',
-  BILLING = 'Billing',
-  SHIPPING = 'Shipping',
-  HOME = 'Home',
-}
-
-@Entity('addresses')
+@Entity({ name: 'addresses', schema: 'dbo' })
 export class Address extends BaseEntity {
   @Column({ type: 'nvarchar', length: 128 })
   street!: string;
@@ -27,7 +20,7 @@ export class Address extends BaseEntity {
   country!: string;
 
   @Column({ name: 'address_type', type: 'nvarchar', length: 20 })
-  addressType!: AddressType;
+  addressType!: string; // AddressType
 
   @Column({ name: 'driving_direction', type: 'nvarchar', length: 256, nullable: true })
   drivingDirections?: string | null;
@@ -47,7 +40,7 @@ export class Address extends BaseEntity {
     nullable: false,
     onDelete: 'NO ACTION',
   })
-  @JoinColumn({ name: 'location_type_id' })
+  @JoinColumn({ name: 'location_type_id', referencedColumnName: 'id' })
   locationType!: LocationType;
 
   @RelationId((addr: Address) => addr.locationType)

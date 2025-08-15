@@ -1,8 +1,7 @@
 import { BaseEntity } from './base.entity';
 import { Entity, Column } from 'typeorm';
-import { LicenseStatus } from './enum.type';
 
-@Entity('licenses')
+@Entity({ name: 'licenses', schema: 'dbo' })
 export class License extends BaseEntity {
   // number
   @Column({ type: 'int', nullable: false })
@@ -28,7 +27,7 @@ export class License extends BaseEntity {
 
   // status
   @Column({ type: 'nvarchar', length: 256, nullable: true })
-  status?: LicenseStatus | null;
+  status?: string | null; // LicenseStatus
 
   // is active
   @Column({ type: 'bit', default: () => '0' })
