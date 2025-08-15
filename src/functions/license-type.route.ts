@@ -78,34 +78,34 @@ export const licenseTypesDeleteHandler = withHttp(
 app.http('license-types-list', {
   methods: ['GET'],
   route: prefixRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: licenseTypesListHandler,
 });
 
 app.http('license-types-get-by-id', {
   methods: ['GET'],
   route: itemRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: licenseTypesGetByIdHandler,
 });
 
 app.http('license-types-create', {
   methods: ['POST'],
   route: prefixRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: licenseTypesCreateHandler,
 });
 
 app.http('license-types-update', {
   methods: ['PUT', 'PATCH'],
   route: itemRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: licenseTypesUpdateHandler,
 });
 
 app.http('license-types-delete', {
   methods: ['DELETE'],
   route: itemRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: licenseTypesDeleteHandler,
 });

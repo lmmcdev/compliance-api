@@ -89,41 +89,41 @@ export const accountsSetBillingAddressHandler = withHttp(
 app.http('accounts-list', {
   methods: ['GET'],
   route: prefixRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: accountsListHandler,
 });
 
 app.http('accounts-create', {
   methods: ['POST'],
   route: prefixRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: accountsCreateHandler,
 });
 
 app.http('accounts-get', {
   methods: ['GET'],
   route: itemRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: accountsGetHandler,
 });
 
 app.http('accounts-update', {
   methods: ['PUT', 'PATCH'],
   route: itemRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: accountsUpdateHandler,
 });
 
 app.http('accounts-delete', {
   methods: ['DELETE'],
   route: itemRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: accountsDeleteHandler,
 });
 
 app.http('accounts-set-billing-address', {
   methods: ['PATCH'],
   route: billingRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: accountsSetBillingAddressHandler,
 });

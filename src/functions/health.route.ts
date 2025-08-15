@@ -1,22 +1,43 @@
+// src/functions/health.route.ts
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { withHttp } from '../http/with-http';
+import { ok } from '../http/respond';
 import { versionedRoute, logInfo } from '../helpers';
 
 const path = 'health';
-const prefixRoute = versionedRoute(path);
+export const prefixRoute = versionedRoute(path);
 
-async function health(req: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
-  logInfo(context, `Health check endpoint called. Method: ${req.method}, URL: ${req.url}`);
-  return {
-    status: 200,
-    jsonBody: { status: 'ok', timestamp: new Date().toISOString() },
-    headers: { 'Content-Type': 'application/json' },
-  };
-}
+export const healthHandler = withHttp(
+  async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
+    logInfo(ctx, `Health check endpoint called. Method: ${req.method}, URL: ${req.url}`);
+
+    const now = new Date();
+    const upSecs = Math.floor(process.uptime());
+    const upSince = new Date(now.getTime() - upSecs * 1000);
+
+    const data = {
+      status: 'ok',
+      timestamp: now.toISOString(),
+      upSeconds: upSecs,
+      upSince: upSince.toISOString(),
+      // Optional runtime/env metadata (only present if set)
+      version: process.env.APP_VERSION || process.env.npm_package_version || null,
+      commit:
+        process.env.BITBUCKET_COMMIT || process.env.SCM_COMMIT_ID || process.env.COMMIT_SHA || null,
+      environment: process.env.NODE_ENV || null,
+      region: process.env.WEBSITE_REGION || null,
+      instanceId: process.env.WEBSITE_INSTANCE_ID || null,
+      site: process.env.WEBSITE_SITE_NAME || null,
+    };
+
+    // Uses your standard envelope and headers (X-Trace-Id, no-store, etc.)
+    return ok(ctx, data);
+  },
+);
+
 app.http('health', {
   methods: ['GET'],
   route: prefixRoute,
   authLevel: 'anonymous',
-  handler: health,
+  handler: healthHandler,
 });
-
-export default health;
