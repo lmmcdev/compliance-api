@@ -2,9 +2,26 @@ import { HttpRequest, HttpResponseInit } from '@azure/functions';
 import { env } from '../config/env';
 import { LicenseTypeCode } from '../types/enum.type';
 
-export const versionedRoute = (path: string, version: string = env.API_VERSION) => {
+const trim = (s: string) => s.replace(/^\/+|\/+$/g, '');
+
+export const versionedRoute = (
+  path: string,
+  version: string = env.API_VERSION || 'v1',
+  opts?: { includeApiPrefix?: boolean },
+): string => {
   if (!path) throw new Error('Path is required');
-  return `${version}/${path}`;
+
+  const includeApi = !!opts?.includeApiPrefix;
+
+  // Normalize inputs
+  const v = trim(version);
+  const p = trim(path);
+
+  const parts = [];
+  if (includeApi && !/^api(\/|$)/i.test(v)) parts.push('api');
+  parts.push(v, p);
+
+  return parts.filter(Boolean).join('/');
 };
 
 export function json(status: number, body: unknown): HttpResponseInit {
@@ -17,8 +34,8 @@ export function isJson(req: HttpRequest) {
 
 // ---- utilities -------------------------------------------------------------
 
-const DUPLICATE_MSSQL = new Set([2601, 2627]); // unique/PK dup
-const FK_VIOLATION = 547; // foreign key (invalid locationTypeId, etc.)
+const DUPLICATE_MSSQL = new Set([2601, 2627]);
+const FK_VIOLATION = 547;
 
 export function isZodError(err: any): boolean {
   return !!err && Array.isArray(err.issues);

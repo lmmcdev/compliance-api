@@ -25,4 +25,13 @@ export {
   type ListAddressesQuery,
 } from './address.dto';
 
+export {
+  CreateLocationTypeSchema,
+  UpdateLocationTypeSchema,
+  ListLocationTypesSchema,
+  type CreateLocationTypeDto,
+  type UpdateLocationTypeDto,
+  type ListLocationTypesQuery,
+} from './location-type.dto';
+
 export type { PageResult } from './pagination';

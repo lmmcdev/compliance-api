@@ -1,19 +1,24 @@
 // src/functions/accounts.route.ts
+import { z } from 'zod';
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { withHttp } from '../http/with-http';
-import { parseJson, parseQuery } from '../http/request';
-import { ok, created, noContent, paginated } from '../http/respond';
+import {
+  created,
+  createPrefixRoute,
+  IdParamSchema,
+  noContent,
+  ok,
+  paginated,
+  parseJson,
+  parseQuery,
+  withHttp,
+} from '../http';
 import { CreateAccountSchema, UpdateAccountSchema, ListAccountsSchema } from '../dtos';
 import { getDataSource } from '../config/ds-runtime';
-import { AccountService } from '../services/account.service';
-import { versionedRoute } from '../helpers';
-import { z } from 'zod';
-import { IdParamSchema } from '../http/param';
+import { AccountService } from '../services';
 
 const path = 'accounts';
-export const prefixRoute = versionedRoute(path); // e.g. api/v1/accounts
-export const itemRoute = `${prefixRoute}/{id}`; // e.g. api/v1/accounts/{id}
-export const billingRoute = `${itemRoute}/billing-address`;
+const { prefixRoute, itemRoute, itemSub } = createPrefixRoute(path);
+const billingRoute = itemSub('billing-address');
 
 // -------- Handlers --------
 
@@ -70,7 +75,7 @@ export const accountsDeleteHandler = withHttp(
 
 // PATCH /billing-address (set/unset)
 const BillingAddressSchema = z.object({
-  billingAddressId: z.string().uuid().nullable().optional(), // null or UUID to clear/set
+  billingAddressId: z.uuid().nullable().optional(), // null or UUID to clear/set
 });
 
 export const accountsSetBillingAddressHandler = withHttp(

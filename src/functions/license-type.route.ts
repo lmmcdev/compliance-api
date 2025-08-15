@@ -1,22 +1,25 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { getDataSource } from '../config/ds-runtime';
 import { LicenseTypeService } from '../services';
-import { versionedRoute, logErr, logInfo, isJson, json, toHttpError, isGuid } from '../helpers';
-import { LicenseTypeCode } from '../types/enum.type';
-import { isLicenseTypeCode } from '../helpers/functions.helper';
-import { withHttp } from '../http/with-http';
-import { parseJson, parseQuery } from '../http/request';
-import { created, noContent, ok, paginated } from '../http/respond';
-import { IdParamSchema } from '../http/param';
+import {
+  created,
+  IdParamSchema,
+  noContent,
+  ok,
+  paginated,
+  parseJson,
+  parseQuery,
+  withHttp,
+} from '../http';
 import {
   CreateLicenseTypeSchema,
   ListLicenseTypesSchema,
   UpdateLicenseTypeSchema,
 } from '../dtos/license-type.dto';
+import { createPrefixRoute } from '../http/route-api';
 
 const path = 'license-types';
-const prefixRoute = versionedRoute(path); // e.g. api/v1/license-types
-const itemRoute = `${prefixRoute}/{id}`; // e.g. api/v1/license-types/{id}`
+const { prefixRoute, itemRoute } = createPrefixRoute(path);
 
 // ---- handlers ----
 const licenseTypesListHandler = withHttp(
@@ -51,16 +54,12 @@ const licenseTypesCreateHandler = withHttp(
 
 const licenseTypesUpdateHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const id = req.params['id']!;
-    if (!isGuid(id))
-      return json(400, { error: 'BadRequest', message: 'Invalid id format (GUID required).' });
-
+    const { id } = IdParamSchema.parse((req as any).params ?? {});
     const dto = await parseJson(req, UpdateLicenseTypeSchema);
     const ds = await getDataSource();
     const service = new LicenseTypeService(ds);
     const updated = await service.update(id, dto);
-    if (!updated) return json(404, { error: 'NotFound' });
-    return json(200, updated);
+    return ok(ctx, updated);
   },
 );
 

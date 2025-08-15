@@ -1,16 +1,12 @@
 // src/functions/health.route.ts
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { withHttp } from '../http/with-http';
-import { ok } from '../http/respond';
-import { versionedRoute, logInfo } from '../helpers';
+import { createPrefixRoute, ok, withHttp } from '../http';
 
 const path = 'health';
-export const prefixRoute = versionedRoute(path);
+const { prefixRoute } = createPrefixRoute(path);
 
 export const healthHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    logInfo(ctx, `Health check endpoint called. Method: ${req.method}, URL: ${req.url}`);
-
     const now = new Date();
     const upSecs = Math.floor(process.uptime());
     const upSince = new Date(now.getTime() - upSecs * 1000);

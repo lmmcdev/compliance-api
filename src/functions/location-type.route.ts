@@ -1,148 +1,114 @@
+// src/functions/location-type.route.ts
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import {
+  created,
+  createPrefixRoute,
+  IdParamSchema,
+  noContent,
+  ok,
+  paginated,
+  parseJson,
+  parseParams,
+  parseQuery,
+  withHttp,
+} from '../http';
+import {
+  CreateLocationTypeSchema,
+  UpdateLocationTypeSchema,
+  ListLocationTypesSchema,
+} from '../dtos';
 import { getDataSource } from '../config/ds-runtime';
-import { LocationTypeService } from '../services';
-import { versionedRoute, logErr, logInfo, isJson, json } from '../helpers';
+import { LocationTypeService } from '../services/location-type.service';
 
 const path = 'location-types';
-const prefixRoute = versionedRoute(path); // e.g. v1/location-types
-const itemRoute = `${prefixRoute}/{id}`; // e.g. v1/location-types/{id}
+const { prefixRoute, itemRoute } = createPrefixRoute(path);
 
-//LIST
-async function getLocationTypes(
-  req: HttpRequest,
-  context: InvocationContext,
-): Promise<HttpResponseInit> {
-  try {
-    logInfo(context, `[${req.method}] ${req.url} Fetching location types`);
+// -------- Handlers --------
+
+export const locationTypesListHandler = withHttp(
+  async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
+    const query = parseQuery(req, ListLocationTypesSchema);
     const ds = await getDataSource();
     const service = new LocationTypeService(ds);
-    const url = new URL(req.url);
-    const page = parseInt(url.searchParams.get('page') || '1', 10);
-    const pageSize = parseInt(url.searchParams.get('pageSize') || '20', 10);
-    const result = await service.list(page, pageSize);
-    return json(200, result);
-  } catch (err: any) {
-    logErr(context, err);
-    if (err?.issues?.length) return json(400, { error: 'ValidationError', details: err.issues });
-    return json(500, { error: 'InternalServerError' });
-  }
-}
+    const page = await service.list(query);
+    return paginated(ctx, page);
+  },
+);
 
-// get LocationType by ID
-async function getLocationTypeById(
-  req: HttpRequest,
-  context: InvocationContext,
-): Promise<HttpResponseInit> {
-  try {
-    const id = req.params['id']!;
+export const locationTypesCreateHandler = withHttp(
+  async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
+    const dto = await parseJson(req, CreateLocationTypeSchema);
     const ds = await getDataSource();
     const service = new LocationTypeService(ds);
-    const found = await service.get(id);
-    if (!found) return json(404, { error: 'Not found' });
-    return json(200, found);
-  } catch (err: any) {
-    logErr(context, err);
-    return json(500, { error: 'InternalServerError' });
-  }
-}
+    const entity = await service.create(dto);
+    return created(ctx, entity);
+  },
+);
 
-// create
-async function createLocationType(
-  req: HttpRequest,
-  context: InvocationContext,
-): Promise<HttpResponseInit> {
-  try {
-    if (!isJson(req)) return json(415, { error: 'Content-Type must be application/json' });
-    const body = await req.json().catch(() => null);
-    if (!body) return json(400, { error: 'Invalid JSON body' });
-
+export const locationTypesGetByIdHandler = withHttp(
+  async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
+    const { id } = parseParams(req, IdParamSchema);
     const ds = await getDataSource();
     const service = new LocationTypeService(ds);
-    const created = await service.create(body);
-    return json(201, created);
-  } catch (err: any) {
-    logErr(context, err);
-    if (err?.issues?.length) return json(400, { error: 'ValidationError', details: err.issues });
-    return json(500, { error: 'InternalServerError' });
-  }
-}
+    const entity = await service.get(id);
+    return ok(ctx, entity);
+  },
+);
 
-// update
-async function updateLocationType(
-  req: HttpRequest,
-  context: InvocationContext,
-): Promise<HttpResponseInit> {
-  try {
-    if (!isJson(req)) return json(415, { error: 'Content-Type must be application/json' });
-    const body = await req.json().catch(() => null);
-    if (!body) return json(400, { error: 'Invalid JSON body' });
-
-    const id = req.params['id']!;
+export const locationTypesUpdateHandler = withHttp(
+  async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
+    const { id } = parseParams(req, IdParamSchema);
+    const dto = await parseJson(req, UpdateLocationTypeSchema);
     const ds = await getDataSource();
     const service = new LocationTypeService(ds);
-    const updated = await service.update(id, body);
-    if (!updated) return json(404, { error: 'Not found' });
-    return json(200, updated);
-  } catch (err: any) {
-    logErr(context, err);
-    if (err?.issues?.length) return json(400, { error: 'ValidationError', details: err.issues });
-    return json(500, { error: 'InternalServerError' });
-  }
-}
+    const entity = await service.update(id, dto);
+    return ok(ctx, entity);
+  },
+);
 
-// delete (soft delete)
-async function deleteLocationType(
-  req: HttpRequest,
-  context: InvocationContext,
-): Promise<HttpResponseInit> {
-  try {
-    const id = req.params['id']!;
+export const locationTypesDeleteHandler = withHttp(
+  async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
+    const { id } = parseParams(req, IdParamSchema);
     const ds = await getDataSource();
     const service = new LocationTypeService(ds);
-
-    const exists = await service.get(id);
-    if (!exists) return json(404, { error: 'Not found' });
-
     await service.remove(id);
-    return { status: 204 };
-  } catch (err: any) {
-    logErr(context, err);
-    return json(500, { error: 'InternalServerError' });
-  }
-}
+    return noContent(ctx);
+  },
+);
 
-// ------- app routes ----
+// -------- Routes --------
+
 app.http('locationTypes-list', {
   methods: ['GET'],
-  authLevel: 'anonymous',
   route: prefixRoute,
-  handler: getLocationTypes,
-});
-
-app.http('locationTypes-getById', {
-  methods: ['GET'],
-  authLevel: 'anonymous',
-  route: itemRoute,
-  handler: getLocationTypeById,
+  authLevel: 'function',
+  handler: locationTypesListHandler,
 });
 
 app.http('locationTypes-create', {
   methods: ['POST'],
-  authLevel: 'anonymous',
   route: prefixRoute,
-  handler: createLocationType,
+  authLevel: 'function',
+  handler: locationTypesCreateHandler,
+});
+
+app.http('locationTypes-getById', {
+  methods: ['GET'],
+  route: itemRoute,
+  authLevel: 'function',
+  handler: locationTypesGetByIdHandler,
 });
 
 app.http('locationTypes-update', {
-  methods: ['PUT'],
-  authLevel: 'anonymous',
+  methods: ['PUT', 'PATCH'],
   route: itemRoute,
-  handler: updateLocationType,
+  authLevel: 'function',
+  handler: locationTypesUpdateHandler,
 });
 
 app.http('locationTypes-delete', {
   methods: ['DELETE'],
-  authLevel: 'anonymous',
   route: itemRoute,
-  handler: deleteLocationType,
+  authLevel: 'function',
+  handler: locationTypesDeleteHandler,
 });

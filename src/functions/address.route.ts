@@ -1,18 +1,22 @@
 // src/functions/addresses.route.ts
-import { z } from 'zod';
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { withHttp } from '../http/with-http';
-import { parseJson, parseQuery } from '../http/request';
-import { ok, created, noContent, paginated } from '../http/respond';
+import {
+  created,
+  createPrefixRoute,
+  IdParamSchema,
+  noContent,
+  ok,
+  paginated,
+  parseJson,
+  parseQuery,
+  withHttp,
+} from '../http';
 import { CreateAddressSchema, UpdateAddressSchema, ListAddressesSchema } from '../dtos';
 import { getDataSource } from '../config/ds-runtime';
-import { AddressService } from '../services/address.service';
-import { versionedRoute } from '../helpers';
-import { IdParamSchema } from '../http/param';
+import { AddressService } from '../services';
 
 const path = 'addresses';
-export const prefixRoute = versionedRoute(path); // e.g. api/v1/addresses
-export const itemRoute = `${prefixRoute}/{id}`; // e.g. api/v1/addresses/{id}
+const { prefixRoute, itemRoute } = createPrefixRoute(path);
 
 // -------- Handlers --------
 
