@@ -137,31 +137,31 @@ async function deleteAddress(
 }
 
 // ---- app routes ------------------------------------------------------------
-app.http('getAddresses', {
+app.http('addresses-list', {
   methods: ['GET'],
   authLevel: 'anonymous',
   route: prefixRoute,
   handler: getAddresses,
 });
-app.http('getAddressById', {
+app.http('addresses-getById', {
   methods: ['GET'],
   authLevel: 'anonymous',
   route: itemRoute,
   handler: getAddressById,
 });
-app.http('createAddress', {
+app.http('addresses-create', {
   methods: ['POST'],
   authLevel: 'anonymous',
   route: prefixRoute,
   handler: createAddress,
 });
-app.http('updateAddress', {
+app.http('addresses-update', {
   methods: ['PUT'],
   authLevel: 'anonymous',
   route: itemRoute,
   handler: updateAddress,
 });
-app.http('deleteAddress', {
+app.http('addresses-delete', {
   methods: ['DELETE'],
   authLevel: 'anonymous',
   route: itemRoute,

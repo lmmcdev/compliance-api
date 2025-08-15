@@ -1,82 +1,88 @@
 import { DataSource } from 'typeorm';
-import { z, ZodError } from 'zod';
 import { LicenseType } from '../entities/license-type.entity';
 import { LicenseTypeCode } from '../types/enum.type';
 import { LicenseTypeRepository } from '../repositories/license-type.repository';
+import {
+  CreateLicenseTypeSchema,
+  ListLicenseTypesSchema,
+  UpdateLicenseTypeSchema,
+  CreateLicenseTypeDto,
+  UpdateLicenseTypeDto,
+} from '../dtos/license-type.dto';
+import { PageResult } from '../dtos';
+import { ConflictError, NotFoundError } from '../http/app-error';
 
-export const createSchema = z.object({
-  code: z.enum(LicenseTypeCode),
-  displayName: z.string().max(128),
-  description: z.string().max(256).optional().nullable(),
-});
-export const updateSchema = createSchema.partial();
+export interface ILicenseTypeService {
+  create(payload: unknown): Promise<LicenseType>;
+  update(id: string, payload: unknown): Promise<LicenseType>;
+  get(id: string): Promise<LicenseType | null>;
+  list(query: unknown): Promise<PageResult<LicenseType>>;
+  remove(id: string): Promise<void>;
+}
 
-export class LicenseTypeService {
+export class LicenseTypeService implements ILicenseTypeService {
   private repo: LicenseTypeRepository;
 
-  constructor(ds: DataSource) {
-    this.repo = new LicenseTypeRepository(ds);
+  constructor(ds: DataSource, repo?: LicenseTypeRepository) {
+    this.repo = repo ?? new LicenseTypeRepository(ds);
   }
 
-  private handleError(err: unknown, op: string): never {
-    // Let Zod errors bubble up so your route can return 400 with details
-    if (err instanceof ZodError) throw err;
+  async create(payload: unknown): Promise<LicenseType> {
+    const dto: CreateLicenseTypeDto = CreateLicenseTypeSchema.parse(payload);
 
-    const msg =
-      err instanceof Error ? err.message : typeof err === 'string' ? err : JSON.stringify(err);
-    throw new Error(`[LicenseTypeService] ${op} failed: ${msg}`);
-  }
-
-  async list(page?: number, pageSize?: number) {
-    try {
-      return await this.repo.findPaged(page, pageSize);
-    } catch (err) {
-      this.handleError(err, 'list');
+    // Check for existing license type with the same code
+    const existing = await this.repo.findByCode(dto.code as LicenseTypeCode);
+    if (existing) {
+      throw new ConflictError(`License type with code ${dto.code} already exists.`);
     }
+
+    const data: Partial<LicenseType> = {
+      code: dto.code,
+      displayName: dto.displayName,
+      description: dto.description ?? null,
+    };
+
+    return this.repo.createAndSave(data);
   }
 
-  async get(id: string) {
-    try {
-      return await this.repo.findById(id); // may return null
-    } catch (err) {
-      this.handleError(err, 'get');
+  async update(id: string, payload: unknown): Promise<LicenseType> {
+    const dto: UpdateLicenseTypeDto = UpdateLicenseTypeSchema.parse(payload);
+
+    const current = await this.repo.findById(id);
+    if (!current) throw new NotFoundError(`License type with id ${id} not found.`);
+
+    if (dto.code !== current.code) {
+      const existing = await this.repo.findByCode(dto.code as LicenseTypeCode);
+      if (existing) {
+        throw new ConflictError(`License type with code ${dto.code} already exists.`);
+      }
     }
+
+    const patch: Partial<LicenseType> = {
+      ...(dto.code !== undefined ? { code: dto.code } : {}),
+      ...(dto.displayName !== undefined ? { displayName: dto.displayName } : {}),
+      ...(dto.description !== undefined ? { description: dto.description } : {}),
+    };
+
+    const updated = await this.repo.updateAndSave(id, patch);
+    if (!updated) throw new NotFoundError('License type not found after update');
+    return updated;
   }
 
-  async create(payload: unknown) {
-    try {
-      const data = createSchema.parse(payload) as Pick<
-        LicenseType,
-        'code' | 'displayName' | 'description'
-      >;
-      return await this.repo.createOne(data);
-    } catch (err) {
-      this.handleError(err, 'create');
-    }
+  async get(id: string): Promise<LicenseType> {
+    const found = await this.repo.findById(id);
+    if (!found) throw new NotFoundError(`License type with id ${id} not found.`);
+    return found;
   }
 
-  async update(id: string, payload: unknown) {
-    try {
-      const data = updateSchema.parse(payload) as Partial<LicenseType>;
-      return await this.repo.updateOne(id, data); // may return null
-    } catch (err) {
-      this.handleError(err, 'update');
-    }
+  async list(query: unknown): Promise<PageResult<LicenseType>> {
+    const q = ListLicenseTypesSchema.parse(query);
+    return await this.repo.list(q);
   }
 
-  async remove(id: string) {
-    try {
-      await this.repo.softDelete(id);
-    } catch (err) {
-      this.handleError(err, 'remove');
-    }
-  }
-
-  async findByCode(code: LicenseTypeCode) {
-    try {
-      return await this.repo.findByCode(code);
-    } catch (err) {
-      this.handleError(err, 'findByCode');
-    }
+  async remove(id: string): Promise<void> {
+    const found = await this.repo.findById(id);
+    if (!found) throw new NotFoundError(`License type with id ${id} not found.`);
+    await this.repo.deleteHard(id);
   }
 }

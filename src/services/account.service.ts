@@ -70,7 +70,9 @@ export class AccountService implements IAccountService {
     if (dto.accountNumber && dto.accountNumber !== current.accountNumber) {
       const exists = await this.repo.findByAccountNumber(dto.accountNumber);
       if (exists && exists.id !== id) {
-        throw new ConflictError('An account with this accountNumber already exists.');
+        throw new ConflictError(
+          `An account with accountNumber ${dto.accountNumber} already exists.`,
+        );
       }
     }
 
@@ -117,9 +119,9 @@ export class AccountService implements IAccountService {
   }
 
   async get(id: string): Promise<Account> {
-    const entity = await this.repo.findById(id);
-    if (!entity) throw new NotFoundError('Account not found');
-    return entity;
+    const found = await this.repo.findById(id);
+    if (!found) throw new NotFoundError('Account not found');
+    return found;
   }
 
   async list(query: unknown) {

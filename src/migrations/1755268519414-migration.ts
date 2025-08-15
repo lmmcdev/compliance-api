@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Migration1755230898335 implements MigrationInterface {
-    name = 'Migration1755230898335'
+export class Migration1755268519414 implements MigrationInterface {
+    name = 'Migration1755268519414'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TABLE "location_types" ("id" uniqueidentifier NOT NULL CONSTRAINT "DF_a8e0edf03ea5715ed995151d637" DEFAULT NEWSEQUENTIALID(), "created_at" datetime2 NOT NULL CONSTRAINT "DF_341188fd21c1c58cdd1c930aab4" DEFAULT GETUTCDATE(), "updated_at" datetime2 NOT NULL CONSTRAINT "DF_76d74e985f4995022c8058d8e4d" DEFAULT GETUTCDATE(), "deleted_at" datetime2, "code" nvarchar(128) NOT NULL, "display_name" nvarchar(128) NOT NULL, "description" nvarchar(256), CONSTRAINT "PK_a8e0edf03ea5715ed995151d637" PRIMARY KEY ("id"))`);

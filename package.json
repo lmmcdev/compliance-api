@@ -22,6 +22,7 @@
     "zod": "^4.0.17"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.19.10",
     "azure-functions-core-tools": "^4.x",
     "eslint": "^9.33.0",

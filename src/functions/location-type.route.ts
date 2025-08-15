@@ -112,35 +112,35 @@ async function deleteLocationType(
 }
 
 // ------- app routes ----
-app.http('getLocationTypes', {
+app.http('locationTypes-list', {
   methods: ['GET'],
   authLevel: 'anonymous',
   route: prefixRoute,
   handler: getLocationTypes,
 });
 
-app.http('getLocationTypeById', {
+app.http('locationTypes-getById', {
   methods: ['GET'],
   authLevel: 'anonymous',
   route: itemRoute,
   handler: getLocationTypeById,
 });
 
-app.http('createLocationType', {
+app.http('locationTypes-create', {
   methods: ['POST'],
   authLevel: 'anonymous',
   route: prefixRoute,
   handler: createLocationType,
 });
 
-app.http('updateLocationType', {
+app.http('locationTypes-update', {
   methods: ['PUT'],
   authLevel: 'anonymous',
   route: itemRoute,
   handler: updateLocationType,
 });
 
-app.http('deleteLocationType', {
+app.http('locationTypes-delete', {
   methods: ['DELETE'],
   authLevel: 'anonymous',
   route: itemRoute,
