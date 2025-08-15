@@ -81,34 +81,34 @@ export const healthcareFacilitiesDeleteHandler = withHttp(
 app.http('healthcare-facilities-list', {
   methods: ['GET'],
   route: prefixRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: healthcareFacilitiesListHandler,
 });
 
 app.http('healthcare-facilities-create', {
   methods: ['POST'],
   route: prefixRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: healthcareFacilitiesCreateHandler,
 });
 
 app.http('healthcare-facilities-get', {
   methods: ['GET'],
   route: itemRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: healthcareFacilitiesGetHandler,
 });
 
 app.http('healthcare-facilities-update', {
   methods: ['PUT', 'PATCH'],
   route: itemRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: healthcareFacilitiesUpdateHandler,
 });
 
 app.http('healthcare-facilities-delete', {
   methods: ['DELETE'],
   route: itemRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: healthcareFacilitiesDeleteHandler,
 });
