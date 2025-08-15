@@ -1,169 +1,105 @@
-// src/functions/address.route.ts
+// src/functions/addresses.route.ts
+import { z } from 'zod';
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+import { withHttp } from '../http/with-http';
+import { parseJson, parseQuery } from '../http/request';
+import { ok, created, noContent, paginated } from '../http/respond';
+import { CreateAddressSchema, UpdateAddressSchema, ListAddressesSchema } from '../dtos';
 import { getDataSource } from '../config/ds-runtime';
-import { AddressService } from '../services/address.service'; // or '../services' if you have a barrel
-import { versionedRoute, logErr, logInfo, isJson, json, isGuid, toHttpError } from '../helpers';
+import { AddressService } from '../services/address.service';
+import { versionedRoute } from '../helpers';
+import { IdParamSchema } from '../http/param';
 
-// ---- routing ---------------------------------------------------------------
 const path = 'addresses';
-const prefixRoute = versionedRoute(path); // e.g. api/v1/addresses
-const itemRoute = `${prefixRoute}/{id}`; // e.g. api/v1/addresses/{id}
+export const prefixRoute = versionedRoute(path); // e.g. api/v1/addresses
+export const itemRoute = `${prefixRoute}/{id}`; // e.g. api/v1/addresses/{id}
 
-// ---- handlers --------------------------------------------------------------
+// -------- Handlers --------
 
-// LIST with filters & pagination
-async function getAddresses(
-  req: HttpRequest,
-  context: InvocationContext,
-): Promise<HttpResponseInit> {
-  try {
-    logInfo(context, `[${req.method}] ${req.url} Fetching addresses`);
+export const addressesListHandler = withHttp(
+  async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
+    const query = parseQuery(req, ListAddressesSchema);
     const ds = await getDataSource();
     const service = new AddressService(ds);
+    const page = await service.list(query);
+    return paginated(ctx, page);
+  },
+);
 
-    const url = new URL(req.url);
-    const query = {
-      page: url.searchParams.get('page') ?? undefined,
-      pageSize: url.searchParams.get('pageSize') ?? undefined,
-      locationTypeId: url.searchParams.get('locationTypeId') ?? undefined,
-      city: url.searchParams.get('city') ?? undefined,
-      addressType: url.searchParams.get('addressType') ?? undefined,
-    };
-
-    const result = await service.list(query);
-    return json(200, result);
-  } catch (err: any) {
-    logErr(context, err);
-    return toHttpError(err);
-  }
-}
-
-// GET by id
-async function getAddressById(
-  req: HttpRequest,
-  context: InvocationContext,
-): Promise<HttpResponseInit> {
-  try {
-    const id = req.params['id']!;
-    if (!isGuid(id))
-      return json(400, { error: 'BadRequest', message: 'Invalid id format (GUID required).' });
-
+export const addressesCreateHandler = withHttp(
+  async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
+    const dto = await parseJson(req, CreateAddressSchema);
     const ds = await getDataSource();
     const service = new AddressService(ds);
-    const found = await service.get(id);
-    if (!found) return json(404, { error: 'NotFound' });
-    return json(200, found);
-  } catch (err: any) {
-    logErr(context, err);
-    return toHttpError(err);
-  }
-}
+    const entity = await service.create(dto);
+    return created(ctx, entity);
+  },
+);
 
-// CREATE
-async function createAddress(
-  req: HttpRequest,
-  context: InvocationContext,
-): Promise<HttpResponseInit> {
-  try {
-    context.log(`[${req.method}] ${req.url} Creating address`);
-    if (!isJson(req))
-      return json(415, {
-        error: 'UnsupportedMediaType',
-        message: 'Content-Type must be application/json',
-      });
-    const body = await req.json().catch(() => null);
-    if (!body) return json(400, { error: 'BadRequest', message: 'Invalid JSON body' });
-
+export const addressesGetByIdHandler = withHttp(
+  async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
+    const { id } = IdParamSchema.parse((req as any).params ?? {});
     const ds = await getDataSource();
     const service = new AddressService(ds);
-    const created = await service.create(body);
-    return json(201, created);
-  } catch (err: any) {
-    logErr(context, err);
-    return toHttpError(err);
-  }
-}
+    const entity = await service.get(id);
+    return ok(ctx, entity);
+  },
+);
 
-// UPDATE
-async function updateAddress(
-  req: HttpRequest,
-  context: InvocationContext,
-): Promise<HttpResponseInit> {
-  try {
-    if (!isJson(req))
-      return json(415, {
-        error: 'UnsupportedMediaType',
-        message: 'Content-Type must be application/json',
-      });
-    const body = await req.json().catch(() => null);
-    if (!body) return json(400, { error: 'BadRequest', message: 'Invalid JSON body' });
-
-    const id = req.params['id']!;
-    if (!isGuid(id))
-      return json(400, { error: 'BadRequest', message: 'Invalid id format (GUID required).' });
-
+export const addressesUpdateHandler = withHttp(
+  async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
+    const { id } = IdParamSchema.parse((req as any).params ?? {});
+    const dto = await parseJson(req, UpdateAddressSchema);
     const ds = await getDataSource();
     const service = new AddressService(ds);
-    const updated = await service.update(id, body);
-    if (!updated) return json(404, { error: 'NotFound' });
-    return json(200, updated);
-  } catch (err: any) {
-    logErr(context, err);
-    return toHttpError(err);
-  }
-}
+    const entity = await service.update(id, dto);
+    return ok(ctx, entity);
+  },
+);
 
-// DELETE (soft delete)
-async function deleteAddress(
-  req: HttpRequest,
-  context: InvocationContext,
-): Promise<HttpResponseInit> {
-  try {
-    const id = req.params['id']!;
-    if (!isGuid(id))
-      return json(400, { error: 'BadRequest', message: 'Invalid id format (GUID required).' });
-
+export const addressesDeleteHandler = withHttp(
+  async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
+    const { id } = IdParamSchema.parse((req as any).params ?? {});
     const ds = await getDataSource();
     const service = new AddressService(ds);
-    const exists = await service.get(id);
-    if (!exists) return json(404, { error: 'NotFound' });
-
     await service.remove(id);
-    return { status: 204 };
-  } catch (err: any) {
-    logErr(context, err);
-    return toHttpError(err);
-  }
-}
+    return noContent(ctx);
+  },
+);
 
-// ---- app routes ------------------------------------------------------------
+// -------- Routes --------
+
 app.http('addresses-list', {
   methods: ['GET'],
-  authLevel: 'anonymous',
   route: prefixRoute,
-  handler: getAddresses,
+  authLevel: 'function',
+  handler: addressesListHandler,
 });
-app.http('addresses-getById', {
-  methods: ['GET'],
-  authLevel: 'anonymous',
-  route: itemRoute,
-  handler: getAddressById,
-});
+
 app.http('addresses-create', {
   methods: ['POST'],
-  authLevel: 'anonymous',
   route: prefixRoute,
-  handler: createAddress,
+  authLevel: 'function',
+  handler: addressesCreateHandler,
 });
-app.http('addresses-update', {
-  methods: ['PUT'],
-  authLevel: 'anonymous',
+
+app.http('addresses-getById', {
+  methods: ['GET'],
   route: itemRoute,
-  handler: updateAddress,
+  authLevel: 'function',
+  handler: addressesGetByIdHandler,
 });
+
+app.http('addresses-update', {
+  methods: ['PUT'], // keep PUT to match your route catalog; add 'PATCH' if desired
+  route: itemRoute,
+  authLevel: 'function',
+  handler: addressesUpdateHandler,
+});
+
 app.http('addresses-delete', {
   methods: ['DELETE'],
-  authLevel: 'anonymous',
   route: itemRoute,
-  handler: deleteAddress,
+  authLevel: 'function',
+  handler: addressesDeleteHandler,
 });

@@ -16,4 +16,13 @@ export {
   type ListBusinessLicensesQuery,
 } from './business-license.dto';
 
+export {
+  CreateAddressSchema,
+  UpdateAddressSchema,
+  ListAddressesSchema,
+  type CreateAddressDto,
+  type UpdateAddressDto,
+  type ListAddressesQuery,
+} from './address.dto';
+
 export type { PageResult } from './pagination';
