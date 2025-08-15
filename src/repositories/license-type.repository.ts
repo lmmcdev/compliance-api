@@ -1,6 +1,7 @@
 import { DataSource } from 'typeorm';
 import { BaseRepository } from './base.repository';
-import { LicenseType, LicenseTypeCode } from '../entities/license-type.entity';
+import { LicenseType } from '../entities/license-type.entity';
+import { LicenseTypeCode } from '../types/enum.type';
 
 export class LicenseTypeRepository extends BaseRepository<LicenseType> {
   constructor(ds: DataSource) {

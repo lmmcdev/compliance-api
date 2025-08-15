@@ -1,10 +1,11 @@
 import { DataSource } from 'typeorm';
 import { z, ZodError } from 'zod';
-import { LicenseType, LicenseTypeCode } from '../entities/license-type.entity';
+import { LicenseType } from '../entities/license-type.entity';
+import { LicenseTypeCode } from '../types/enum.type';
 import { LicenseTypeRepository } from '../repositories/license-type.repository';
 
 export const createSchema = z.object({
-  code: z.nativeEnum(LicenseTypeCode),
+  code: z.enum(LicenseTypeCode),
   displayName: z.string().max(128),
   description: z.string().max(256).optional().nullable(),
 });
@@ -68,6 +69,14 @@ export class LicenseTypeService {
       await this.repo.softDelete(id);
     } catch (err) {
       this.handleError(err, 'remove');
+    }
+  }
+
+  async findByCode(code: LicenseTypeCode) {
+    try {
+      return await this.repo.findByCode(code);
+    } catch (err) {
+      this.handleError(err, 'findByCode');
     }
   }
 }

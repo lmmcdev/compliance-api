@@ -1,6 +1,7 @@
 import { DataSource } from 'typeorm';
 import { z } from 'zod';
-import { LocationType, LocationTypeCode } from '../entities/location-type.entity';
+import { LocationType } from '../entities/location-type.entity';
+import { LocationTypeCode } from '../types/enum.type';
 import { LocationTypeRepository } from '../repositories/location-type.repository';
 
 export const createLocationTypeSchema = z.object({

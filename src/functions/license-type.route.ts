@@ -2,6 +2,8 @@ import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/fu
 import { getDataSource } from '../config/ds-runtime';
 import { LicenseTypeService } from '../services';
 import { versionedRoute, logErr, logInfo, isJson, json, toHttpError, isGuid } from '../helpers';
+import { LicenseTypeCode } from '../types/enum.type';
+import { isLicenseTypeCode } from '../helpers/functions.helper';
 
 const path = 'license-types';
 const prefixRoute = versionedRoute(path); // e.g. api/v1/license-types
@@ -130,6 +132,28 @@ async function deleteLicenseType(
   }
 }
 
+async function getLicenseTypeByCode(
+  req: HttpRequest,
+  context: InvocationContext,
+): Promise<HttpResponseInit> {
+  try {
+    const codeParam = (req.params['code'] ?? '').trim();
+
+    if (!isLicenseTypeCode(codeParam)) {
+      return json(400, { error: 'BadRequest', message: 'Invalid or missing license type code.' });
+    }
+
+    const ds = await getDataSource();
+    const service = new LicenseTypeService(ds);
+    const found = await service.findByCode(codeParam);
+    if (!found) return json(404, { error: 'NotFound' });
+    return json(200, found);
+  } catch (err: any) {
+    logErr(context, err);
+    return toHttpError(err);
+  }
+}
+
 // ---- app routes ----
 app.http('getLicenseTypes', {
   methods: ['GET'],
@@ -160,4 +184,11 @@ app.http('deleteLicenseType', {
   authLevel: 'anonymous',
   route: itemRoute,
   handler: deleteLicenseType,
+});
+
+app.http('getLicenseTypeByCode', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  route: `${prefixRoute}/code/{code}`,
+  handler: getLicenseTypeByCode,
 });

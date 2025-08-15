@@ -1,5 +1,6 @@
 import { HttpRequest, HttpResponseInit } from '@azure/functions';
 import { env } from '../config/env';
+import { LicenseTypeCode } from '../types/enum.type';
 
 export const versionedRoute = (path: string, version: string = env.API_VERSION) => {
   if (!path) throw new Error('Path is required');
@@ -47,4 +48,9 @@ export function isGuid(id: string): boolean {
   return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(
     id,
   );
+}
+
+// get by code could be added here as needed
+export function isLicenseTypeCode(value: string): value is LicenseTypeCode {
+  return (Object.values(LicenseTypeCode) as string[]).includes(value as LicenseTypeCode);
 }

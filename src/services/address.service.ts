@@ -1,6 +1,7 @@
 import { DataSource } from 'typeorm';
 import { z, ZodError } from 'zod';
-import { Address, AddressType } from '../entities/address.entity';
+import { Address } from '../entities/address.entity';
+import { AddressType } from '../types/enum.type';
 import { AddressRepository } from '../repositories/address.repository';
 
 // ---------- validation ----------
