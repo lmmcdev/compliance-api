@@ -10,6 +10,7 @@ on:
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # path to your Function App (repo root)
   NODE_VERSION: '20' # Azure Functions v4 supports 18/20
+  APP_NAME: 'compliance-api'
 
 jobs:
   build:
