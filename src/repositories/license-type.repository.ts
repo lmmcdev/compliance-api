@@ -1,6 +1,6 @@
 import { DataSource, Repository } from 'typeorm';
 import { LicenseType } from '../entities';
-import { LicenseTypeCode } from '../types/enum.type';
+import { LicenseTypeCode } from '../types/enum.types';
 import { ListLicenseTypesQuery } from '../dtos/license-type.dto';
 import { PageResult } from '../dtos';
 

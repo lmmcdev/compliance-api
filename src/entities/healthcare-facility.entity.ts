@@ -40,7 +40,7 @@ export class HealthcareFacility extends BaseEntity {
 
   /** Always Open flag */
   @Column({ name: 'always_open', type: 'bit', default: false })
-  alwaysOpen!: boolean;
+  alwaysOpen?: boolean;
 
   /** Source System (e.g., external integration name) */
   @Column({ name: 'source_system', type: 'nvarchar', length: 128, nullable: true })

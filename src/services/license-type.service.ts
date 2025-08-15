@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm';
 import { LicenseType } from '../entities/license-type.entity';
-import { LicenseTypeCode } from '../types/enum.type';
+import { LicenseTypeCode } from '../types/enum.types';
 import { LicenseTypeRepository } from '../repositories/license-type.repository';
 import {
   CreateLicenseTypeSchema,

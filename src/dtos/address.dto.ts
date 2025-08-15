@@ -1,6 +1,6 @@
 // src/dtos/address.dto.ts
 import { z } from 'zod';
-import { AddressType } from '../types/enum.type';
+import { AddressType } from '../types/enum.types';
 
 export const AddressTypeSchema = z.enum(AddressType);
 

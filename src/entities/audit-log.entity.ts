@@ -1,6 +1,6 @@
 import { Entity, Column } from 'typeorm';
 import { BaseEntity } from './base.entity';
-import { EntityName } from '../types/enum.type';
+import { EntityName } from '../types/enum.types';
 
 @Entity({ name: 'audit_logs', schema: 'dbo' })
 export class AuditLog extends BaseEntity {

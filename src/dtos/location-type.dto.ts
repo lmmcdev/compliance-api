@@ -1,8 +1,9 @@
 // src/dtos/location-type.dto.ts
 import { z } from 'zod';
+import { LocationTypeCode } from '../types';
 
 export const CreateLocationTypeSchema = z.object({
-  code: z.string().min(1).max(128),
+  code: z.enum(LocationTypeCode),
   displayName: z.string().min(1).max(128),
   description: z.string().max(256).optional().nullable(),
 });
