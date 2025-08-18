@@ -1,5 +1,5 @@
 import { app } from '@azure/functions';
-import { accountsGetHandler as handler } from '../functions/accounts.route';
+import { accountsGetHandler as handler } from '../modules/account/account.routes';
 
 test('GET /accounts/{id} -> 404 envelope', async () => {
   const req = { method: 'GET', url: 'http://x/api/v1/accounts/abc', params: { id: 'abc' } } as any;

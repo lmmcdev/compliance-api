@@ -1,7 +1,7 @@
 import { HttpResponseInit, InvocationContext } from '@azure/functions';
 import { ApiError, ApiSuccess, Meta, PaginationMeta } from './envelope';
 import { HTTP_STATUS } from './status';
-import { PageResult } from '../dtos';
+import { PageResult } from '../shared';
 
 function baseHeaders(traceId: string): Record<string, string> {
   return {

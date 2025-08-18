@@ -26,13 +26,6 @@ export enum LocationTypeCode {
   OTHER = 'Other',
 }
 
-export enum AddressType {
-  MAILING = 'Mailing',
-  BILLING = 'Billing',
-  SHIPPING = 'Shipping',
-  HOME = 'Home',
-}
-
 export enum LicenseTypeCode {
   BTL = 'BTL',
   AHC = 'AHC',

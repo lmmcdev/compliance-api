@@ -1,8 +1,8 @@
 import './functions/health.route';
-import './functions/license-type.route';
-import './functions/location-type.route';
-import './functions/address.route';
-import './functions/accounts.route';
-import './functions/business-license.route';
-import './functions/healthcare-facility.route';
-import './functions/healthcare-provider.route';
+import './modules/account/account.routes';
+import './modules/business-licenses/business-license.routes';
+import './modules/healthcare-facility/healthcare-facility.routes';
+import './modules/healthcare-provider/healthcare-provider.routes';
+import './modules/license-type/license-type.routes';
+import './modules/address/address.routes';
+import './modules/location-type/location-type.routes';

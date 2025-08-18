@@ -1,5 +1,6 @@
 // src/http/route.ts
-import { versionedRoute } from '../helpers';
+
+import { versionedRoute } from '../shared';
 
 type Part = string | null | undefined;
 
