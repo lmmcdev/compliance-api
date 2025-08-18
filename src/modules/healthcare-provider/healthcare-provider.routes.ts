@@ -18,7 +18,7 @@ import {
   UpdateHealthcareProviderSchema,
   ListHealthcareProvidersSchema,
 } from './healthcare-provider.dtos';
-import { getDataSource } from '../../infra/ds-runtime';
+import { getDataSource } from '../../infrastructure/ds-runtime';
 import { HealthcareProviderService } from './healthcare-provider.service';
 
 const { prefixRoute, itemRoute } = createPrefixRoute('healthcare-providers');

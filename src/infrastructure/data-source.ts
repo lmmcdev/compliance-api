@@ -11,6 +11,7 @@ import { HealthcareProvider } from '../modules/healthcare-provider';
 import { HealthcareFacility } from '../modules/healthcare-facility';
 import { BusinessLicense } from '../modules/business-licenses';
 import { Account } from '../modules/account';
+import { Location } from '../modules/location';
 
 const { DB_HOST, DB_PORT, DB_USER, DB_PASS, DB_NAME, DB_ENCRYPT } = env;
 
@@ -26,6 +27,7 @@ const AppDataSource = new DataSource({
   entities: [
     LicenseType,
     LocationType,
+    Location,
     Address,
     HealthcareFacility,
     HealthcareProvider,

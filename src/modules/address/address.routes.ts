@@ -17,7 +17,7 @@ import {
   ListAddressesSchema,
   AddressService,
 } from '../../modules/address';
-import { getDataSource } from '../../infra/ds-runtime';
+import { getDataSource } from '../../infrastructure/ds-runtime';
 
 const path = 'addresses';
 const { prefixRoute, itemRoute } = createPrefixRoute(path);

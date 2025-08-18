@@ -1,5 +1,5 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { getDataSource } from '../../infra/ds-runtime';
+import { getDataSource } from '../../infrastructure/ds-runtime';
 import { LicenseTypeService } from './license-type.service';
 import {
   created,

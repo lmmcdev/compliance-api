@@ -18,7 +18,7 @@ import {
   ListBusinessLicensesSchema,
   SetBusinessLicenseStatusSchema,
 } from './business-license.dtos';
-import { getDataSource } from '../../infra/ds-runtime';
+import { getDataSource } from '../../infrastructure/ds-runtime';
 import { BusinessLicenseService } from './business-license.service';
 
 const { prefixRoute, itemRoute } = createPrefixRoute('business-licenses');

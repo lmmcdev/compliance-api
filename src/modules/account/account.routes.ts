@@ -13,7 +13,7 @@ import {
   withHttp,
 } from '../../http';
 import { CreateAccountSchema, UpdateAccountSchema, ListAccountsSchema } from './account.dto';
-import { getDataSource } from '../../infra/ds-runtime';
+import { getDataSource } from '../../infrastructure/ds-runtime';
 import { AccountService } from './account.service';
 
 const path = 'accounts';

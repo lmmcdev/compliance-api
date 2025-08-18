@@ -19,7 +19,7 @@ import {
 } from './location-type.dtos';
 
 import { LocationTypeService } from './location-type.service';
-import { getDataSource } from '../../infra/ds-runtime';
+import { getDataSource } from '../../infrastructure/ds-runtime';
 
 const path = 'location-types';
 const { prefixRoute, itemRoute } = createPrefixRoute(path);

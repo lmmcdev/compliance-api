@@ -16,7 +16,7 @@ import {
 import { CreateLocationSchema, UpdateLocationSchema, ListLocationsSchema } from './location.dtos';
 
 import { LocationService } from './location.service';
-import { getDataSource } from '../../infra/ds-runtime';
+import { getDataSource } from '../../infrastructure/ds-runtime';
 
 const path = 'locations';
 const { prefixRoute, itemRoute } = createPrefixRoute(path);

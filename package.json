@@ -10,7 +10,7 @@
     "prestart": "npm run clean && npm run build",
     "start": "func start",
     "test": "echo \"No tests yet...\"",
-    "typeorm": "typeorm-ts-node-commonjs -d ./src/config/typeorm-cli.datasource.ts",
+    "typeorm": "typeorm-ts-node-commonjs -d ./src/infrastructure/typeorm-cli.datasource.ts",
     "migration:generate": "npm run typeorm -- migration:generate ./src/migrations/migration",
     "migration:run": "npm run typeorm -- migration:run",
     "migration:revert": "npm run typeorm -- migration:revert"

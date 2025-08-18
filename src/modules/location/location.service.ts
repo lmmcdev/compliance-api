@@ -3,8 +3,8 @@ import { DataSource, Repository } from 'typeorm';
 import { Location } from './location.entity';
 import { CreateLocationDto, UpdateLocationDto, ListLocationsQuery } from './location.dtos';
 import { LocationRepository } from './location.repository';
-import { LocationType } from '../../modules/location-type';
-import { Address } from '../../modules/address';
+import { LocationType } from '../location-type';
+import { Address } from '../address';
 import { PageResult } from '../../shared';
 import { BadRequestError, NotFoundError } from '../../http';
 

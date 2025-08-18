@@ -11,6 +11,7 @@ import { HealthcareFacility } from '../modules/healthcare-facility';
 import { HealthcareProvider } from '../modules/healthcare-provider';
 import { BusinessLicense } from '../modules/business-licenses';
 import { Account } from '../modules/account/account.entity';
+import { Location } from '../modules/location';
 
 export default new DataSource({
   type: 'mssql',
@@ -24,6 +25,7 @@ export default new DataSource({
   entities: [
     LicenseType,
     LocationType,
+    Location,
     Address,
     HealthcareFacility,
     HealthcareProvider,
