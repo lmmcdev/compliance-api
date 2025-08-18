@@ -14,7 +14,7 @@ export type CreateLocationTypeDto = z.infer<typeof CreateLocationTypeSchema>;
 export type UpdateLocationTypeDto = z.infer<typeof UpdateLocationTypeSchema>;
 
 export const ListLocationTypesSchema = z.object({
-  q: z.string().optional(), // free-text over code, displayName, description
+  q: z.string().optional(),
   code: z.string().optional(),
   displayName: z.string().optional(),
 
