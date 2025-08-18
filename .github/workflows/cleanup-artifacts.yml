@@ -1,0 +1,106 @@
+name: cleanup-artifacts
+
+on:
+  workflow_dispatch:
+    inputs:
+      max_age_days:
+        description: 'Delete artifacts older than this many days'
+        required: true
+        default: '7'
+      keep_most_recent:
+        description: 'Always keep the most recent N artifacts (regardless of age)'
+        required: true
+        default: '50'
+      dry_run:
+        description: 'Preview only (do not delete)'
+        required: true
+        default: 'true'
+        type: choice
+        options: ['true', 'false']
+  schedule:
+    - cron: '0 3 * * *' # daily at 03:00 UTC
+
+concurrency:
+  group: cleanup-artifacts
+  cancel-in-progress: false
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write # required to delete artifacts
+      contents: read
+    steps:
+      - name: List artifacts and compute deletion set
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          MAX_AGE_DAYS: ${{ inputs.max_age_days || '7' }}
+          KEEP: ${{ inputs.keep_most_recent || '50' }}
+        run: |
+          set -eo pipefail
+
+          # Grab all artifacts (paginated)
+          gh api -H "Accept: application/vnd.github+json" repos/$REPO/actions/artifacts --paginate \
+            -q '.artifacts[] | [.id,.name,.created_at,.expired,.size_in_bytes] | @tsv' > artifacts.tsv || true
+
+          if [ ! -s artifacts.tsv ]; then
+            echo "No artifacts found."; exit 0
+          fi
+
+          echo "Total artifacts: $(wc -l < artifacts.tsv)"
+
+          # Add epoch column and sort newest->oldest
+          awk -F '\t' '{
+            id=$1; name=$2; ts=$3;
+            cmd="date -u -d \""ts"\" +%s"; cmd | getline epoch; close(cmd);
+            print id "\t" name "\t" ts "\t" epoch "\t" $5
+          }' artifacts.tsv | sort -k4,4nr > artifacts_epoch.tsv
+
+          CUTOFF_EPOCH=$(date -u -d "${MAX_AGE_DAYS} days ago" +%s)
+
+          # A) Older than age cutoff
+          awk -F '\t' -v cutoff=$CUTOFF_EPOCH '$4 < cutoff { print $1 }' artifacts_epoch.tsv | sort -u > old_ids.txt || true
+
+          # B) Beyond "keep most recent" (skip first KEEP newest)
+          tail -n +$((KEEP+1)) artifacts_epoch.tsv | awk -F '\t' '{ print $1 }' | sort -u > excess_ids.txt || true
+
+          # Union
+          cat old_ids.txt excess_ids.txt | sort -u > delete_ids.txt || true
+          DEL_COUNT=$(wc -l < delete_ids.txt || echo 0)
+
+          # Estimate bytes to be freed
+          if [ -s delete_ids.txt ]; then
+            BYTES=$(awk 'NR==FNR {del[$1]=1; next} ($1 in del){sum+=$5} END{print sum+0}' delete_ids.txt artifacts_epoch.tsv)
+          else
+            BYTES=0
+          fi
+
+          echo "Deletion candidates: $DEL_COUNT"
+          echo "Estimated bytes to free: $BYTES"
+
+          if [ "$DEL_COUNT" -gt 0 ]; then
+            echo "IDs to delete (if not dry-run):"
+            nl -ba delete_ids.txt
+          fi
+
+      - name: Delete artifacts (dry-run aware)
+        if: ${{ always() }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          DRY_RUN: ${{ inputs.dry_run || 'true' }}
+        run: |
+          set -eo pipefail
+          if [ ! -s delete_ids.txt ]; then
+            echo "Nothing to delete."; exit 0
+          fi
+
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "Dry-run enabled; skipping deletion."
+            exit 0
+          fi
+
+          echo "Deleting artifacts..."
+          xargs -r -n1 -I{} gh api -X DELETE -H "Accept: application/vnd.github+json" repos/$REPO/actions/artifacts/{} < delete_ids.txt
+          echo "Done."
