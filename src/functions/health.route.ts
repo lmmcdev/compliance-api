@@ -21,12 +21,8 @@ export const healthHandler = withHttp(
       commit:
         process.env.BITBUCKET_COMMIT || process.env.SCM_COMMIT_ID || process.env.COMMIT_SHA || null,
       environment: process.env.NODE_ENV || null,
-      region: process.env.WEBSITE_REGION || null,
-      instanceId: process.env.WEBSITE_INSTANCE_ID || null,
-      site: process.env.WEBSITE_SITE_NAME || null,
     };
 
-    // Uses your standard envelope and headers (X-Trace-Id, no-store, etc.)
     return ok(ctx, data);
   },
 );

@@ -25,7 +25,7 @@ export class Location extends BaseEntity {
   externalReference?: string | null;
 
   /** Physical Address */
-  @ManyToOne(() => Address, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => Address, { nullable: true, onDelete: 'NO ACTION' })
   @JoinColumn({ name: 'address_id' })
   address?: Address | null;
 
@@ -33,7 +33,7 @@ export class Location extends BaseEntity {
   addressId?: string | null;
 
   /** Visitor Address (separate address record if used) */
-  @ManyToOne(() => Address, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => Address, { nullable: true, onDelete: 'NO ACTION' })
   @JoinColumn({ name: 'visitor_address_id' })
   visitorAddress?: Address | null;
 
@@ -62,7 +62,7 @@ export class Location extends BaseEntity {
   longitude?: number | null;
 
   /** Parent Location (for hierarchies) */
-  @ManyToOne(() => Location, (l) => l.children, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => Location, (l) => l.children, { nullable: true, onDelete: 'NO ACTION' })
   @JoinColumn({ name: 'parent_location_id' })
   parent?: Location | null;
 

@@ -12,12 +12,12 @@ export const env = {
   API_VERSION: process.env.API_VERSION ?? 'v1',
 
   // DB SQL azure
-  DB_HOST: process.env.DB_HOST ?? 'localhost',
+  DB_HOST: process.env.DB_HOST,
   DB_PORT: parseInt(process.env.DB_PORT ?? '1433', 10),
-  DB_USER: process.env.DB_USER ?? 'sa',
-  DB_PASS: process.env.DB_PASS ?? 'LMMC0okm9ijn!@',
-  DB_NAME: process.env.DB_NAME ?? 'compliance-db',
-  DB_ENCRYPT: process.env.DB_ENCRYPT ?? 'true', // Azure SQL requires encryption
+  DB_USER: process.env.DB_USER,
+  DB_PASS: process.env.DB_PASS,
+  DB_NAME: process.env.DB_NAME,
+  DB_ENCRYPT: process.env.DB_ENCRYPT,
 };
 
 export default env;
