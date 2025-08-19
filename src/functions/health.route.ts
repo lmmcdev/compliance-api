@@ -1,6 +1,7 @@
 // src/functions/health.route.ts
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { createPrefixRoute, ok, withHttp } from '../http';
+import { env } from '../config/env';
 
 const path = 'health';
 const { prefixRoute } = createPrefixRoute(path);
@@ -16,11 +17,8 @@ export const healthHandler = withHttp(
       timestamp: now.toISOString(),
       upSeconds: upSecs,
       upSince: upSince.toISOString(),
-      // Optional runtime/env metadata (only present if set)
-      version: process.env.APP_VERSION || process.env.npm_package_version || null,
-      commit:
-        process.env.BITBUCKET_COMMIT || process.env.SCM_COMMIT_ID || process.env.COMMIT_SHA || null,
-      environment: process.env.NODE_ENV || null,
+      version: env.APP_VERSION ?? null,
+      environment: env.NODE_ENV ?? null,
     };
 
     return ok(ctx, data);

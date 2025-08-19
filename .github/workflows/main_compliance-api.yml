@@ -1,6 +1,6 @@
 # Docs: https://github.com/Azure/functions-action
 
-name: Build and deploy Node.js project to Azure Function App - compliance-api
+name: main_compliance-api
 
 on:
   push:
@@ -37,7 +37,6 @@ jobs:
       - name: Test
         run: npm test --if-present
 
-      # Upload the entire workspace (including dist/) so the deploy job uses the built code
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
