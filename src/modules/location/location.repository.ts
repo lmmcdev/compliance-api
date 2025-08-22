@@ -1,4 +1,4 @@
-
+// src/modules/location/location.repository.ts
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { Location } from './location.entity';
 import { ListLocationsQuery } from './location.dtos';
@@ -61,7 +61,6 @@ export class LocationRepository implements ILocationRepository {
       .leftJoinAndSelect('l.address', 'ad')
       .leftJoinAndSelect('l.visitorAddress', 'vad')
       .leftJoinAndSelect('l.parent', 'pl');
-
 
     if (q.q) {
       qb = qb.andWhere(
