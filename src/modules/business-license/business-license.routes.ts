@@ -26,7 +26,7 @@ const { prefixRoute, itemRoute } = createPrefixRoute('business-licenses');
 
 export const businessLicensesListHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const query = parseQuery(req, ListBusinessLicensesSchema);
+    const query = await parseQuery(req, ListBusinessLicensesSchema);
     const ds = await getDataSource();
     const service = new BusinessLicenseService(ds);
     const page = await service.list(query);

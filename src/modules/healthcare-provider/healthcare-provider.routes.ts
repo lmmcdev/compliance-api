@@ -27,7 +27,7 @@ const { prefixRoute, itemRoute } = createPrefixRoute('healthcare-providers');
 
 export const healthcareProvidersListHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const query = parseQuery(req, ListHealthcareProvidersSchema);
+    const query = await parseQuery(req, ListHealthcareProvidersSchema);
     const ds = await getDataSource();
     const service = new HealthcareProviderService(ds);
     const page = await service.list(query);

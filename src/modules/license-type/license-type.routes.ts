@@ -25,7 +25,7 @@ const { prefixRoute, itemRoute } = createPrefixRoute(path);
 // ---- handlers ----
 const licenseTypesListHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const query = parseQuery(req, ListLicenseTypesSchema);
+    const query = await parseQuery(req, ListLicenseTypesSchema);
     const ds = await getDataSource();
     const service = new LicenseTypeService(ds);
     const page = await service.list(query);

@@ -25,7 +25,7 @@ const { prefixRoute, itemRoute } = createPrefixRoute(path);
 
 export const locationsListHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const query = parseQuery(req, ListLocationsSchema);
+    const query = await parseQuery(req, ListLocationsSchema);
     const ds = await getDataSource();
     const service = new LocationService(ds);
     const page = await service.list(query);

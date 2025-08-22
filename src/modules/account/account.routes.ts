@@ -23,7 +23,7 @@ const billingRoute = itemSub('billing-address');
 
 export const accountsListHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const query = parseQuery(req, ListAccountsSchema);
+    const query = await parseQuery(req, ListAccountsSchema);
     const ds = await getDataSource();
     const service = new AccountService(ds);
     const page = await service.list(query);
