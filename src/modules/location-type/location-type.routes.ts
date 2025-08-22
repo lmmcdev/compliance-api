@@ -15,7 +15,7 @@ import {
   CreateLocationTypeSchema,
   UpdateLocationTypeSchema,
   ListLocationTypesSchema,
-} from './location-type.dtos';
+} from './location-type.dto';
 
 import { LocationTypeService } from './location-type.service';
 import { getDataSource } from '../../infrastructure/ds-runtime';

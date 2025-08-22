@@ -6,7 +6,7 @@ import {
   type CreateHealthcareProviderDto,
   type UpdateHealthcareProviderDto,
   type ListHealthcareProvidersQuery,
-} from './healthcare-provider.dtos';
+} from './healthcare-provider.dto';
 
 import { HealthcareProvider } from './healthcare-provider.entity';
 import {

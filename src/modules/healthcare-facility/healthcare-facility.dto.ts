@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const CreateHealthcareFacilitySchema = z.object({
   name: z.string().min(1).max(256),
-  accountId: z.string().uuid(),
+  accountId: z.uuid(),
 
   location: z.string().max(256).optional().nullable(),
   locationType: z.string().max(128).optional().nullable(),
@@ -16,7 +16,7 @@ export const CreateHealthcareFacilitySchema = z.object({
   sourceSystemId: z.string().max(128).optional().nullable(),
   sourceSystemModified: z.coerce.date().optional().nullable(),
 
-  addressId: z.string().uuid().optional().nullable(),
+  addressId: z.uuid().optional().nullable(),
 });
 
 export const UpdateHealthcareFacilitySchema = CreateHealthcareFacilitySchema.partial();
@@ -27,7 +27,7 @@ export type UpdateHealthcareFacilityDto = z.infer<typeof UpdateHealthcareFacilit
 export const ListHealthcareFacilitiesSchema = z.object({
   q: z.string().optional(),
 
-  accountId: z.string().uuid().optional(),
+  accountId: z.uuid().optional(),
   locationType: z.string().optional(),
   facilityType: z.string().optional(),
   alwaysOpen: z.coerce.boolean().optional(),

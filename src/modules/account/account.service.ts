@@ -28,9 +28,7 @@ export class AccountService implements IAccountService {
     this.repo = repo ?? new AccountRepository(ds);
   }
 
-  async create(payload: unknown): Promise<Account> {
-    const dto: CreateAccountDto = CreateAccountSchema.parse(payload);
-
+  async create(dto: CreateAccountDto): Promise<Account> {
     const exists = await this.repo.findByAccountNumber(dto.accountNumber);
     if (exists) throw new ConflictError('An account with this accountNumber already exists.');
 
@@ -60,9 +58,7 @@ export class AccountService implements IAccountService {
     return this.repo.createAndSave(data);
   }
 
-  async update(id: string, payload: unknown): Promise<Account> {
-    const dto: UpdateAccountDto = UpdateAccountSchema.parse(payload);
-
+  async update(id: string, dto: UpdateAccountDto): Promise<Account> {
     const current = await this.repo.findById(id);
     if (!current) throw new NotFoundError('Account not found');
 

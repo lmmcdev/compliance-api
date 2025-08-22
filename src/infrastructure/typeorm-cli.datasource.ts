@@ -7,7 +7,7 @@ import { LocationType } from '../modules/location-type';
 import { Address } from '../modules/address';
 import { HealthcareFacility } from '../modules/healthcare-facility';
 import { HealthcareProvider } from '../modules/healthcare-provider';
-import { BusinessLicense } from '../modules/business-licenses';
+import { BusinessLicense } from '../modules/business-license';
 import { Account } from '../modules/account/account.entity';
 import { Location } from '../modules/location';
 

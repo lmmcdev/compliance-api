@@ -1,6 +1,6 @@
 import { Entity, Column, OneToMany, Index } from 'typeorm';
 import { BaseEntity } from '../../shared';
-import { BusinessLicense } from '../../modules/business-licenses';
+import { BusinessLicense } from '../business-license';
 
 @Entity({ name: 'license_types', schema: 'dbo' })
 @Index('UQ_license_types_code', ['code'], { unique: true })

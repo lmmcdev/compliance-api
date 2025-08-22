@@ -1,7 +1,7 @@
 // src/modules/location/location.repository.ts
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { Location } from './location.entity';
-import { ListLocationsQuery } from './location.dtos';
+import { ListLocationsQuery } from './location.dto';
 import { PageResult } from '../../shared';
 
 export interface ILocationRepository {

@@ -1,6 +1,6 @@
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { BusinessLicense } from './business-license.entity';
-import { ListBusinessLicensesQuery } from './business-license.dtos';
+import { ListBusinessLicensesQuery } from './business-license.dto';
 import { PageResult } from '../../shared';
 
 export interface IBusinessLicenseRepository {

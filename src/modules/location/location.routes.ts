@@ -13,7 +13,7 @@ import {
   withHttp,
 } from '../../http';
 
-import { CreateLocationSchema, UpdateLocationSchema, ListLocationsSchema } from './location.dtos';
+import { CreateLocationSchema, UpdateLocationSchema, ListLocationsSchema } from './location.dto';
 
 import { LocationService } from './location.service';
 import { getDataSource } from '../../infrastructure/ds-runtime';

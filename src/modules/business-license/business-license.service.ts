@@ -8,7 +8,7 @@ import {
   type UpdateBusinessLicenseDto,
   type ListBusinessLicensesQuery,
   type SetBusinessLicenseStatusDto,
-} from './business-license.dtos';
+} from './business-license.dto';
 import { PageResult } from '../../shared';
 import { BusinessLicense } from './business-license.entity';
 import {

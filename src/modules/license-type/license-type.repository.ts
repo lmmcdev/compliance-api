@@ -1,7 +1,7 @@
 import { DataSource, Repository } from 'typeorm';
 import { LicenseType } from './license-type.entity';
 import { LicenseTypeCode } from '../../types/enum.types';
-import { ListLicenseTypesQuery } from './license-type.dtos';
+import { ListLicenseTypesQuery } from './license-type.dto';
 import { PageResult } from '../../shared';
 
 export interface ILicenseTypeRepository {
