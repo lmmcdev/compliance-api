@@ -1,6 +1,7 @@
-import { HttpRequest } from '@azure/functions';
-import { ZodTypeAny } from 'zod';
+import type { HttpRequest } from '@azure/functions';
+import type { ZodTypeAny } from 'zod';
 import { ValidationError } from './app-error';
+import { normalizeUuidsDeep } from './normalize';
 
 export async function parseJson<T extends ZodTypeAny>(
   req: HttpRequest,
@@ -8,21 +9,64 @@ export async function parseJson<T extends ZodTypeAny>(
 ): Promise<ReturnType<T['parse']>> {
   let body: unknown;
   try {
+    // (Opcional) valida cabecera Content-Type aquí si quieres ser estricto
+    // const ct = req.headers.get("content-type") ?? "";
+    // if (!ct.includes("application/json")) throw new ValidationError("Content-Type must be application/json");
     body = await req.json();
   } catch {
     throw new ValidationError('Invalid JSON body');
   }
-  const result = await schema.safeParseAsync(body);
-  if (!result.success) throw result.error;
+
+  // Normaliza UUID-like (minúsculas) antes de Zod
+  const preprocessed = normalizeUuidsDeep(body);
+
+  const result = await schema.safeParseAsync(preprocessed);
+  if (!result.success) {
+    // Estandariza el error a tu shape
+    throw new ValidationError('Validation failed', {
+      fields: result.error.issues.map((e) => ({
+        path: e.path.join('.'),
+        message: e.message,
+        code: e.code,
+      })),
+    });
+  }
   return result.data as any;
 }
 
-export function parseQuery<T extends ZodTypeAny>(
+export async function parseQuery<T extends ZodTypeAny>(
   req: HttpRequest,
   schema: T,
-): ReturnType<T['parse']> {
-  const q = Object.fromEntries(new URL(req.url).searchParams.entries());
-  const result = schema.safeParse(q);
-  if (!result.success) throw result.error;
+): Promise<ReturnType<T['parse']>> {
+  const url = new URL(req.url);
+  const raw = searchParamsToObject(url.searchParams);
+
+  // Normaliza UUID-like
+  const preprocessed = normalizeUuidsDeep(raw);
+
+  const result = await schema.safeParseAsync(preprocessed);
+  if (!result.success) {
+    throw new ValidationError('Validation failed', {
+      fields: result.error.issues.map((e) => ({
+        path: e.path.join('.'),
+        message: e.message,
+        code: e.code,
+      })),
+    });
+  }
   return result.data as any;
+}
+
+function searchParamsToObject(sp: URLSearchParams): Record<string, unknown> {
+  const obj: Record<string, unknown> = {};
+  for (const [k, v] of sp.entries()) {
+    if (k in obj) {
+      const current = obj[k];
+      if (Array.isArray(current)) obj[k] = [...current, v];
+      else obj[k] = [current, v];
+    } else {
+      obj[k] = v;
+    }
+  }
+  return obj;
 }
