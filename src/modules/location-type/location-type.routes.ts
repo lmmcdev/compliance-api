@@ -82,34 +82,34 @@ export const locationTypesDeleteHandler = withHttp(
 app.http('locationTypes-list', {
   methods: ['GET'],
   route: prefixRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: locationTypesListHandler,
 });
 
 app.http('locationTypes-create', {
   methods: ['POST'],
   route: prefixRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: locationTypesCreateHandler,
 });
 
 app.http('locationTypes-getById', {
   methods: ['GET'],
   route: itemRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: locationTypesGetByIdHandler,
 });
 
 app.http('locationTypes-update', {
   methods: ['PUT', 'PATCH'],
   route: itemRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: locationTypesUpdateHandler,
 });
 
 app.http('locationTypes-delete', {
   methods: ['DELETE'],
   route: itemRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: locationTypesDeleteHandler,
 });
