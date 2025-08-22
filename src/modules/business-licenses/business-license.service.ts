@@ -1,4 +1,3 @@
-// src/services/business-license.service.ts
 import { DataSource } from 'typeorm';
 import {
   CreateBusinessLicenseSchema,
@@ -37,7 +36,6 @@ export class BusinessLicenseService implements IBusinessLicenseService {
   async create(payload: unknown): Promise<BusinessLicense> {
     const dto: CreateBusinessLicenseDto = CreateBusinessLicenseSchema.parse(payload);
 
-    // Optional uniqueness check per (accountId, licenseNumber)
     if (dto.licenseNumber) {
       const existing = await this.repo.findByLicenseNumber(
         dto.licenseNumber,
@@ -61,7 +59,6 @@ export class BusinessLicenseService implements IBusinessLicenseService {
       isActive: dto.isActive ?? false,
       description: dto.description ?? null,
 
-      // relations by id (stubs)
       licenseType: dto.licenseTypeId ? ({ id: dto.licenseTypeId } as any) : null,
       healthcareFacility: dto.healthcareFacilityId
         ? ({ id: dto.healthcareFacilityId } as any)

@@ -1,4 +1,3 @@
-// src/entities/account.entity.ts
 import { Entity, Column, Index, ManyToOne, JoinColumn, RelationId } from 'typeorm';
 import { BaseEntity } from '../../shared';
 import { Address } from '../../modules/address';
@@ -23,7 +22,6 @@ export class Account extends BaseEntity {
   @Column({ name: 'last_call_date', type: 'datetime2', nullable: true })
   lastCallDate?: Date | null;
 
-  /** Billing Address (relation to addresses.id) */
   @ManyToOne(() => Address, { nullable: true, onDelete: 'NO ACTION' })
   @JoinColumn({ name: 'billing_address_id', referencedColumnName: 'id' })
   billingAddress?: Address | null;
@@ -31,7 +29,6 @@ export class Account extends BaseEntity {
   @RelationId((a: Account) => a.billingAddress)
   billingAddressId?: string | null;
 
-  /** ---------------- Healthcare Information ---------------- */
   @Column({ name: 'termination_date_in_mdvita', type: 'datetime2', nullable: true })
   terminationDateInMDVita?: Date | null;
 

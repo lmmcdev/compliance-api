@@ -3,4 +3,3 @@ export * from './healthcare-provider.dtos';
 export * from './healthcare-provider.repository';
 export * from './healthcare-provider.service';
 export * from './healthcare-provider.routes';
-//export * from './healthcare-provider.controller';

@@ -1,4 +1,3 @@
-// src/functions/location-type.route.ts
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import {
   created,

@@ -16,11 +16,9 @@ export enum BusinessLicenseStatus {
 @Entity({ name: 'business_licenses', schema: 'dbo' })
 @Index('IX_business_licenses_license_number', ['licenseNumber'])
 export class BusinessLicense extends BaseEntity {
-  /** Name shown at top (e.g., AHCA-12115) */
   @Column({ name: 'name', type: 'nvarchar', length: 256 })
   name!: string;
 
-  /** Dates */
   @Column({ name: 'issue_date', type: 'datetime2', nullable: true })
   issueDate?: Date | null;
 
@@ -30,25 +28,21 @@ export class BusinessLicense extends BaseEntity {
   @Column({ name: 'termination_date', type: 'datetime2', nullable: true })
   terminationDate?: Date | null;
 
-  /** Numbers */
   @Column({ name: 'license_number', type: 'nvarchar', length: 128, nullable: true })
   licenseNumber?: string | null;
 
   @Column({ name: 'certificate_number', type: 'nvarchar', length: 128, nullable: true })
   certificateNumber?: string | null;
 
-  /** Status + Activity */
   @Column({ name: 'status', type: 'nvarchar', length: 64, nullable: true })
   status?: BusinessLicenseStatus | string | null;
 
   @Column({ name: 'is_active', type: 'bit', default: false })
   isActive!: boolean;
 
-  /** Optional description */
   @Column({ name: 'description', type: 'nvarchar', length: 1024, nullable: true })
   description?: string | null;
 
-  /** Relations */
   @ManyToOne(() => LicenseType, { nullable: true, onDelete: 'NO ACTION' })
   @JoinColumn({ name: 'license_type_id', referencedColumnName: 'id' })
   licenseType?: LicenseType | null;
@@ -67,7 +61,6 @@ export class BusinessLicense extends BaseEntity {
   @RelationId((b: BusinessLicense) => b.healthcareProvider)
   healthcareProviderId?: string | null;
 
-  /** Optional: tie back to Account if you want a direct link */
   @ManyToOne(() => Account, { nullable: true, onDelete: 'NO ACTION' })
   @JoinColumn({ name: 'account_id', referencedColumnName: 'id' })
   account?: Account | null;

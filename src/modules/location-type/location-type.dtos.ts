@@ -1,4 +1,3 @@
-// src/dtos/location-type.dto.ts
 import { z } from 'zod';
 import { LocationTypeCode } from '../../types';
 

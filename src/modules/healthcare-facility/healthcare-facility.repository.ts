@@ -1,4 +1,3 @@
-// src/repositories/healthcare-facility.repository.ts
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { HealthcareFacility } from './healthcare-facility.entity';
 import { ListHealthcareFacilitiesQuery } from './healthcare-facility.dtos';
@@ -58,7 +57,6 @@ export class HealthcareFacilityRepository implements IHealthcareFacilityReposito
       .leftJoinAndSelect('hf.account', 'acc')
       .leftJoinAndSelect('hf.address', 'addr');
 
-    // Free-text search
     if (q.q) {
       qb = qb.andWhere(
         '(' +
@@ -74,7 +72,6 @@ export class HealthcareFacilityRepository implements IHealthcareFacilityReposito
       );
     }
 
-    // Filters
     if (q.accountId) qb = qb.andWhere('acc.id = :accountId', { accountId: q.accountId });
     if (q.locationType)
       qb = qb.andWhere('hf.locationType = :locationType', { locationType: q.locationType });
@@ -85,7 +82,6 @@ export class HealthcareFacilityRepository implements IHealthcareFacilityReposito
     if (q.sourceSystem)
       qb = qb.andWhere('hf.sourceSystem = :sourceSystem', { sourceSystem: q.sourceSystem });
 
-    // Ranges
     if (q.licensedBedCountMin !== undefined) {
       qb = qb.andWhere('hf.licensedBedCount >= :licensedBedCountMin', {
         licensedBedCountMin: q.licensedBedCountMin,

@@ -1,4 +1,3 @@
-// src/services/location.service.ts
 import { DataSource, Repository } from 'typeorm';
 import { Location } from './location.entity';
 import { CreateLocationDto, UpdateLocationDto, ListLocationsQuery } from './location.dtos';
@@ -29,7 +28,6 @@ export class LocationService implements ILocationService {
     this.selfRepo = ds.getRepository(Location);
   }
 
-  /** Create a Location validating referenced entities. */
   async create(payload: CreateLocationDto): Promise<Location> {
     const locationType = await this.mustGetLocationType(payload.locationTypeId);
     const address = await this.maybeGetAddress(payload.addressId ?? undefined);
@@ -53,7 +51,6 @@ export class LocationService implements ILocationService {
     return this.repo.createAndSave(entity);
   }
 
-  /** Patch a Location. Only fields present in the payload are applied. */
   async update(id: string, payload: UpdateLocationDto): Promise<Location> {
     const current = await this.repo.findById(id);
     if (!current) throw new NotFoundError(`Location ${id} not found`);
@@ -63,7 +60,6 @@ export class LocationService implements ILocationService {
     if (payload.name !== undefined) patch.name = payload.name;
     if (payload.description !== undefined) patch.description = payload.description ?? null;
 
-    // Relations (respect explicit nulls to clear)
     if (Object.prototype.hasOwnProperty.call(payload, 'locationTypeId')) {
       if (!payload.locationTypeId) throw new BadRequestError('locationTypeId cannot be null/empty');
       patch.locationType = await this.mustGetLocationType(payload.locationTypeId);
@@ -81,7 +77,6 @@ export class LocationService implements ILocationService {
       patch.parent = parent ?? null;
     }
 
-    // Misc
     if (payload.externalReference !== undefined) {
       patch.externalReference = payload.externalReference ?? null;
     }
@@ -108,13 +103,10 @@ export class LocationService implements ILocationService {
   }
 
   async remove(id: string): Promise<void> {
-    // Optional: ensure existence first for friendlier API
     const exists = await this.selfRepo.exist({ where: { id } });
     if (!exists) throw new NotFoundError(`Location ${id} not found`);
     await this.repo.deleteHard(id);
   }
-
-  // ---------- helpers ----------
 
   private async mustGetLocationType(id: string): Promise<LocationType> {
     const lt = await this.ltRepo.findOne({ where: { id } });

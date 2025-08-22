@@ -1,4 +1,3 @@
-// src/repositories/address.repository.ts
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { Address, ListAddressesQuery } from '../address';
 import { PageResult } from '../../shared';

@@ -34,15 +34,15 @@ export class AddressService implements IAddressService {
     const data: Partial<Address> = {
       street: dto.street,
       city: dto.city,
-      state: dto.state, // defaults handled by Zod schema if omitted
+      state: dto.state,
       zip: dto.zip,
-      country: dto.country, // defaults handled by Zod schema if omitted
+      country: dto.country,
       addressType: dto.addressType,
       drivingDirections: dto.drivingDirections ?? null,
       description: dto.description ?? null,
       timeZone: dto.timeZone ?? null,
       lead: dto.lead ?? null,
-      locationType: { id: dto.locationTypeId } as any, // required FK
+      locationType: { id: dto.locationTypeId } as any,
     };
 
     return this.repo.createAndSave(data);

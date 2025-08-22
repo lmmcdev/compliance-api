@@ -31,7 +31,6 @@ export class AccountService implements IAccountService {
   async create(payload: unknown): Promise<Account> {
     const dto: CreateAccountDto = CreateAccountSchema.parse(payload);
 
-    // Graceful uniqueness check before DB constraint
     const exists = await this.repo.findByAccountNumber(dto.accountNumber);
     if (exists) throw new ConflictError('An account with this accountNumber already exists.');
 

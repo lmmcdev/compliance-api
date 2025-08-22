@@ -1,4 +1,3 @@
-// src/functions/addresses.route.ts
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import {
   created,
@@ -99,7 +98,7 @@ app.http('addresses-getById', {
 });
 
 app.http('addresses-update', {
-  methods: ['PUT'], // keep PUT to match your route catalog; add 'PATCH' if desired
+  methods: ['PUT'],
   route: itemRoute,
   authLevel: 'anonymous',
   handler: addressesUpdateHandler,

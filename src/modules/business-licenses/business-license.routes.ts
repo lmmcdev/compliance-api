@@ -1,4 +1,3 @@
-// src/functions/business-license.route.ts
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import {
   created,
@@ -91,42 +90,42 @@ export const businessLicensesSetStatusHandler = withHttp(
 
 app.http('business-licenses-list', {
   methods: ['GET'],
-  route: prefixRoute, // v1/business-licenses
+  route: prefixRoute,
   authLevel: 'anonymous',
   handler: businessLicensesListHandler,
 });
 
 app.http('business-licenses-create', {
   methods: ['POST'],
-  route: prefixRoute, // v1/business-licenses
+  route: prefixRoute,
   authLevel: 'anonymous',
   handler: businessLicensesCreateHandler,
 });
 
 app.http('business-licenses-get', {
   methods: ['GET'],
-  route: itemRoute, // v1/business-licenses/{id}
+  route: itemRoute,
   authLevel: 'anonymous',
   handler: businessLicensesGetHandler,
 });
 
 app.http('business-licenses-update', {
   methods: ['PUT', 'PATCH'],
-  route: itemRoute, // v1/business-licenses/{id}
+  route: itemRoute,
   authLevel: 'anonymous',
   handler: businessLicensesUpdateHandler,
 });
 
 app.http('business-licenses-delete', {
   methods: ['DELETE'],
-  route: itemRoute, // v1/business-licenses/{id}
+  route: itemRoute,
   authLevel: 'anonymous',
   handler: businessLicensesDeleteHandler,
 });
 
 app.http('business-licenses-set-status', {
   methods: ['PATCH'],
-  route: `${itemRoute}/status`, // v1/business-licenses/{id}/status
+  route: `${itemRoute}/status`,
   authLevel: 'anonymous',
   handler: businessLicensesSetStatusHandler,
 });

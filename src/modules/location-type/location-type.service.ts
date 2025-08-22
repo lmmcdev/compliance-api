@@ -1,4 +1,3 @@
-// src/services/location-type.service.ts
 import { DataSource } from 'typeorm';
 import {
   CreateLocationTypeSchema,
@@ -31,7 +30,6 @@ export class LocationTypeService implements ILocationTypeService {
   async create(payload: unknown): Promise<LocationType> {
     const dto: CreateLocationTypeDto = CreateLocationTypeSchema.parse(payload);
 
-    // Uniqueness check on code
     const existing = await this.repo.findByCode(dto.code);
     if (existing) {
       throw new ConflictError('A location type with this code already exists.');
@@ -51,7 +49,6 @@ export class LocationTypeService implements ILocationTypeService {
     const current = await this.repo.findById(id);
     if (!current) throw new NotFoundError('Location type not found');
 
-    // If code changes, ensure uniqueness
     if (dto.code && dto.code !== current.code) {
       const exists = await this.repo.findByCode(dto.code);
       if (exists && exists.id !== id) {

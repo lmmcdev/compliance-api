@@ -1,12 +1,9 @@
-// src/dtos/healthcare-facility.dto.ts
 import { z } from 'zod';
 
 export const CreateHealthcareFacilitySchema = z.object({
-  // required
   name: z.string().min(1).max(256),
   accountId: z.string().uuid(),
 
-  // optional / nullable
   location: z.string().max(256).optional().nullable(),
   locationType: z.string().max(128).optional().nullable(),
   licensedBedCount: z.number().int().min(0).optional().nullable(),
@@ -28,7 +25,7 @@ export type CreateHealthcareFacilityDto = z.infer<typeof CreateHealthcareFacilit
 export type UpdateHealthcareFacilityDto = z.infer<typeof UpdateHealthcareFacilitySchema>;
 
 export const ListHealthcareFacilitiesSchema = z.object({
-  q: z.string().optional(), // free text over name, location, locationType, facilityType, sourceSystem, sourceSystemId
+  q: z.string().optional(),
 
   accountId: z.string().uuid().optional(),
   locationType: z.string().optional(),
@@ -36,7 +33,6 @@ export const ListHealthcareFacilitiesSchema = z.object({
   alwaysOpen: z.coerce.boolean().optional(),
   sourceSystem: z.string().optional(),
 
-  // ranges / filters
   licensedBedCountMin: z.coerce.number().int().min(0).optional(),
   licensedBedCountMax: z.coerce.number().int().min(0).optional(),
   sourceSystemModifiedFrom: z.coerce.date().optional(),

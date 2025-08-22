@@ -1,4 +1,4 @@
-// src/repositories/location.repository.ts
+
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { Location } from './location.entity';
 import { ListLocationsQuery } from './location.dtos';
@@ -62,7 +62,7 @@ export class LocationRepository implements ILocationRepository {
       .leftJoinAndSelect('l.visitorAddress', 'vad')
       .leftJoinAndSelect('l.parent', 'pl');
 
-    // Free-text search over common text fields
+
     if (q.q) {
       qb = qb.andWhere(
         '(l.name LIKE :q OR l.description LIKE :q OR l.externalReference LIKE :q OR l.timeZone LIKE :q)',
@@ -70,7 +70,6 @@ export class LocationRepository implements ILocationRepository {
       );
     }
 
-    // Precise filters
     if (q.name) qb = qb.andWhere('l.name = :name', { name: q.name });
     if (q.locationTypeId)
       qb = qb.andWhere('lt.id = :locationTypeId', { locationTypeId: q.locationTypeId });

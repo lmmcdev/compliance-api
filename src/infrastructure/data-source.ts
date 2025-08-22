@@ -1,8 +1,6 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 
-import { join } from 'path';
-
 import { env } from '../config/env';
 import { LicenseType } from '../modules/license-type';
 import { LocationType } from '../modules/location-type';

@@ -1,4 +1,3 @@
-// src/services/healthcare-provider.service.ts
 import { DataSource } from 'typeorm';
 import {
   CreateHealthcareProviderSchema,
