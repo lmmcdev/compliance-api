@@ -1,1637 +1,1586 @@
 {
-    "info": {
-        "name": "Compliance API v1 (Generated)",
-        "_postman_id": "gen-1723708728",
-        "description": "Collection generated from declared Azure Functions routes.",
-        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  "info": {
+    "_postman_id": "5fa5b70d-5c64-4140-9b94-d86876841941",
+    "name": "Compliance API v1",
+    "description": "Postman collection for local Azure Functions endpoints (http://localhost:7071/api/v1). Includes Accounts, Addresses, License Types, Location Types, and Health routes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "41162985"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "health [GET]",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Health check endpoint."
+          },
+          "response": []
+        }
+      ]
     },
-    "item": [
+    {
+      "name": "Accounts",
+      "item": [
         {
-            "name": "Accounts",
-            "item": [
+          "name": "accounts-list [GET]",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts?page={{page}}&pageSize={{pageSize}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts"],
+              "query": [
                 {
-                    "name": "accounts-list [GET]",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/accounts?page={{page}}&pageSize={{pageSize}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "accounts"
-                            ],
-                            "query": [
-                                {
-                                    "key": "page",
-                                    "value": "{{page}}"
-                                },
-                                {
-                                    "key": "pageSize",
-                                    "value": "{{pageSize}}"
-                                }
-                            ]
-                        },
-                        "description": "List accounts"
-                    },
-                    "response": []
+                  "key": "page",
+                  "value": "{{page}}"
                 },
                 {
-                    "name": "accounts-create [POST]",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/accounts",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "accounts"
-                            ]
-                        },
-                        "description": "Create account",
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"name\": \"Acme Clinic\",\n  \"accountNumber\": \"AC-001\",\n  \"type\": \"Center\",\n  \"phone\": \"305-555-1212\",\n  \"billingAddressId\": \"{{addressId}}\"\n}"
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "accounts-get [GET]",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/accounts/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "accounts",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Get account by id"
-                    },
-                    "response": []
-                },
-                {
-                    "name": "accounts-update [PUT]",
-                    "request": {
-                        "method": "PUT",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/accounts/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "accounts",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Replace account",
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"name\": \"Acme Clinic (Updated)\",\n  \"phone\": \"305-555-0000\"\n}"
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "accounts-update [PATCH]",
-                    "request": {
-                        "method": "PATCH",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/accounts/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "accounts",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Partial update account",
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"plan\": \"Premium\",\n  \"planType\": \"Gold\"\n}"
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "accounts-set-billing-address [PATCH]",
-                    "request": {
-                        "method": "PATCH",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/accounts/{{id}}/billing-address",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "accounts",
-                                "{{id}}",
-                                "billing-address"
-                            ]
-                        },
-                        "description": "Set or clear billing address (use null to clear)",
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"billingAddressId\": \"{{addressId}}\"\n}"
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "accounts-delete [DELETE]",
-                    "request": {
-                        "method": "DELETE",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/accounts/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "accounts",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Delete account"
-                    },
-                    "response": []
+                  "key": "pageSize",
+                  "value": "{{pageSize}}"
                 }
-            ]
+              ]
+            },
+            "description": "List accounts with pagination and optional filters."
+          },
+          "response": []
         },
         {
-            "name": "Addresses",
-            "item": [
-                {
-                    "name": "addresses-list [GET]",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/addresses?page={{page}}&pageSize={{pageSize}}&q={{q}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "addresses"
-                            ],
-                            "query": [
-                                {
-                                    "key": "page",
-                                    "value": "{{page}}"
-                                },
-                                {
-                                    "key": "pageSize",
-                                    "value": "{{pageSize}}"
-                                },
-                                {
-                                    "key": "q",
-                                    "value": "{{q}}"
-                                }
-                            ]
-                        },
-                        "description": "List addresses"
-                    },
-                    "response": []
-                },
-                {
-                    "name": "addresses-create [POST]",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/addresses",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "addresses"
-                            ]
-                        },
-                        "description": "Create address",
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"street\": \"123 Main St\",\n  \"city\": \"Miami\",\n  \"state\": \"FL\",\n  \"zip\": \"33101\",\n  \"country\": \"United States\",\n  \"addressType\": \"Billing\",\n  \"locationTypeId\": \"{{id}}\"\n}"
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "addresses-getById [GET]",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/addresses/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "addresses",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Get address by id"
-                    },
-                    "response": []
-                },
-                {
-                    "name": "addresses-update [PUT]",
-                    "request": {
-                        "method": "PUT",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/addresses/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "addresses",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Replace address",
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"street\": \"456 New Ave\",\n  \"city\": \"Miami\",\n  \"state\": \"FL\",\n  \"zip\": \"33102\",\n  \"country\": \"United States\",\n  \"addressType\": \"Mailing\",\n  \"locationTypeId\": \"{{id}}\"\n}"
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "addresses-delete [DELETE]",
-                    "request": {
-                        "method": "DELETE",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/addresses/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "addresses",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Delete address"
-                    },
-                    "response": []
-                }
-            ]
+          "name": "accounts-create [POST]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Acme Clinic\",\n  \"accountNumber\": \"AC-001\",\n  \"type\": \"Center\",\n  \"phone\": \"305-555-1212\",\n  \"billingAddressId\": null,\n  \"mdvitaDisenrollment\": false,\n  \"inHouse\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts"]
+            },
+            "description": "Create an account."
+          },
+          "response": []
         },
         {
-            "name": "Business Licenses",
-            "item": [
-                {
-                    "name": "business-licenses-list [GET]",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/business-licenses?page={{page}}&pageSize={{pageSize}}&q={{q}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "business-licenses"
-                            ],
-                            "query": [
-                                {
-                                    "key": "page",
-                                    "value": "{{page}}"
-                                },
-                                {
-                                    "key": "pageSize",
-                                    "value": "{{pageSize}}"
-                                },
-                                {
-                                    "key": "q",
-                                    "value": "{{q}}"
-                                }
-                            ]
-                        },
-                        "description": "List business licenses"
-                    },
-                    "response": []
-                },
-                {
-                    "name": "business-licenses-create [POST]",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/business-licenses",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "business-licenses"
-                            ]
-                        },
-                        "description": "Create business license",
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"name\": \"AHCA-12115\",\n  \"licenseNumber\": \"12115\",\n  \"certificateNumber\": \"CERT-001\",\n  \"status\": \"Active\",\n  \"isActive\": true,\n  \"description\": \"Example license\",\n  \"licenseTypeId\": \"{{licenseTypeId}}\",\n  \"accountId\": \"{{accountId}}\"\n}"
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "business-licenses-get [GET]",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/business-licenses/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "business-licenses",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Get business license"
-                    },
-                    "response": []
-                },
-                {
-                    "name": "business-licenses-update [PUT]",
-                    "request": {
-                        "method": "PUT",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/business-licenses/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "business-licenses",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Replace business license",
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"description\": \"Replaced license record\"\n}"
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "business-licenses-update [PATCH]",
-                    "request": {
-                        "method": "PATCH",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/business-licenses/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "business-licenses",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Partial update business license",
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"description\": \"Patched description\"\n}"
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "business-licenses-set-status [PATCH]",
-                    "request": {
-                        "method": "PATCH",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/business-licenses/{{id}}/status",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "business-licenses",
-                                "{{id}}",
-                                "status"
-                            ]
-                        },
-                        "description": "Set status and active flag",
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"status\": \"Inactive\",\n  \"isActive\": false\n}"
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "business-licenses-delete [DELETE]",
-                    "request": {
-                        "method": "DELETE",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/business-licenses/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "business-licenses",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Delete business license"
-                    },
-                    "response": []
-                }
-            ]
+          "name": "accounts-get [GET]",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "{{id}}"]
+            },
+            "description": "Get account by id."
+          },
+          "response": []
         },
         {
-            "name": "Health",
-            "item": [
-                {
-                    "name": "health [GET]",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/health",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "health"
-                            ]
-                        },
-                        "description": "Health check"
-                    },
-                    "response": []
-                }
-            ]
+          "name": "accounts-update [PUT]",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Acme Clinic Updated\",\n  \"phone\": \"305-555-2222\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "{{id}}"]
+            },
+            "description": "Update account (PUT/PATCH supported)."
+          },
+          "response": []
         },
         {
-            "name": "Healthcare Facilities",
-            "item": [
-                {
-                    "name": "healthcare-facilities-list [GET]",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/healthcare-facilities?page={{page}}&pageSize={{pageSize}}&q={{q}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "healthcare-facilities"
-                            ],
-                            "query": [
-                                {
-                                    "key": "page",
-                                    "value": "{{page}}"
-                                },
-                                {
-                                    "key": "pageSize",
-                                    "value": "{{pageSize}}"
-                                },
-                                {
-                                    "key": "q",
-                                    "value": "{{q}}"
-                                }
-                            ]
-                        },
-                        "description": "List facilities"
-                    },
-                    "response": []
-                },
-                {
-                    "name": "healthcare-facilities-create [POST]",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/healthcare-facilities",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "healthcare-facilities"
-                            ]
-                        },
-                        "description": "Create facility",
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"name\": \"Acme Care Center\",\n  \"accountId\": \"{{accountId}}\",\n  \"location\": \"Hialeah\",\n  \"facilityType\": \"Adult Day Care\",\n  \"addressId\": \"{{addressId}}\"\n}"
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "healthcare-facilities-get [GET]",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/healthcare-facilities/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "healthcare-facilities",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Get facility"
-                    },
-                    "response": []
-                },
-                {
-                    "name": "healthcare-facilities-update [PUT]",
-                    "request": {
-                        "method": "PUT",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/healthcare-facilities/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "healthcare-facilities",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Replace facility",
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"name\": \"Acme Care Center (Updated)\"\n}"
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "healthcare-facilities-update [PATCH]",
-                    "request": {
-                        "method": "PATCH",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/healthcare-facilities/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "healthcare-facilities",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Partial update facility",
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"availabilityExceptions\": \"Closed Sundays\"\n}"
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "healthcare-facilities-delete [DELETE]",
-                    "request": {
-                        "method": "DELETE",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/healthcare-facilities/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "healthcare-facilities",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Delete facility"
-                    },
-                    "response": []
-                }
-            ]
+          "name": "accounts-update [PATCH]",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan\": \"Gold\",\n  \"planType\": \"Premium\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "{{id}}"]
+            },
+            "description": "Partial update account."
+          },
+          "response": []
         },
         {
-            "name": "Healthcare Providers",
-            "item": [
-                {
-                    "name": "healthcare-providers-list [GET]",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/healthcare-providers?page={{page}}&pageSize={{pageSize}}&q={{q}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "healthcare-providers"
-                            ],
-                            "query": [
-                                {
-                                    "key": "page",
-                                    "value": "{{page}}"
-                                },
-                                {
-                                    "key": "pageSize",
-                                    "value": "{{pageSize}}"
-                                },
-                                {
-                                    "key": "q",
-                                    "value": "{{q}}"
-                                }
-                            ]
-                        },
-                        "description": "List providers"
-                    },
-                    "response": []
-                },
-                {
-                    "name": "healthcare-providers-create [POST]",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/healthcare-providers",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "healthcare-providers"
-                            ]
-                        },
-                        "description": "Create provider",
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"healthcareProviderName\": \"Dr. Jane Doe\",\n  \"accountId\": \"{{accountId}}\",\n  \"providerType\": \"MD\",\n  \"npi\": \"1234567890\",\n  \"facilityId\": \"{{facilityId}}\"\n}"
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "healthcare-providers-get [GET]",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/healthcare-providers/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "healthcare-providers",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Get provider"
-                    },
-                    "response": []
-                },
-                {
-                    "name": "healthcare-providers-update [PUT]",
-                    "request": {
-                        "method": "PUT",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/healthcare-providers/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "healthcare-providers",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Replace provider",
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"status\": \"Active\"\n}"
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "healthcare-providers-update [PATCH]",
-                    "request": {
-                        "method": "PATCH",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/healthcare-providers/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "healthcare-providers",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Partial update provider",
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"daysOff\": \"Mon,Wed\"\n}"
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "healthcare-providers-delete [DELETE]",
-                    "request": {
-                        "method": "DELETE",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/healthcare-providers/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "healthcare-providers",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Delete provider"
-                    },
-                    "response": []
-                }
-            ]
+          "name": "accounts-set-billing-address [PATCH]",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"billingAddressId\": \"{{addressId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{id}}/billing-address",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "{{id}}", "billing-address"]
+            },
+            "description": "Set or clear billing address (set to null to clear)."
+          },
+          "response": []
         },
         {
-            "name": "License Types",
-            "item": [
-                {
-                    "name": "license-types-list [GET]",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/license-types?page={{page}}&pageSize={{pageSize}}&q={{q}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "license-types"
-                            ],
-                            "query": [
-                                {
-                                    "key": "page",
-                                    "value": "{{page}}"
-                                },
-                                {
-                                    "key": "pageSize",
-                                    "value": "{{pageSize}}"
-                                },
-                                {
-                                    "key": "q",
-                                    "value": "{{q}}"
-                                }
-                            ]
-                        },
-                        "description": "List license types"
-                    },
-                    "response": []
-                },
-                {
-                    "name": "license-types-create [POST]",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/license-types",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "license-types"
-                            ]
-                        },
-                        "description": "Create license type",
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"code\": \"AHCA\",\n  \"name\": \"AHCA License\",\n  \"description\": \"Agency for Health Care Administration\"\n}"
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "license-types-get-by-id [GET]",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/license-types/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "license-types",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Get license type by id"
-                    },
-                    "response": []
-                },
-                {
-                    "name": "license-types-update [PUT]",
-                    "request": {
-                        "method": "PUT",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/license-types/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "license-types",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Replace license type",
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"name\": \"AHCA License (Updated)\"\n}"
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "license-types-update [PATCH]",
-                    "request": {
-                        "method": "PATCH",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/license-types/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "license-types",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Partial update license type",
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"description\": \"Patched description\"\n}"
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "license-types-delete [DELETE]",
-                    "request": {
-                        "method": "DELETE",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/license-types/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "license-types",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Delete license type"
-                    },
-                    "response": []
-                }
-            ]
-        },
-        {
-            "name": "Location Types",
-            "item": [
-                {
-                    "name": "locationTypes-list [GET]",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/location-types?page={{page}}&pageSize={{pageSize}}&q={{q}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "location-types"
-                            ],
-                            "query": [
-                                {
-                                    "key": "page",
-                                    "value": "{{page}}"
-                                },
-                                {
-                                    "key": "pageSize",
-                                    "value": "{{pageSize}}"
-                                },
-                                {
-                                    "key": "q",
-                                    "value": "{{q}}"
-                                }
-                            ]
-                        },
-                        "description": "List location types"
-                    },
-                    "response": []
-                },
-                {
-                    "name": "locationTypes-create [POST]",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/location-types",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "location-types"
-                            ]
-                        },
-                        "description": "Create location type",
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"code\": \"Clinic\",\n  \"displayName\": \"Clinic\",\n  \"description\": \"Primary care clinic\"\n}"
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "locationTypes-getById [GET]",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/location-types/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "location-types",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Get location type by id"
-                    },
-                    "response": []
-                },
-                {
-                    "name": "locationTypes-update [PUT]",
-                    "request": {
-                        "method": "PUT",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/location-types/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "location-types",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Replace location type",
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"displayName\": \"Clinic (Updated)\"\n}"
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "locationTypes-update [PATCH]",
-                    "request": {
-                        "method": "PATCH",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/location-types/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "location-types",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Partial update location type",
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"description\": \"Patched description\"\n}"
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "locationTypes-delete [DELETE]",
-                    "request": {
-                        "method": "DELETE",
-                        "header": [
-                            {
-                                "key": "x-functions-key",
-                                "value": "{{functionKey}}",
-                                "type": "text",
-                                "disabled": true
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/location-types/{{id}}",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "location-types",
-                                "{{id}}"
-                            ]
-                        },
-                        "description": "Delete location type"
-                    },
-                    "response": []
-                }
-            ]
+          "name": "accounts-delete [DELETE]",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["accounts", "{{id}}"]
+            },
+            "description": "Delete account by id."
+          },
+          "response": []
         }
-    ],
-    "variable": [
+      ]
+    },
+    {
+      "name": "Addresses",
+      "item": [
         {
-            "key": "baseUrl",
-            "value": "http://localhost:7071/api/v1"
+          "name": "addresses-list [GET]",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/addresses?page={{page}}&pageSize={{pageSize}}&q={{q}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["addresses"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "{{page}}"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "{{pageSize}}"
+                },
+                {
+                  "key": "q",
+                  "value": "{{q}}"
+                }
+              ]
+            },
+            "description": "List addresses with pagination."
+          },
+          "response": []
         },
         {
-            "key": "functionKey",
-            "value": ""
+          "name": "addresses-create [POST]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"street\": \"123 Main St\",\n  \"city\": \"Miami\",\n  \"state\": \"FL\",\n  \"zip\": \"33101\",\n  \"country\": \"United States\",\n  \"addressType\": \"Billing\",\n  \"locationTypeId\": \"{{locationTypeId}}\",\n  \"drivingDirections\": null,\n  \"description\": null,\n  \"timeZone\": \"America/New_York\",\n  \"lead\": null\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/addresses",
+              "host": ["{{baseUrl}}"],
+              "path": ["addresses"]
+            },
+            "description": "Create an address."
+          },
+          "response": []
         },
         {
-            "key": "id",
-            "value": "00000000-0000-0000-0000-000000000000"
+          "name": "addresses-getById [GET]",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/addresses/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["addresses", "{{id}}"]
+            },
+            "description": "Get address by id."
+          },
+          "response": []
         },
         {
-            "key": "page",
-            "value": "1"
+          "name": "addresses-update [PUT]",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"street\": \"456 Oak Ave\",\n  \"city\": \"Miami\",\n  \"state\": \"FL\",\n  \"zip\": \"33102\",\n  \"country\": \"United States\",\n  \"addressType\": \"Billing\",\n  \"locationTypeId\": \"{{locationTypeId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/addresses/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["addresses", "{{id}}"]
+            },
+            "description": "Update address by id."
+          },
+          "response": []
         },
         {
-            "key": "pageSize",
-            "value": "20"
-        },
-        {
-            "key": "q",
-            "value": ""
-        },
-        {
-            "key": "accountId",
-            "value": "00000000-0000-0000-0000-000000000000"
-        },
-        {
-            "key": "addressId",
-            "value": "00000000-0000-0000-0000-000000000000"
-        },
-        {
-            "key": "licenseTypeId",
-            "value": "00000000-0000-0000-0000-000000000000"
-        },
-        {
-            "key": "facilityId",
-            "value": "00000000-0000-0000-0000-000000000000"
-        },
-        {
-            "key": "facilityIIId",
-            "value": "00000000-0000-0000-0000-000000000000"
-        },
-        {
-            "key": "facilityIIIId",
-            "value": "00000000-0000-0000-0000-000000000000"
-        },
-        {
-            "key": "providerId",
-            "value": "00000000-0000-0000-0000-000000000000"
+          "name": "addresses-delete [DELETE]",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/addresses/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["addresses", "{{id}}"]
+            },
+            "description": "Delete address by id."
+          },
+          "response": []
         }
-    ]
+      ]
+    },
+    {
+      "name": "License Types",
+      "item": [
+        {
+          "name": "license-types-list [GET]",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/license-types?page={{page}}&pageSize={{pageSize}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["license-types"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "{{page}}"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "{{pageSize}}"
+                }
+              ]
+            },
+            "description": "List license types with pagination."
+          },
+          "response": []
+        },
+        {
+          "name": "license-types-create [POST]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"code\": \"Medicaid\",\n    \"displayName\": \"Medicaid\",\n    \"description\": \"Agency for Health Care Administration\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/license-types",
+              "host": ["{{baseUrl}}"],
+              "path": ["license-types"]
+            },
+            "description": "Create a license type."
+          },
+          "response": []
+        },
+        {
+          "name": "license-types-get-by-id [GET]",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/license-types/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["license-types", "{{id}}"]
+            },
+            "description": "List license types with pagination."
+          },
+          "response": []
+        },
+        {
+          "name": "license-types-update [PATCH]",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\"code\": \"CAQH\",\n\"displayName\": \"CAQH dsdfsdfsdfsdfsdf\"\n}\n"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/license-types/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["license-types", "{{id}}"]
+            },
+            "description": "Create a license type."
+          },
+          "response": []
+        },
+        {
+          "name": "license-types-update [PUT]",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\"code\": \"Medicaid\",\n\"displayName\": \"Medicaid\",\n\"description\": \"Agency for Health Care Administration\"\n}\n"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/license-types/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["license-types", "{{id}}"]
+            },
+            "description": "Create a license type."
+          },
+          "response": []
+        },
+        {
+          "name": "license-types-delete [DELETE]",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/license-types/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["license-types", "{{id}}"]
+            },
+            "description": "Delete address by id."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Location Types",
+      "item": [
+        {
+          "name": "locationTypes-list [GET]",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/location-types?page={{page}}&pageSize={{pageSize}}&q={{q}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["location-types"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "{{page}}"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "{{pageSize}}"
+                },
+                {
+                  "key": "q",
+                  "value": "{{q}}"
+                }
+              ]
+            },
+            "description": "List location types with pagination."
+          },
+          "response": []
+        },
+        {
+          "name": "locationTypes-create [POST]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"Corporate\",\n  \"displayName\": \"Primary Care\",\n  \"description\": \"Primary care location\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/location-types",
+              "host": ["{{baseUrl}}"],
+              "path": ["location-types"]
+            },
+            "description": "Create a location type."
+          },
+          "response": []
+        },
+        {
+          "name": "locationTypes-getById [GET]",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/location-types/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["location-types", "{{id}}"]
+            },
+            "description": "Get location type by id."
+          },
+          "response": []
+        },
+        {
+          "name": "locationTypes-update [PUT]",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"Primary Care\",\n  \"displayName\": \"Primary Care - Updated\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/location-types/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["location-types", "{{id}}"]
+            },
+            "description": "Update location type by id."
+          },
+          "response": []
+        },
+        {
+          "name": "locationTypes-delete [DELETE]",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/location-types/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["location-types", "{{id}}"]
+            },
+            "description": "Delete location type by id."
+          },
+          "response": []
+        },
+        {
+          "name": "locationTypes-update [PATCH]",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"Primary Care\",\n  \"displayName\": \"Primary Care - Updated\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/location-types/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["location-types", "{{id}}"]
+            },
+            "description": "Update location type by id."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Business Licenses",
+      "item": [
+        {
+          "name": "business-licenses-list [GET]",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/business-licenses?page={{page}}&pageSize={{pageSize}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["business-licenses"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "{{page}}"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "{{pageSize}}"
+                }
+              ]
+            },
+            "description": "List business licenses."
+          },
+          "response": []
+        },
+        {
+          "name": "business-licenses-create [POST]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"AHCA-12115\",\n  \"issueDate\": null,\n  \"renewalDate\": null,\n  \"terminationDate\": null,\n  \"licenseNumber\": \"12115\",\n  \"certificateNumber\": \"CERT-001\",\n  \"status\": \"Active\",\n  \"isActive\": true,\n  \"description\": \"Example license\",\n  \"licenseTypeId\": \"{{licenseTypeId}}\",\n  \"healthcareFacilityId\": null,\n  \"healthcareProviderId\": null,\n  \"accountId\": \"{{accountId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/business-licenses",
+              "host": ["{{baseUrl}}"],
+              "path": ["business-licenses"]
+            },
+            "description": "Create a business license."
+          },
+          "response": []
+        },
+        {
+          "name": "business-licenses-get [GET]",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/business-licenses/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["business-licenses", "{{id}}"]
+            },
+            "description": "Get a business license by id."
+          },
+          "response": []
+        },
+        {
+          "name": "business-licenses-update [PUT]",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"AHCA-12115 Updated\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/business-licenses/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["business-licenses", "{{id}}"]
+            },
+            "description": "Update business license (PUT)."
+          },
+          "response": []
+        },
+        {
+          "name": "business-licenses-update [PATCH]",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated desc\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/business-licenses/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["business-licenses", "{{id}}"]
+            },
+            "description": "Partial update business license (PATCH)."
+          },
+          "response": []
+        },
+        {
+          "name": "business-licenses-set-status [PATCH]",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Inactive\",\n  \"isActive\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/business-licenses/{{id}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["business-licenses", "{{id}}", "status"]
+            },
+            "description": "Set status of business license."
+          },
+          "response": []
+        },
+        {
+          "name": "business-licenses-delete [DELETE]",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/business-licenses/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["business-licenses", "{{id}}"]
+            },
+            "description": "Delete business license by id."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Healthcare Facilities",
+      "item": [
+        {
+          "name": "healthcare-facilities-list [GET]",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/healthcare-facilities?page={{page}}&pageSize={{pageSize}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["healthcare-facilities"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "{{page}}"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "{{pageSize}}"
+                }
+              ]
+            },
+            "description": "List business licenses."
+          },
+          "response": []
+        },
+        {
+          "name": "healthcare-facilities-create [POST]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Las Mercedes Medical Centers - Homestead (Primary Care)\",\n  \"accountId\": \"{{accountId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/healthcare-facilities",
+              "host": ["{{baseUrl}}"],
+              "path": ["healthcare-facilities"]
+            },
+            "description": "Create a business license."
+          },
+          "response": []
+        },
+        {
+          "name": "healthcare-facilities-get [GET]",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/healthcare-facilities/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["healthcare-facilities", "{{id}}"]
+            },
+            "description": "Get a business license by id."
+          },
+          "response": []
+        },
+        {
+          "name": "healthcare-facilities-update [PUT]",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"AHCA-12115 Updated\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/healthcare-facilities/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["healthcare-facilities", "{{id}}"]
+            },
+            "description": "Update business license (PUT)."
+          },
+          "response": []
+        },
+        {
+          "name": "healthcare-facilities-update [PATCH]",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated desc\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/healthcare-facilities/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["healthcare-facilities", "{{id}}"]
+            },
+            "description": "Partial update business license (PATCH)."
+          },
+          "response": []
+        },
+        {
+          "name": "healthcare-facilities-set-status [PATCH]",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Inactive\",\n  \"isActive\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/healthcare-facilities/{{id}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["healthcare-facilities", "{{id}}", "status"]
+            },
+            "description": "Set status of business license."
+          },
+          "response": []
+        },
+        {
+          "name": "healthcare-facilities-delete [DELETE]",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/healthcare-facilities/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["healthcare-facilities", "{{id}}"]
+            },
+            "description": "Delete business license by id."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Healthcare Providers",
+      "item": [
+        {
+          "name": "healthcare-providers-list [GET]",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/healthcare-providers?page={{page}}&pageSize={{pageSize}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["healthcare-providers"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "{{page}}"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "{{pageSize}}"
+                }
+              ]
+            },
+            "description": "List accounts with pagination and optional filters."
+          },
+          "response": []
+        },
+        {
+          "name": "healthcare-providers-create [POST]",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"healthcareProviderName\": \"Acme Clinic\",\n\"accountId\": \"{{accountId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/healthcare-providers",
+              "host": ["{{baseUrl}}"],
+              "path": ["healthcare-providers"]
+            },
+            "description": "Create an account."
+          },
+          "response": []
+        },
+        {
+          "name": "healthcare-providers-get [GET]",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/healthcare-providers/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["healthcare-providers", "{{id}}"]
+            },
+            "description": "Get account by id."
+          },
+          "response": []
+        },
+        {
+          "name": "healthcare-providers-update [PUT]",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Acme Clinic Updated\",\n  \"phone\": \"305-555-2222\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/healthcare-providers/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["healthcare-providers", "{{id}}"]
+            },
+            "description": "Update account (PUT/PATCH supported)."
+          },
+          "response": []
+        },
+        {
+          "name": "healthcare-providers-update [PATCH]",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan\": \"Gold\",\n  \"planType\": \"Premium\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/healthcare-providers/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["healthcare-providers", "{{id}}"]
+            },
+            "description": "Partial update account."
+          },
+          "response": []
+        },
+        {
+          "name": "healthcare-providers-set-billing-address [PATCH]",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"billingAddressId\": \"{{addressId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/healthcare-providers/{{id}}/billing-address",
+              "host": ["{{baseUrl}}"],
+              "path": ["healthcare-providers", "{{id}}", "billing-address"]
+            },
+            "description": "Set or clear billing address (set to null to clear)."
+          },
+          "response": []
+        },
+        {
+          "name": "healthcare-providers-delete [DELETE]",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-functions-key",
+                "value": "{{functionKey}}",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/healthcare-providers/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["healthcare-providers", "{{id}}"]
+            },
+            "description": "Delete account by id."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Locations",
+      "item": [
+        {
+          "name": "locations-list [GET]",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/locations?page={{page}}&pageSize={{pageSize}}&q={{q}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["locations"],
+              "query": [
+                { "key": "page", "value": "{{page}}" },
+                { "key": "pageSize", "value": "{{pageSize}}" },
+                { "key": "q", "value": "{{q}}" }
+              ]
+            },
+            "description": "List locations with pagination and filters."
+          }
+        },
+        {
+          "name": "locations-create [POST]",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Main Campus\",\n  \"description\": \"Primary corporate office\",\n  \"locationTypeId\": \"{{locationTypeId}}\",\n  \"addressId\": \"{{addressId}}\",\n  \"visitorAddressId\": null,\n  \"parentLocationId\": null,\n  \"externalReference\": null,\n  \"timeZone\": \"America/New_York\",\n  \"drivingDirections\": \"Near downtown\",\n  \"latitude\": 25.7617,\n  \"longitude\": -80.1918\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/locations",
+              "host": ["{{baseUrl}}"],
+              "path": ["locations"]
+            },
+            "description": "Create a new location."
+          }
+        },
+        {
+          "name": "locations-getById [GET]",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/locations/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["locations", "{{id}}"]
+            },
+            "description": "Get location by id."
+          }
+        },
+        {
+          "name": "locations-update [PUT]",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Main Campus Updated\",\n  \"description\": \"Renovated headquarters\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/locations/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["locations", "{{id}}"]
+            },
+            "description": "Update location by id (PUT)."
+          }
+        },
+        {
+          "name": "locations-update [PATCH]",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated description only\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/locations/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["locations", "{{id}}"]
+            },
+            "description": "Partial update location (PATCH)."
+          }
+        },
+        {
+          "name": "locations-delete [DELETE]",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/locations/{{id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["locations", "{{id}}"]
+            },
+            "description": "Delete location by id."
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:7071/api/v1"
+    },
+    {
+      "key": "functionKey",
+      "value": ""
+    },
+    {
+      "key": "id",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "accountId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "addressId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "licenseTypeId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "locationTypeId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "page",
+      "value": "1"
+    },
+    {
+      "key": "pageSize",
+      "value": "20"
+    },
+    {
+      "key": "q",
+      "value": ""
+    },
+    {
+      "key": "v",
+      "value": "",
+      "disabled": true
+    }
+  ]
 }
