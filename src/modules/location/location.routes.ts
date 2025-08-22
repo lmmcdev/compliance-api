@@ -79,34 +79,34 @@ export const locationsDeleteHandler = withHttp(
 app.http('locations-list', {
   methods: ['GET'],
   route: prefixRoute, // /api/v1/locations (assuming your prefix is applied by createPrefixRoute)
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: locationsListHandler,
 });
 
 app.http('locations-create', {
   methods: ['POST'],
   route: prefixRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: locationsCreateHandler,
 });
 
 app.http('locations-getById', {
   methods: ['GET'],
   route: itemRoute, // /api/v1/locations/{id}
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: locationsGetByIdHandler,
 });
 
 app.http('locations-update', {
   methods: ['PUT', 'PATCH'],
   route: itemRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: locationsUpdateHandler,
 });
 
 app.http('locations-delete', {
   methods: ['DELETE'],
   route: itemRoute,
-  authLevel: 'function',
+  authLevel: 'anonymous',
   handler: locationsDeleteHandler,
 });
