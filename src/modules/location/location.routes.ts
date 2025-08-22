@@ -1,4 +1,4 @@
-// src/functions/location.route.ts
+
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import {
   created,
@@ -78,7 +78,7 @@ export const locationsDeleteHandler = withHttp(
 
 app.http('locations-list', {
   methods: ['GET'],
-  route: prefixRoute, // /api/v1/locations (assuming your prefix is applied by createPrefixRoute)
+  route: prefixRoute,
   authLevel: 'anonymous',
   handler: locationsListHandler,
 });
@@ -92,7 +92,7 @@ app.http('locations-create', {
 
 app.http('locations-getById', {
   methods: ['GET'],
-  route: itemRoute, // /api/v1/locations/{id}
+  route: itemRoute,
   authLevel: 'anonymous',
   handler: locationsGetByIdHandler,
 });

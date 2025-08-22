@@ -1,4 +1,3 @@
-// src/repositories/healthcare-provider.repository.ts
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { HealthcareProvider } from './healthcare-provider.entity';
 import { ListHealthcareProvidersQuery } from './healthcare-provider.dtos';
@@ -75,7 +74,6 @@ export class HealthcareProviderRepository implements IHealthcareProviderReposito
       .leftJoinAndSelect('hp.facilityII', 'f2')
       .leftJoinAndSelect('hp.facilityIII', 'f3');
 
-    // Free-text search
     if (q.q) {
       qb = qb.andWhere(
         '(' +
@@ -93,7 +91,6 @@ export class HealthcareProviderRepository implements IHealthcareProviderReposito
       );
     }
 
-    // Scalar filters
     if (q.accountId) qb = qb.andWhere('acc.id = :accountId', { accountId: q.accountId });
     if (q.status) qb = qb.andWhere('hp.status = :status', { status: q.status });
     if (q.providerType)
@@ -108,7 +105,6 @@ export class HealthcareProviderRepository implements IHealthcareProviderReposito
     if (q.practitioner)
       qb = qb.andWhere('hp.practitioner = :practitioner', { practitioner: q.practitioner });
 
-    // Boolean filters
     if (typeof q.autonomousAprn === 'boolean')
       qb = qb.andWhere('hp.autonomousAprn = :autonomousAprn', { autonomousAprn: q.autonomousAprn });
     if (typeof q.inHouse === 'boolean')
@@ -124,13 +120,11 @@ export class HealthcareProviderRepository implements IHealthcareProviderReposito
       });
     }
 
-    // Facility filters
     if (q.facilityId) qb = qb.andWhere('f1.id = :facilityId', { facilityId: q.facilityId });
     if (q.facilityIIId) qb = qb.andWhere('f2.id = :facilityIIId', { facilityIIId: q.facilityIIId });
     if (q.facilityIIIId)
       qb = qb.andWhere('f3.id = :facilityIIIId', { facilityIIIId: q.facilityIIIId });
 
-    // Date ranges
     if (q.effectiveFromFrom)
       qb = qb.andWhere('hp.effectiveFrom >= :effFromFrom', { effFromFrom: q.effectiveFromFrom });
     if (q.effectiveFromTo)

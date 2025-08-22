@@ -1,5 +1,3 @@
-// src/http/route.ts
-
 import { versionedRoute } from '../shared';
 
 type Part = string | null | undefined;
@@ -11,33 +9,33 @@ function normalize(...parts: Part[]) {
       String(p)
         .trim()
         .replace(/^\/+|\/+$/g, ''),
-    ) // trim both ends
+    )
     .filter((p) => p.length > 0)
-    .join('/') // no leading slash
-    .replace(/\/{2,}/g, '/'); // collapse dupes
+    .join('/')
+    .replace(/\/{2,}/g, '/');
 }
 
 export interface PrefixRoute {
-  prefixRoute: string; // e.g. "v1/accounts"  (no leading slash)
-  itemRoute: string; // e.g. "v1/accounts/{id}"
+  prefixRoute: string;
+  itemRoute: string;
   idParamName: string;
-  sub: (segment: string) => string; // "v1/accounts/search"
-  itemSub: (segment: string) => string; // "v1/accounts/{id}/billing-address"
-  action: (name: string) => string; // "v1/accounts/{id}/activate"
+  sub: (segment: string) => string;
+  itemSub: (segment: string) => string;
+  action: (name: string) => string;
   child: (
     childBase: string,
     childIdParamName?: string,
   ) => {
-    prefix: string; // "v1/accounts/{id}/addresses"
-    item: string; // "v1/accounts/{id}/addresses/{addressId}"
+    prefix: string;
+    item: string;
     idParamName: string;
   };
 }
 
 export type CreatePrefixRouteOptions = {
   idParamName?: string;
-  versioner?: (base: string) => string; // default: versionedRoute
-  prefixOverride?: string; // provide full prefix if you want
+  versioner?: (base: string) => string;
+  prefixOverride?: string;
 };
 
 export const createPrefixRoute = (
@@ -47,10 +45,9 @@ export const createPrefixRoute = (
   const idParamName = opts.idParamName ?? 'id';
   const versioner = opts.versioner ?? versionedRoute;
 
-  // IMPORTANT: no leading slash here
   const prefixRoute = opts.prefixOverride
     ? normalize(opts.prefixOverride)
-    : normalize(versioner(base)); // ensure versionedRoute returns something like "v1/accounts"
+    : normalize(versioner(base));
 
   const itemRoute = normalize(prefixRoute, `{${idParamName}}`);
 

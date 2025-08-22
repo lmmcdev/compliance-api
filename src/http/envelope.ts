@@ -8,7 +8,6 @@ export type PaginationMeta = {
 export type Meta = {
   traceId: string;
   pagination?: PaginationMeta;
-  // add more fields if needed (e.g., timing)
 };
 
 export type ApiSuccess<T> = {
@@ -20,9 +19,9 @@ export type ApiSuccess<T> = {
 export type ApiError = {
   success: false;
   error: {
-    code: string; // MACHINE_READABLE_CODE
-    message: string; // human-readable
-    details?: unknown; // optional internal details (safe)
+    code: string;
+    message: string;
+    details?: unknown;
     fields?: Array<{
       path: string;
       message: string;

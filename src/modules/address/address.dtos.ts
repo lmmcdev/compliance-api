@@ -18,15 +18,13 @@ export const CreateAddressSchema = z.object({
   timeZone: z.string().max(256).optional().nullable(),
   lead: z.string().max(20).optional().nullable(),
 
-  // required FK (entity has nullable: false)
-  locationTypeId: z.string().uuid(),
+  locationTypeId: z.uuid(),
 });
 
 export const UpdateAddressSchema = CreateAddressSchema.partial();
 
-// List / filter / pagination
 export const ListAddressesSchema = z.object({
-  q: z.string().optional(), // free text over common fields
+  q: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
   zip: z.string().optional(),

@@ -1,4 +1,3 @@
-// src/repositories/business-license.repository.ts
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { BusinessLicense } from './business-license.entity';
 import { ListBusinessLicensesQuery } from './business-license.dtos';
@@ -80,7 +79,6 @@ export class BusinessLicenseRepository implements IBusinessLicenseRepository {
       .leftJoinAndSelect('bl.healthcareProvider', 'hp')
       .leftJoinAndSelect('bl.account', 'acc');
 
-    // Free-text search
     if (q.q) {
       qb = qb.andWhere(
         '(' +
@@ -93,12 +91,10 @@ export class BusinessLicenseRepository implements IBusinessLicenseRepository {
       );
     }
 
-    // Scalar filters
     if (q.status) qb = qb.andWhere('bl.status = :status', { status: q.status });
     if (typeof q.isActive === 'boolean')
       qb = qb.andWhere('bl.isActive = :isActive', { isActive: q.isActive });
 
-    // FK filters
     if (q.licenseTypeId)
       qb = qb.andWhere('lt.id = :licenseTypeId', { licenseTypeId: q.licenseTypeId });
     if (q.healthcareFacilityId)
@@ -111,7 +107,6 @@ export class BusinessLicenseRepository implements IBusinessLicenseRepository {
       });
     if (q.accountId) qb = qb.andWhere('acc.id = :accountId', { accountId: q.accountId });
 
-    // Date ranges
     if (q.issueDateFrom)
       qb = qb.andWhere('bl.issueDate >= :issueDateFrom', { issueDateFrom: q.issueDateFrom });
     if (q.issueDateTo)

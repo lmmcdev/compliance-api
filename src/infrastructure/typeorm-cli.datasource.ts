@@ -1,9 +1,7 @@
-// src/config/typeorm-cli.datasource.ts
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
-import { env } from '../config/env';
 
-// 👉 Import your entities (keep this in sync with runtime DS)
+import { env } from '../config/env';
 import { LicenseType } from '../modules/license-type';
 import { LocationType } from '../modules/location-type';
 import { Address } from '../modules/address';

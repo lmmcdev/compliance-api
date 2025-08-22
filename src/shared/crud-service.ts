@@ -1,6 +1,5 @@
 import { Id, ListQuery, PageResult } from './types';
 
-// shared/crud-service.ts
 export interface CrudService<
   TEntity,
   TCreate,

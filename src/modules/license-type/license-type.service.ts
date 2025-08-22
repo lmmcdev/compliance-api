@@ -30,7 +30,6 @@ export class LicenseTypeService implements ILicenseTypeService {
   async create(payload: unknown): Promise<LicenseType> {
     const dto: CreateLicenseTypeDto = CreateLicenseTypeSchema.parse(payload);
 
-    // Check for existing license type with the same code
     const existing = await this.repo.findByCode(dto.code as LicenseTypeCode);
     if (existing) {
       throw new ConflictError(`License type with code ${dto.code} already exists.`);

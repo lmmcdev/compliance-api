@@ -34,13 +34,11 @@ export class Address extends BaseEntity {
   @Column({ type: 'nvarchar', length: 20, nullable: true })
   lead?: string | null;
 
-  /** FK to LocationType (ensure uniqueidentifier) */
   @Index('IX_addresses_location_type_id')
   @ManyToOne(() => LocationType, (lt) => lt.addresses, { nullable: false, onDelete: 'NO ACTION' })
   @JoinColumn({ name: 'location_type_id', referencedColumnName: 'id' })
   locationType!: LocationType;
 
-  // Optional: expose the FK column with correct type
   @RelationId((addr: Address) => addr.locationType)
-  locationTypeId!: string; // will be uniqueidentifier if BaseEntity.id is uuid
+  locationTypeId!: string;
 }

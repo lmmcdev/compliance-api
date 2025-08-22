@@ -1,4 +1,3 @@
-// src/repositories/location-type.repository.ts
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { LocationType } from './location-type.entity';
 import { ListLocationTypesQuery } from './location-type.dtos';
@@ -33,7 +32,7 @@ export class LocationTypeRepository implements ILocationTypeRepository {
   async findById(id: string): Promise<LocationType | null> {
     return this.repo.findOne({
       where: { id },
-      relations: { addresses: true }, // include addresses; drop if you prefer lazy
+      relations: { addresses: true },
     });
   }
 

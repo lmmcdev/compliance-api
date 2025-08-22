@@ -4,11 +4,9 @@ import { AccountType } from '../../types';
 export const AccountTypeSchema = z.enum(AccountType).or(z.string()).optional().nullable();
 
 export const CreateAccountSchema = z.object({
-  // required
   name: z.string().min(1).max(256),
   accountNumber: z.string().min(1).max(64),
 
-  // optional
   type: AccountTypeSchema,
   phone: z.string().max(64).optional().nullable(),
   lastCallDate: z.coerce.date().optional().nullable(),
@@ -37,7 +35,7 @@ export type CreateAccountDto = z.infer<typeof CreateAccountSchema>;
 export type UpdateAccountDto = z.infer<typeof UpdateAccountSchema>;
 
 export const ListAccountsSchema = z.object({
-  q: z.string().optional(), // searches name, accountNumber, phone, payer, plan
+  q: z.string().optional(),
   accountNumber: z.string().optional(),
   type: z.string().optional(),
   inHouse: z.coerce.boolean().optional(),

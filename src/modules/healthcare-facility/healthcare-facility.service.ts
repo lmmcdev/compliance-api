@@ -1,4 +1,3 @@
-// src/services/healthcare-facility.service.ts
 import { DataSource } from 'typeorm';
 import {
   CreateHealthcareFacilitySchema,
@@ -47,7 +46,6 @@ export class HealthcareFacilityService implements IHealthcareFacilityService {
       sourceSystemId: dto.sourceSystemId ?? null,
       sourceSystemModified: dto.sourceSystemModified ?? null,
 
-      // relations
       account: { id: dto.accountId } as any,
       address: dto.addressId ? ({ id: dto.addressId } as any) : null,
     };
@@ -76,7 +74,6 @@ export class HealthcareFacilityService implements IHealthcareFacilityService {
         ? { sourceSystemModified: dto.sourceSystemModified }
         : {}),
 
-      // relations
       ...(dto.accountId !== undefined ? { account: { id: dto.accountId } as any } : {}),
       ...(dto.addressId !== undefined
         ? { address: dto.addressId ? ({ id: dto.addressId } as any) : null }

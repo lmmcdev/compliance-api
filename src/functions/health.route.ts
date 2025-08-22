@@ -1,4 +1,3 @@
-// src/functions/health.route.ts
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { createPrefixRoute, ok, withHttp } from '../http';
 import { env } from '../config/env';

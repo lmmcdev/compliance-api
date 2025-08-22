@@ -1,4 +1,3 @@
-// src/functions/accounts.route.ts
 import { z } from 'zod';
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import {
@@ -73,9 +72,8 @@ export const accountsDeleteHandler = withHttp(
   },
 );
 
-// PATCH /billing-address (set/unset)
 const BillingAddressSchema = z.object({
-  billingAddressId: z.uuid().nullable().optional(), // null or UUID to clear/set
+  billingAddressId: z.uuid().nullable().optional(),
 });
 
 export const accountsSetBillingAddressHandler = withHttp(
