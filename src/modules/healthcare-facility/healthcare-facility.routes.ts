@@ -16,7 +16,7 @@ import {
   CreateHealthcareFacilitySchema,
   UpdateHealthcareFacilitySchema,
   ListHealthcareFacilitiesSchema,
-} from './healthcare-facility.dtos';
+} from './healthcare-facility.dto';
 import { getDataSource } from '../../infrastructure/ds-runtime';
 import { HealthcareFacilityService } from './healthcare-facility.service';
 

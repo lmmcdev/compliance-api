@@ -16,7 +16,7 @@ import {
   UpdateBusinessLicenseSchema,
   ListBusinessLicensesSchema,
   SetBusinessLicenseStatusSchema,
-} from './business-license.dtos';
+} from './business-license.dto';
 import { getDataSource } from '../../infrastructure/ds-runtime';
 import { BusinessLicenseService } from './business-license.service';
 

@@ -17,7 +17,7 @@ import {
   CreateLicenseTypeSchema,
   ListLicenseTypesSchema,
   UpdateLicenseTypeSchema,
-} from './license-type.dtos';
+} from './license-type.dto';
 
 const path = 'license-types';
 const { prefixRoute, itemRoute } = createPrefixRoute(path);

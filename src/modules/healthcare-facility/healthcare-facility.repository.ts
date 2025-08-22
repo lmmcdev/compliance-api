@@ -1,6 +1,6 @@
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { HealthcareFacility } from './healthcare-facility.entity';
-import { ListHealthcareFacilitiesQuery } from './healthcare-facility.dtos';
+import { ListHealthcareFacilitiesQuery } from './healthcare-facility.dto';
 import { PageResult } from '../../shared';
 
 export interface IHealthcareFacilityRepository {

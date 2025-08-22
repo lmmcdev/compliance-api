@@ -17,7 +17,7 @@ import {
   CreateHealthcareProviderSchema,
   UpdateHealthcareProviderSchema,
   ListHealthcareProvidersSchema,
-} from './healthcare-provider.dtos';
+} from './healthcare-provider.dto';
 import { getDataSource } from '../../infrastructure/ds-runtime';
 import { HealthcareProviderService } from './healthcare-provider.service';
 

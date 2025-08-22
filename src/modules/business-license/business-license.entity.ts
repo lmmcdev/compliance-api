@@ -1,7 +1,7 @@
 // src/entities/business-license.entity.ts
 import { Entity, Column, ManyToOne, JoinColumn, RelationId, Index } from 'typeorm';
 import { BaseEntity } from '../../shared';
-import { LicenseType } from '../../modules/license-type';
+import { LicenseType } from '../license-type';
 import { HealthcareFacility } from '../healthcare-facility';
 import { HealthcareProvider } from '../healthcare-provider';
 import { Account } from '../account/account.entity';

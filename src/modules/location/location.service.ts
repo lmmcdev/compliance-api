@@ -1,7 +1,7 @@
 // src/modules/location/location.service.ts
 import { DataSource, Repository } from 'typeorm';
 import { Location } from './location.entity';
-import { CreateLocationDto, UpdateLocationDto, ListLocationsQuery } from './location.dtos';
+import { CreateLocationDto, UpdateLocationDto, ListLocationsQuery } from './location.dto';
 import { LocationRepository } from './location.repository';
 import { LocationType } from '../location-type';
 import { Address } from '../address';

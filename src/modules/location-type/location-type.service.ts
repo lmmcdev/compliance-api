@@ -6,7 +6,7 @@ import {
   type CreateLocationTypeDto,
   type UpdateLocationTypeDto,
   type ListLocationTypesQuery,
-} from './location-type.dtos';
+} from './location-type.dto';
 import { PageResult } from '../../shared';
 import { LocationType } from './location-type.entity';
 import { LocationTypeRepository, type ILocationTypeRepository } from './location-type.repository';

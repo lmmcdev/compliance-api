@@ -8,7 +8,7 @@ import {
   UpdateLicenseTypeSchema,
   CreateLicenseTypeDto,
   UpdateLicenseTypeDto,
-} from './license-type.dtos';
+} from './license-type.dto';
 import { PageResult } from '../../shared';
 import { ConflictError, NotFoundError } from '../../http/app-error';
 

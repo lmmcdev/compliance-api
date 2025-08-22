@@ -6,7 +6,7 @@ import {
   type CreateHealthcareFacilityDto,
   type UpdateHealthcareFacilityDto,
   type ListHealthcareFacilitiesQuery,
-} from './healthcare-facility.dtos';
+} from './healthcare-facility.dto';
 
 import { HealthcareFacility } from './healthcare-facility.entity';
 import {

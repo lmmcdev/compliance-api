@@ -1,6 +1,6 @@
 import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { LocationType } from './location-type.entity';
-import { ListLocationTypesQuery } from './location-type.dtos';
+import { ListLocationTypesQuery } from './location-type.dto';
 import { PageResult } from '../../shared';
 
 export interface ILocationTypeRepository {

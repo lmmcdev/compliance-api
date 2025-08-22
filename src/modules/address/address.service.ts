@@ -6,7 +6,7 @@ import {
   type CreateAddressDto,
   type UpdateAddressDto,
   type ListAddressesQuery,
-} from './address.dtos';
+} from './address.dto';
 import type { PageResult } from '../../shared';
 
 import { Address } from './address.entity';
