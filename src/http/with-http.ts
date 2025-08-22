@@ -5,6 +5,7 @@ export type HttpHandler = (req: HttpRequest, ctx: InvocationContext) => Promise<
 
 export function withHttp(handler: HttpHandler): HttpHandler {
   return async (req, ctx) => {
+    ctx.log(`Handling request for ${req.method} ${req.url}`);
     try {
       return await handler(req, ctx);
     } catch (err) {
