@@ -1,3 +1,4 @@
+// src/modules/location/location.entity.ts
 import { Entity, Column, ManyToOne, OneToMany, JoinColumn, RelationId, Index } from 'typeorm';
 import { BaseEntity } from '../../shared/base.entity';
 import { LocationType } from '../location-type/location-type.entity';

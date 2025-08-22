@@ -1,3 +1,4 @@
+// src/modules/license-type/license-type.routes.ts
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { getDataSource } from '../../infrastructure/ds-runtime';
 import { LicenseTypeService } from './license-type.service';

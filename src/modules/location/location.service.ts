@@ -1,3 +1,4 @@
+// src/modules/location/location.service.ts
 import { DataSource, Repository } from 'typeorm';
 import { Location } from './location.entity';
 import { CreateLocationDto, UpdateLocationDto, ListLocationsQuery } from './location.dtos';
