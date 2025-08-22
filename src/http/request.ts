@@ -12,7 +12,7 @@ export async function parseJson<T extends ZodTypeAny>(
   } catch {
     throw new ValidationError('Invalid JSON body');
   }
-  const result = schema.safeParse(body);
+  const result = await schema.safeParseAsync(body);
   if (!result.success) throw result.error;
   return result.data as any;
 }
