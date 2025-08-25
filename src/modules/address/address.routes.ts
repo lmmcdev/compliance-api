@@ -5,6 +5,8 @@ import { z } from 'zod';
 
 import { AddressService } from './address.service';
 import { CreateAddressSchema, UpdateAddressSchema, ListAddressesSchema } from './address.dto';
+import en from 'zod/v4/locales/en.cjs';
+import { audit } from '../audit-log/audit';
 
 // ----- Route base: nested under LocationType (ensures PK is always present)
 const base = 'v1/location-types/{locationTypeId}/addresses';
@@ -50,6 +52,26 @@ export const addressesCreateHandler = withHttp(
 
     const service = await AddressService.createInstance();
     const entity = await service.create(dto);
+    if (entity) {
+      await audit(ctx, {
+        entityType: 'address',
+        entityId: entity.id,
+        action: 'CREATE',
+        actor: {
+          id: (req as any).user?.id,
+          email: (req as any).user?.email,
+          ip: req.headers.get('x-forwarded-for') ?? undefined,
+        },
+        context: {
+          method: req.method,
+          path: new URL(req.url).pathname,
+          status: 201,
+          userAgent: req.headers.get('user-agent') ?? undefined,
+        },
+        after: { id: entity.id, street: entity.street, city: entity.city }, // keep it small
+        message: 'Created address',
+      });
+    }
     return created(ctx, entity);
   },
 );
