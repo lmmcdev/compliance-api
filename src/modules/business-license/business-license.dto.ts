@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { BusinessLicenseStatus } from './business-license.entity';
 
 export const BusinessLicenseStatusSchema = z
-  .nativeEnum(BusinessLicenseStatus)
+  .enum(BusinessLicenseStatus)
   .or(z.string().min(1))
   .optional()
   .nullable();

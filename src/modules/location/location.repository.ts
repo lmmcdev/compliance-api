@@ -1,96 +1,172 @@
 // src/modules/location/location.repository.ts
-import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
-import { Location } from './location.entity';
-import { ListLocationsQuery } from './location.dto';
-import { PageResult } from '../../shared';
+import { Container, SqlQuerySpec } from '@azure/cosmos';
+import { getContainer } from '../../infrastructure/cosmos';
+import { LocationDoc } from './location.doc';
+import { randomUUID } from 'crypto';
 
-export interface ILocationRepository {
-  createAndSave(data: Partial<Location>): Promise<Location>;
-  updateAndSave(id: string, patch: Partial<Location>): Promise<Location | null>;
-  findById(id: string): Promise<Location | null>;
-  findByName(name: string): Promise<Location | null>;
-  list(query: ListLocationsQuery): Promise<PageResult<Location>>;
-  deleteHard(id: string): Promise<void>;
-}
+const CONTAINER_ID = 'locations';
+const PK_PATH = '/locationTypeId';
 
-export class LocationRepository implements ILocationRepository {
-  private repo: Repository<Location>;
+export class LocationRepository {
+  private container!: Container;
 
-  constructor(private readonly ds: DataSource) {
-    this.repo = ds.getRepository(Location);
+  async init() {
+    this.container = await getContainer({ id: CONTAINER_ID, partitionKeyPath: PK_PATH });
+    return this;
   }
 
-  async createAndSave(data: Partial<Location>): Promise<Location> {
-    const entity = this.repo.create(data);
-    return this.repo.save(entity);
+  async create(data: Omit<LocationDoc, 'id' | 'createdAt' | 'updatedAt'>): Promise<LocationDoc> {
+    const now = new Date().toISOString();
+
+    const doc: LocationDoc = {
+      id: randomUUID(),
+      createdAt: now,
+      updatedAt: now,
+      // required
+      locationTypeId: data.locationTypeId,
+      name: data.name.trim(),
+      // optionals / defaults
+      description: data.description ?? null,
+      externalReference: data.externalReference ?? null,
+      addressId: data.addressId ?? null,
+      visitorAddressId: data.visitorAddressId ?? null,
+      timeZone: data.timeZone ?? 'America/New_York',
+      drivingDirections: data.drivingDirections ?? null,
+      latitude: data.latitude ?? null,
+      longitude: data.longitude ?? null,
+      parentLocationId: data.parentLocationId ?? null,
+    };
+
+    const { resource } = await this.container.items.create(doc);
+    return resource as LocationDoc;
   }
 
-  async updateAndSave(id: string, patch: Partial<Location>): Promise<Location | null> {
-    await this.repo.update({ id }, patch);
-    return this.findById(id);
+  // Point read requires both id and partition key (locationTypeId)
+  async findById(id: string, locationTypeId: string): Promise<LocationDoc | null> {
+    try {
+      const { resource } = await this.container.item(id, locationTypeId).read<LocationDoc>();
+      return resource ? (resource as LocationDoc) : null;
+    } catch {
+      return null;
+    }
   }
 
-  async findById(id: string): Promise<Location | null> {
-    return this.repo.findOne({
-      where: { id },
-      relations: {
-        locationType: true,
-        address: true,
-        visitorAddress: true,
-        parent: true,
-      },
+  /**
+   * List locations by locationTypeId (single-partition), with optional search & parent filter.
+   * - q: searches name and externalReference (case-insensitive)
+   * - parentLocationId: filter children of a parent; pass null to get roots (no parent)
+   * - sort: createdAt | updatedAt | name
+   * - order: ASC | DESC
+   */
+  async listByLocationType(
+    locationTypeId: string,
+    opts?: {
+      pageSize?: number;
+      token?: string;
+      q?: string;
+      parentLocationId?: string | null;
+      sort?: 'createdAt' | 'updatedAt' | 'name';
+      order?: 'ASC' | 'DESC';
+    },
+  ) {
+    const {
+      pageSize = 50,
+      token,
+      q,
+      parentLocationId,
+      sort = 'createdAt',
+      order = 'DESC',
+    } = opts ?? {};
+
+    const filters: string[] = ['c.locationTypeId = @lt'];
+    const params: { name: string; value: any }[] = [{ name: '@lt', value: locationTypeId }];
+
+    if (q) {
+      filters.push('(CONTAINS(LOWER(c.name), @q) OR CONTAINS(LOWER(c.externalReference), @q))');
+      params.push({ name: '@q', value: q.toLowerCase() });
+    }
+
+    if (parentLocationId === null) {
+      // roots: parent is undefined or null
+      filters.push('(NOT IS_DEFINED(c.parentLocationId) OR IS_NULL(c.parentLocationId))');
+    } else if (typeof parentLocationId === 'string') {
+      filters.push('c.parentLocationId = @parent');
+      params.push({ name: '@parent', value: parentLocationId });
+    }
+
+    const query: SqlQuerySpec = {
+      query: `
+        SELECT c.id, c.name, c.description, c.locationTypeId, c.externalReference,
+               c.addressId, c.visitorAddressId, c.timeZone, c.drivingDirections,
+               c.latitude, c.longitude, c.parentLocationId, c.createdAt, c.updatedAt
+        FROM c
+        WHERE ${filters.join(' AND ')}
+        ORDER BY c.${sort} ${order}
+      `,
+      parameters: params,
+    };
+
+    const iter = this.container.items.query<LocationDoc>(query, {
+      maxItemCount: pageSize,
+      continuationToken: token,
+    });
+
+    const { resources, continuationToken } = await iter.fetchNext();
+    return {
+      items: resources.map((r) => r as LocationDoc),
+      continuationToken: continuationToken ?? null,
+    };
+  }
+
+  // Convenience: list direct children for a given parent
+  async listChildren(
+    locationTypeId: string,
+    parentLocationId: string,
+    opts?: {
+      pageSize?: number;
+      token?: string;
+      sort?: 'createdAt' | 'updatedAt' | 'name';
+      order?: 'ASC' | 'DESC';
+    },
+  ) {
+    return this.listByLocationType(locationTypeId, {
+      ...opts,
+      parentLocationId,
     });
   }
 
-  async findByName(name: string): Promise<Location | null> {
-    return this.repo.findOne({ where: { name } });
-  }
+  async update(
+    id: string,
+    locationTypeId: string,
+    patch: Partial<Omit<LocationDoc, 'id' | 'createdAt' | 'locationTypeId'>>,
+  ): Promise<LocationDoc | null> {
+    const current = await this.findById(id, locationTypeId);
+    if (!current) return null;
 
-  async list(q: ListLocationsQuery): Promise<PageResult<Location>> {
-    const { page, pageSize, sort, order } = q;
-
-    const sortMap: Record<ListLocationsQuery['sort'], string> = {
-      createdAt: 'l.createdAt',
-      updatedAt: 'l.updatedAt',
-      name: 'l.name',
+    const updated: LocationDoc = {
+      ...current,
+      ...(patch.name !== undefined ? { name: patch.name.trim() } : {}),
+      ...(patch.description !== undefined ? { description: patch.description } : {}),
+      ...(patch.externalReference !== undefined
+        ? { externalReference: patch.externalReference }
+        : {}),
+      ...(patch.addressId !== undefined ? { addressId: patch.addressId } : {}),
+      ...(patch.visitorAddressId !== undefined ? { visitorAddressId: patch.visitorAddressId } : {}),
+      ...(patch.timeZone !== undefined ? { timeZone: patch.timeZone } : {}),
+      ...(patch.drivingDirections !== undefined
+        ? { drivingDirections: patch.drivingDirections }
+        : {}),
+      ...(patch.latitude !== undefined ? { latitude: patch.latitude } : {}),
+      ...(patch.longitude !== undefined ? { longitude: patch.longitude } : {}),
+      ...(patch.parentLocationId !== undefined ? { parentLocationId: patch.parentLocationId } : {}),
+      updatedAt: new Date().toISOString(),
     };
 
-    let qb: SelectQueryBuilder<Location> = this.repo
-      .createQueryBuilder('l')
-      .leftJoinAndSelect('l.locationType', 'lt')
-      .leftJoinAndSelect('l.address', 'ad')
-      .leftJoinAndSelect('l.visitorAddress', 'vad')
-      .leftJoinAndSelect('l.parent', 'pl');
-
-    if (q.q) {
-      qb = qb.andWhere(
-        '(l.name LIKE :q OR l.description LIKE :q OR l.externalReference LIKE :q OR l.timeZone LIKE :q)',
-        { q: `%${q.q}%` },
-      );
-    }
-
-    if (q.name) qb = qb.andWhere('l.name = :name', { name: q.name });
-    if (q.locationTypeId)
-      qb = qb.andWhere('lt.id = :locationTypeId', { locationTypeId: q.locationTypeId });
-    if (q.parentLocationId)
-      qb = qb.andWhere('pl.id = :parentLocationId', { parentLocationId: q.parentLocationId });
-    if (q.addressId) qb = qb.andWhere('ad.id = :addressId', { addressId: q.addressId });
-    if (q.visitorAddressId)
-      qb = qb.andWhere('vad.id = :visitorAddressId', { visitorAddressId: q.visitorAddressId });
-    if (typeof q.hasVisitorAddress !== 'undefined') {
-      qb = q.hasVisitorAddress ? qb.andWhere('vad.id IS NOT NULL') : qb.andWhere('vad.id IS NULL');
-    }
-
-    qb = qb
-      .orderBy(sortMap[sort], order)
-      .skip((page - 1) * pageSize)
-      .take(pageSize);
-
-    const [items, total] = await qb.getManyAndCount();
-    return { items, total, page, pageSize };
+    const { resource } = await this.container.item(id, locationTypeId).replace(updated);
+    return resource as LocationDoc;
   }
 
-  async deleteHard(id: string): Promise<void> {
-    await this.repo.delete(id);
+  async delete(id: string, locationTypeId: string): Promise<void> {
+    await this.container.item(id, locationTypeId).delete();
   }
 }

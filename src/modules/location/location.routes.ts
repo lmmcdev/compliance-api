@@ -1,43 +1,48 @@
 // src/modules/location/location.routes.ts
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import {
-  created,
-  createPrefixRoute,
-  IdParamSchema,
-  noContent,
-  ok,
-  paginated,
-  parseJson,
-  parseParams,
-  parseQuery,
-  withHttp,
-} from '../../http';
-
-import { CreateLocationSchema, UpdateLocationSchema, ListLocationsSchema } from './location.dto';
+import { withHttp, ok, created, noContent, parseJson } from '../../http';
+import { z } from 'zod';
 
 import { LocationService } from './location.service';
-import { getDataSource } from '../../infrastructure/ds-runtime';
+import { CreateLocationSchema, UpdateLocationSchema, ListLocationsSchema } from './location.dto';
 
-const path = 'locations';
-const { prefixRoute, itemRoute } = createPrefixRoute(path);
+// Nested under location type so we always have the partition key
+const base = 'v1/location-types/{locationTypeId}/locations';
+
+// ---- Param schemas ----
+const LTParamSchema = z.object({
+  locationTypeId: z.string().uuid(),
+});
+const LTParamWithIdSchema = LTParamSchema.extend({
+  id: z.string().uuid(),
+});
+
+// Body for POST comes without locationTypeId (we inject from path)
+const CreateLocationBodySchema = CreateLocationSchema.omit({ locationTypeId: true });
 
 // -------- Handlers --------
 
 export const locationsListHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const query = await parseQuery(req, ListLocationsSchema);
-    const ds = await getDataSource();
-    const service = new LocationService(ds);
-    const page = await service.list(query);
-    return paginated(ctx, page);
+    const { locationTypeId } = LTParamSchema.parse((req as any).params ?? {});
+    const rawQuery = Object.fromEntries(new URL(req.url).searchParams.entries());
+    const query = ListLocationsSchema.parse({ ...rawQuery, locationTypeId });
+
+    const service = await LocationService.createInstance();
+    const page = await service.list(query); // { items, continuationToken }
+    return ok(ctx, page);
   },
 );
 
 export const locationsCreateHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const dto = await parseJson(req, CreateLocationSchema);
-    const ds = await getDataSource();
-    const service = new LocationService(ds);
+    const { locationTypeId } = LTParamSchema.parse((req as any).params ?? {});
+    // validate body without PK...
+    const body = await parseJson(req, CreateLocationBodySchema);
+    // ...then inject PK and validate full DTO
+    const dto = CreateLocationSchema.parse({ ...body, locationTypeId });
+
+    const service = await LocationService.createInstance();
     const entity = await service.create(dto);
     return created(ctx, entity);
   },
@@ -45,68 +50,65 @@ export const locationsCreateHandler = withHttp(
 
 export const locationsGetByIdHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { id } = parseParams(req, IdParamSchema);
-    const ds = await getDataSource();
-    const service = new LocationService(ds);
-    const entity = await service.get(id);
+    const { locationTypeId, id } = LTParamWithIdSchema.parse((req as any).params ?? {});
+    const service = await LocationService.createInstance();
+    const entity = await service.get(id, locationTypeId);
     return ok(ctx, entity);
   },
 );
 
 export const locationsUpdateHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { id } = parseParams(req, IdParamSchema);
-    const dto = await parseJson(req, UpdateLocationSchema);
-    const ds = await getDataSource();
-    const service = new LocationService(ds);
-    const entity = await service.update(id, dto);
+    const { locationTypeId, id } = LTParamWithIdSchema.parse((req as any).params ?? {});
+    const patch = await parseJson(req, UpdateLocationSchema);
+    const service = await LocationService.createInstance();
+    const entity = await service.update(id, locationTypeId, patch);
     return ok(ctx, entity);
   },
 );
 
 export const locationsDeleteHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { id } = parseParams(req, IdParamSchema);
-    const ds = await getDataSource();
-    const service = new LocationService(ds);
-    await service.remove(id);
+    const { locationTypeId, id } = LTParamWithIdSchema.parse((req as any).params ?? {});
+    const service = await LocationService.createInstance();
+    await service.remove(id, locationTypeId);
     return noContent(ctx);
   },
 );
 
-// -------- Routes --------
+// -------- Azure Functions route registrations --------
 
 app.http('locations-list', {
   methods: ['GET'],
-  route: prefixRoute,
+  route: `${base}`,
   authLevel: 'anonymous',
   handler: locationsListHandler,
 });
 
 app.http('locations-create', {
   methods: ['POST'],
-  route: prefixRoute,
+  route: `${base}`,
   authLevel: 'anonymous',
   handler: locationsCreateHandler,
 });
 
 app.http('locations-getById', {
   methods: ['GET'],
-  route: itemRoute,
+  route: `${base}/{id}`,
   authLevel: 'anonymous',
   handler: locationsGetByIdHandler,
 });
 
 app.http('locations-update', {
   methods: ['PUT', 'PATCH'],
-  route: itemRoute,
+  route: `${base}/{id}`,
   authLevel: 'anonymous',
   handler: locationsUpdateHandler,
 });
 
 app.http('locations-delete', {
   methods: ['DELETE'],
-  route: itemRoute,
+  route: `${base}/{id}`,
   authLevel: 'anonymous',
   handler: locationsDeleteHandler,
 });

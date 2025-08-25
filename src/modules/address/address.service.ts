@@ -23,7 +23,6 @@ export class AddressService implements IAddressService {
 
   async create(payload: unknown): Promise<AddressDoc> {
     const dto = CreateAddressSchema.parse(payload);
-    // repo handles normalization (state/country/zip) and timestamps
     return this.repo.create(dto);
   }
 
@@ -53,7 +52,10 @@ export class AddressService implements IAddressService {
    * Query shape: { locationTypeId, pageSize?, token?, q?, addressType? }
    */
   async list(query: unknown): Promise<{ items: AddressDoc[]; continuationToken: string | null }> {
+    // Validamos y parseamos query
+    console.log('Query to list addresses:', query);
     const q = ListAddressesSchema.parse(query);
+
     return this.repo.listByLocationType(q.locationTypeId, {
       pageSize: q.pageSize,
       token: q.token,

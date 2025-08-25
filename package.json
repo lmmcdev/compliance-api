@@ -13,7 +13,9 @@
     "typeorm": "typeorm-ts-node-commonjs -d ./src/infrastructure/typeorm-cli.datasource.ts",
     "migration:generate": "npm run typeorm -- migration:generate ./src/migrations/migration",
     "migration:run": "npm run typeorm -- migration:run",
-    "migration:revert": "npm run typeorm -- migration:revert"
+    "migration:revert": "npm run typeorm -- migration:revert",
+    "dev": "concurrently -k -n TSC,HOST -c auto \"npm:watch\" \"func start \"",
+    "dev:clean": "npm run clean && npm run dev"
   },
   "dependencies": {
     "@azure/cosmos": "^4.5.0",
@@ -26,6 +28,7 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^20.19.10",
     "azure-functions-core-tools": "^4.x",
+    "concurrently": "^9.2.1",
     "eslint": "^9.33.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",

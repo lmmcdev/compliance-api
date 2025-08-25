@@ -24,11 +24,11 @@ const CreateAddressBodySchema = CreateAddressSchema.omit({ locationTypeId: true 
 
 export const addressesListHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { locationTypeId } = await LTParamSchema.parse((req as any).params ?? {});
+    const { locationTypeId } = LTParamSchema.parse((req as any).params ?? {});
 
     // Merge query params with the path param, then validate
     const rawQuery = Object.fromEntries(new URL(req.url).searchParams.entries());
-    const query = await ListAddressesSchema.parse({
+    const query = ListAddressesSchema.parse({
       ...rawQuery,
       locationTypeId,
     });

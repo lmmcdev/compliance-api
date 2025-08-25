@@ -1,70 +1,28 @@
-// src/modules/location/location.dtos.ts
+// src/modules/location/location.dto.ts
 import { z } from 'zod';
 
-const uuid = z.uuid();
-
 export const CreateLocationSchema = z.object({
-  name: z.string().min(1).max(128),
-  description: z.string().max(256).optional().nullable(),
-
-  locationTypeId: uuid,
-  addressId: uuid.optional().nullable(),
-  visitorAddressId: uuid.optional().nullable(),
-  parentLocationId: uuid.optional().nullable(),
-
-  externalReference: z.string().max(64).optional().nullable(),
-  timeZone: z.string().max(64).optional().nullable(),
-  drivingDirections: z.string().max(1024).optional().nullable(),
-  latitude: z.number().gte(-90).lte(90).optional().nullable(),
-  longitude: z.number().gte(-180).lte(180).optional().nullable(),
+  locationTypeId: z.uuid(),
+  name: z.string().min(1),
+  description: z.string().nullable().optional(),
+  externalReference: z.string().nullable().optional(),
+  addressId: z.uuid().nullable().optional(),
+  visitorAddressId: z.uuid().nullable().optional(),
+  timeZone: z.string().optional().default('America/New_York'),
+  drivingDirections: z.string().nullable().optional(),
+  latitude: z.number().nullable().optional(),
+  longitude: z.number().nullable().optional(),
+  parentLocationId: z.uuid().nullable().optional(),
 });
 
 export const UpdateLocationSchema = CreateLocationSchema.partial();
 
-export type CreateLocationDto = z.infer<typeof CreateLocationSchema>;
-export type UpdateLocationDto = z.infer<typeof UpdateLocationSchema>;
-
 export const ListLocationsSchema = z.object({
+  locationTypeId: z.uuid(),
   q: z.string().optional(),
-
-  name: z.string().optional(),
-  locationTypeId: uuid.optional(),
-  parentLocationId: uuid.optional(),
-  addressId: uuid.optional(),
-  visitorAddressId: uuid.optional(),
-  hasVisitorAddress: z.coerce.boolean().optional(),
-
-  page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+  parentLocationId: z.uuid().nullable().optional(),
+  pageSize: z.coerce.number().int().min(1).max(100).default(50),
+  token: z.string().optional(),
   sort: z.enum(['createdAt', 'updatedAt', 'name']).default('createdAt'),
   order: z.enum(['ASC', 'DESC']).default('DESC'),
 });
-
-export type ListLocationsQuery = z.infer<typeof ListLocationsSchema>;
-
-export const LocationIdParamSchema = z.object({
-  id: uuid,
-});
-export type LocationIdParam = z.infer<typeof LocationIdParamSchema>;
-
-export const LocationResponseSchema = z.object({
-  id: uuid,
-  name: z.string(),
-  description: z.string().nullable(),
-
-  locationTypeId: uuid,
-  addressId: uuid.nullable(),
-  visitorAddressId: uuid.nullable(),
-  parentLocationId: uuid.nullable(),
-
-  externalReference: z.string().nullable(),
-  timeZone: z.string().nullable(),
-  drivingDirections: z.string().nullable(),
-  latitude: z.number().nullable(),
-  longitude: z.number().nullable(),
-
-  createdAt: z.date(),
-  updatedAt: z.date(),
-});
-
-export type LocationResponseDto = z.infer<typeof LocationResponseSchema>;

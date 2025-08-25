@@ -9,9 +9,6 @@ export async function parseJson<T extends ZodTypeAny>(
 ): Promise<ReturnType<T['parse']>> {
   let body: unknown;
   try {
-    // (Opcional) valida cabecera Content-Type aquí si quieres ser estricto
-    // const ct = req.headers.get("content-type") ?? "";
-    // if (!ct.includes("application/json")) throw new ValidationError("Content-Type must be application/json");
     body = await req.json();
   } catch {
     throw new ValidationError('Invalid JSON body');
