@@ -1,93 +1,72 @@
-import { DataSource } from 'typeorm';
-import {
-  CreateAddressSchema,
-  UpdateAddressSchema,
-  ListAddressesSchema,
-  type CreateAddressDto,
-  type UpdateAddressDto,
-  type ListAddressesQuery,
-} from './address.dto';
-import type { PageResult } from '../../shared';
-
-import { Address } from './address.entity';
-import { AddressRepository, type IAddressRepository } from './address.repository';
-import { NotFoundError } from '../../http';
+// src/modules/address/address.service.ts
+import { AddressRepository } from './address.repository';
+import { AddressDoc } from './address.doc';
+import { CreateAddressSchema, UpdateAddressSchema, ListAddressesSchema } from './address.dto';
+import { NotFoundError } from '../../http/app-error';
 
 export interface IAddressService {
-  create(payload: unknown): Promise<Address>;
-  update(id: string, payload: unknown): Promise<Address>;
-  get(id: string): Promise<Address>;
-  list(query: unknown): Promise<PageResult<Address>>;
-  remove(id: string): Promise<void>;
+  create(payload: unknown): Promise<AddressDoc>;
+  update(id: string, locationTypeId: string, payload: unknown): Promise<AddressDoc>;
+  get(id: string, locationTypeId: string): Promise<AddressDoc>;
+  list(query: unknown): Promise<{ items: AddressDoc[]; continuationToken: string | null }>;
+  remove(id: string, locationTypeId: string): Promise<void>;
 }
 
 export class AddressService implements IAddressService {
-  private readonly repo: IAddressRepository;
+  constructor(private readonly repo: AddressRepository) {}
 
-  constructor(ds: DataSource, repo?: IAddressRepository) {
-    this.repo = repo ?? new AddressRepository(ds);
+  /** Factory to keep init uniform with your other services */
+  static async createInstance(): Promise<AddressService> {
+    const repo = await new AddressRepository().init();
+    return new AddressService(repo);
   }
 
-  async create(payload: unknown): Promise<Address> {
-    const dto: CreateAddressDto = CreateAddressSchema.parse(payload);
-
-    const data: Partial<Address> = {
-      street: dto.street,
-      city: dto.city,
-      state: dto.state,
-      zip: dto.zip,
-      country: dto.country,
-      addressType: dto.addressType,
-      drivingDirections: dto.drivingDirections ?? null,
-      description: dto.description ?? null,
-      timeZone: dto.timeZone ?? null,
-      lead: dto.lead ?? null,
-      locationType: { id: dto.locationTypeId } as any,
-    };
-
-    return this.repo.createAndSave(data);
+  async create(payload: unknown): Promise<AddressDoc> {
+    const dto = CreateAddressSchema.parse(payload);
+    // repo handles normalization (state/country/zip) and timestamps
+    return this.repo.create(dto);
   }
 
-  async update(id: string, payload: unknown): Promise<Address> {
-    const dto: UpdateAddressDto = UpdateAddressSchema.parse(payload);
-    const current = await this.repo.findById(id);
-    if (!current) throw new NotFoundError('Address not found');
+  async update(id: string, locationTypeId: string, payload: unknown): Promise<AddressDoc> {
+    const dto = UpdateAddressSchema.parse(payload);
 
-    const patch: Partial<Address> = {
-      ...(dto.street !== undefined ? { street: dto.street } : {}),
-      ...(dto.city !== undefined ? { city: dto.city } : {}),
-      ...(dto.state !== undefined ? { state: dto.state } : {}),
-      ...(dto.zip !== undefined ? { zip: dto.zip } : {}),
-      ...(dto.country !== undefined ? { country: dto.country } : {}),
-      ...(dto.addressType !== undefined ? { addressType: dto.addressType } : {}),
-      ...(dto.drivingDirections !== undefined ? { drivingDirections: dto.drivingDirections } : {}),
-      ...(dto.description !== undefined ? { description: dto.description } : {}),
-      ...(dto.timeZone !== undefined ? { timeZone: dto.timeZone } : {}),
-      ...(dto.lead !== undefined ? { lead: dto.lead } : {}),
-      ...(dto.locationTypeId !== undefined
-        ? { locationType: { id: dto.locationTypeId } as any }
-        : {}),
-    };
+    const current = await this.repo.findById(id, locationTypeId);
+    if (!current) {
+      throw new NotFoundError(`Address ${id} not found for locationType ${locationTypeId}.`);
+    }
 
-    const updated = await this.repo.updateAndSave(id, patch);
+    const updated = await this.repo.update(id, locationTypeId, dto);
     if (!updated) throw new NotFoundError('Address not found after update');
     return updated;
   }
 
-  async get(id: string): Promise<Address> {
-    const entity = await this.repo.findById(id);
-    if (!entity) throw new NotFoundError('Address not found');
-    return entity;
+  async get(id: string, locationTypeId: string): Promise<AddressDoc> {
+    const found = await this.repo.findById(id, locationTypeId);
+    if (!found) {
+      throw new NotFoundError(`Address ${id} not found for locationType ${locationTypeId}.`);
+    }
+    return found;
   }
 
-  async list(query: unknown): Promise<PageResult<Address>> {
-    const q: ListAddressesQuery = ListAddressesSchema.parse(query);
-    return this.repo.list(q);
+  /**
+   * Token-based paging within a single partition (/locationTypeId).
+   * Query shape: { locationTypeId, pageSize?, token?, q?, addressType? }
+   */
+  async list(query: unknown): Promise<{ items: AddressDoc[]; continuationToken: string | null }> {
+    const q = ListAddressesSchema.parse(query);
+    return this.repo.listByLocationType(q.locationTypeId, {
+      pageSize: q.pageSize,
+      token: q.token,
+      q: q.q,
+      addressType: q.addressType,
+    });
   }
 
-  async remove(id: string): Promise<void> {
-    const found = await this.repo.findById(id);
-    if (!found) throw new NotFoundError('Address not found');
-    await this.repo.deleteHard(id);
+  async remove(id: string, locationTypeId: string): Promise<void> {
+    const found = await this.repo.findById(id, locationTypeId);
+    if (!found) {
+      throw new NotFoundError(`Address ${id} not found for locationType ${locationTypeId}.`);
+    }
+    await this.repo.delete(id, locationTypeId);
   }
 }

@@ -1,92 +1,113 @@
-import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
-import { Address, ListAddressesQuery } from '../address';
-import { PageResult } from '../../shared';
+// src/modules/address/address.repository.ts
+import { Container, SqlQuerySpec } from '@azure/cosmos';
+import { getContainer } from '../../infrastructure/cosmos';
+import { AddressDoc } from './address.doc';
+import { randomUUID } from 'crypto';
 
-export interface IAddressRepository {
-  createAndSave(data: Partial<Address>): Promise<Address>;
-  updateAndSave(id: string, patch: Partial<Address>): Promise<Address | null>;
-  findById(id: string): Promise<Address | null>;
-  list(query: ListAddressesQuery): Promise<PageResult<Address>>;
-  deleteHard(id: string): Promise<void>;
-}
+const CONTAINER_ID = 'addresses';
+const PK_PATH = '/locationTypeId';
 
-export class AddressRepository implements IAddressRepository {
-  private repo: Repository<Address>;
+export class AddressRepository {
+  private container!: Container;
 
-  constructor(private readonly ds: DataSource) {
-    this.repo = ds.getRepository(Address);
+  async init() {
+    this.container = await getContainer({ id: CONTAINER_ID, partitionKeyPath: PK_PATH });
+    return this;
   }
 
-  async createAndSave(data: Partial<Address>): Promise<Address> {
-    const entity = this.repo.create(data);
-    return await this.repo.save(entity);
-  }
-
-  async updateAndSave(id: string, patch: Partial<Address>): Promise<Address | null> {
-    await this.repo.update({ id }, patch);
-    return this.findById(id);
-  }
-
-  async findById(id: string): Promise<Address | null> {
-    return this.repo.findOne({
-      where: { id },
-      relations: { locationType: true },
-    });
-  }
-
-  async list(q: ListAddressesQuery): Promise<PageResult<Address>> {
-    const { page, pageSize, sort, order } = q;
-
-    const sortMap: Record<ListAddressesQuery['sort'], string> = {
-      createdAt: 'ad.createdAt',
-      updatedAt: 'ad.updatedAt',
-      city: 'ad.city',
-      state: 'ad.state',
-      zip: 'ad.zip',
-      country: 'ad.country',
-      addressType: 'ad.addressType',
+  async create(data: Omit<AddressDoc, 'id' | 'createdAt' | 'updatedAt'>): Promise<AddressDoc> {
+    const now = new Date().toISOString();
+    const doc: AddressDoc = {
+      id: randomUUID(),
+      createdAt: now,
+      updatedAt: now,
+      ...data,
+      // normalization examples (optional)
+      state: data.state.toUpperCase(),
+      country: data.country.toUpperCase(),
+      zip: String(data.zip),
     };
 
-    let qb: SelectQueryBuilder<Address> = this.repo
-      .createQueryBuilder('ad')
-      .leftJoinAndSelect('ad.locationType', 'lt');
-
-    if (q.q) {
-      qb = qb.andWhere(
-        '(' +
-          'ad.street LIKE :q OR ' +
-          'ad.city LIKE :q OR ' +
-          'ad.state LIKE :q OR ' +
-          'ad.zip LIKE :q OR ' +
-          'ad.country LIKE :q OR ' +
-          'ad.addressType LIKE :q OR ' +
-          'ad.description LIKE :q OR ' +
-          'ad.timeZone LIKE :q OR ' +
-          'ad.lead LIKE :q' +
-          ')',
-        { q: `%${q.q}%` },
-      );
-    }
-
-    if (q.city) qb = qb.andWhere('ad.city = :city', { city: q.city });
-    if (q.state) qb = qb.andWhere('ad.state = :state', { state: q.state });
-    if (q.zip) qb = qb.andWhere('ad.zip = :zip', { zip: q.zip });
-    if (q.country) qb = qb.andWhere('ad.country = :country', { country: q.country });
-    if (q.addressType)
-      qb = qb.andWhere('ad.addressType = :addressType', { addressType: q.addressType });
-    if (q.locationTypeId)
-      qb = qb.andWhere('lt.id = :locationTypeId', { locationTypeId: q.locationTypeId });
-
-    qb = qb
-      .orderBy(sortMap[sort], order)
-      .skip((page - 1) * pageSize)
-      .take(pageSize);
-
-    const [items, total] = await qb.getManyAndCount();
-    return { items, total, page, pageSize };
+    const { resource } = await this.container.items.create(doc);
+    return resource as AddressDoc;
   }
 
-  async deleteHard(id: string): Promise<void> {
-    await this.repo.delete(id);
+  // Point read: you MUST provide the partition key (locationTypeId)
+  async findById(id: string, locationTypeId: string): Promise<AddressDoc | null> {
+    try {
+      const { resource } = await this.container.item(id, locationTypeId).read<AddressDoc>();
+      return resource ? (resource as AddressDoc) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  async listByLocationType(
+    locationTypeId: string,
+    opts?: { pageSize?: number; token?: string; q?: string; addressType?: string },
+  ) {
+    const { pageSize = 50, token, q, addressType } = opts ?? {};
+
+    const filters: string[] = ['c.locationTypeId = @lt'];
+    const params: { name: string; value: any }[] = [{ name: '@lt', value: locationTypeId }];
+
+    if (q) {
+      filters.push(
+        '(CONTAINS(LOWER(c.street), @q) OR CONTAINS(LOWER(c.city), @q) OR CONTAINS(LOWER(c.county), @q))',
+      );
+      params.push({ name: '@q', value: q.toLowerCase() });
+    }
+    if (addressType) {
+      filters.push('c.addressType = @addressType');
+      params.push({ name: '@addressType', value: addressType });
+    }
+
+    const query: SqlQuerySpec = {
+      query: `SELECT c.id, c.street, c.city, c.state, c.zip, c.country, c.county,
+                     c.addressType, c.drivingDirections, c.description, c.timeZone, c.lead,
+                     c.locationTypeId, c.createdAt, c.updatedAt
+              FROM c
+              WHERE ${filters.join(' AND ')}
+              ORDER BY c.createdAt DESC`,
+      parameters: params,
+    };
+
+    const iter = this.container.items.query<AddressDoc>(query, {
+      maxItemCount: pageSize,
+      continuationToken: token,
+      // stays in one partition because we filtered by locationTypeId (the PK)
+    });
+
+    const { resources, continuationToken } = await iter.fetchNext();
+    return {
+      items: resources.map((item) => item as AddressDoc),
+      continuationToken: continuationToken ?? null,
+    };
+  }
+
+  async update(
+    id: string,
+    locationTypeId: string,
+    patch: Partial<Omit<AddressDoc, 'id' | 'createdAt' | 'locationTypeId'>>,
+  ): Promise<AddressDoc | null> {
+    const current = await this.findById(id, locationTypeId);
+    if (!current) return null;
+
+    const updated: AddressDoc = {
+      ...current,
+      ...patch,
+      // keep normalization consistent if state/country/zip are changing
+      ...(patch.state !== undefined ? { state: patch.state.toUpperCase() } : {}),
+      ...(patch.country !== undefined ? { country: patch.country.toUpperCase() } : {}),
+      ...(patch.zip !== undefined ? { zip: String(patch.zip) } : {}),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const { resource } = await this.container.item(id, locationTypeId).replace(updated);
+    return resource as AddressDoc;
+  }
+
+  async delete(id: string, locationTypeId: string): Promise<void> {
+    await this.container.item(id, locationTypeId).delete();
   }
 }
