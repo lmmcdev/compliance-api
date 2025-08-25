@@ -1,3 +1,4 @@
+// src/modules/location-type/location-type.routes.ts
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import {
   created,
@@ -7,7 +8,6 @@ import {
   ok,
   paginated,
   parseJson,
-  parseParams,
   parseQuery,
   withHttp,
 } from '../../http';
@@ -15,100 +15,86 @@ import {
   CreateLocationTypeSchema,
   UpdateLocationTypeSchema,
   ListLocationTypesSchema,
-} from './location-type.dto';
-
+} from './location-type.dto'; // adjust if needed
 import { LocationTypeService } from './location-type.service';
-import { getDataSource } from '../../infrastructure/ds-runtime';
 
 const path = 'location-types';
 const { prefixRoute, itemRoute } = createPrefixRoute(path);
 
-// -------- Handlers --------
-
-export const locationTypesListHandler = withHttp(
+const listHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const query = await parseQuery(req, ListLocationTypesSchema);
-    const ds = await getDataSource();
-    const service = new LocationTypeService(ds);
-    const page = await service.list(query);
+    const q = parseQuery(req, ListLocationTypesSchema);
+    const svc = await LocationTypeService.createInstance();
+    const page = await svc.list(q);
     return paginated(ctx, page);
   },
 );
 
-export const locationTypesCreateHandler = withHttp(
+const getHandler = withHttp(
+  async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
+    const id = (req as any).params?.id as string;
+    const svc = await LocationTypeService.createInstance();
+    const entity = await svc.get(id);
+    return ok(ctx, entity);
+  },
+);
+
+const createHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
     const dto = await parseJson(req, CreateLocationTypeSchema);
-    const ds = await getDataSource();
-    const service = new LocationTypeService(ds);
-    const entity = await service.create(dto);
+    const svc = await LocationTypeService.createInstance();
+    const entity = await svc.create(dto);
     return created(ctx, entity);
   },
 );
 
-export const locationTypesGetByIdHandler = withHttp(
+const updateHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { id } = parseParams(req, IdParamSchema);
-    const ds = await getDataSource();
-    const service = new LocationTypeService(ds);
-    const entity = await service.get(id);
-    return ok(ctx, entity);
-  },
-);
-
-export const locationTypesUpdateHandler = withHttp(
-  async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { id } = parseParams(req, IdParamSchema);
+    const { id } = IdParamSchema.parse((req as any).params ?? {});
     const dto = await parseJson(req, UpdateLocationTypeSchema);
-    const ds = await getDataSource();
-    const service = new LocationTypeService(ds);
-    const entity = await service.update(id, dto);
+    const svc = await LocationTypeService.createInstance();
+    const entity = await svc.update(id, dto);
     return ok(ctx, entity);
   },
 );
 
-export const locationTypesDeleteHandler = withHttp(
+const deleteHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { id } = parseParams(req, IdParamSchema);
-    const ds = await getDataSource();
-    const service = new LocationTypeService(ds);
-    await service.remove(id);
+    const { id } = IdParamSchema.parse((req as any).params ?? {});
+    const svc = await LocationTypeService.createInstance();
+    await svc.remove(id);
     return noContent(ctx);
   },
 );
 
-// -------- Routes --------
-
-app.http('locationTypes-list', {
+// register
+app.http('location-types-list', {
   methods: ['GET'],
   route: prefixRoute,
   authLevel: 'anonymous',
-  handler: locationTypesListHandler,
+  handler: listHandler,
 });
-
-app.http('locationTypes-create', {
+app.http('location-types-get', {
+  methods: ['GET'],
+  route: itemRoute,
+  authLevel: 'anonymous',
+  handler: getHandler,
+});
+app.http('location-types-create', {
   methods: ['POST'],
   route: prefixRoute,
   authLevel: 'anonymous',
-  handler: locationTypesCreateHandler,
+  handler: createHandler,
 });
-
-app.http('locationTypes-getById', {
-  methods: ['GET'],
-  route: itemRoute,
-  authLevel: 'anonymous',
-  handler: locationTypesGetByIdHandler,
-});
-
-app.http('locationTypes-update', {
+app.http('location-types-update', {
   methods: ['PUT', 'PATCH'],
   route: itemRoute,
   authLevel: 'anonymous',
-  handler: locationTypesUpdateHandler,
+  handler: updateHandler,
 });
-
-app.http('locationTypes-delete', {
+app.http('location-types-delete', {
   methods: ['DELETE'],
   route: itemRoute,
   authLevel: 'anonymous',
-  handler: locationTypesDeleteHandler,
+  handler: deleteHandler,
 });

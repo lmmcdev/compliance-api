@@ -1,86 +1,68 @@
-import { DataSource } from 'typeorm';
+// src/modules/location-type/location-type.service.ts
+import { LocationTypeRepository } from './location-type.repository';
 import {
   CreateLocationTypeSchema,
   UpdateLocationTypeSchema,
   ListLocationTypesSchema,
-  type CreateLocationTypeDto,
-  type UpdateLocationTypeDto,
-  type ListLocationTypesQuery,
-} from './location-type.dto';
+} from './location-type.dto'; // adjust if your file is named differently
+import { LocationTypeDoc } from './location-type.doc';
 import { PageResult } from '../../shared';
-import { LocationType } from './location-type.entity';
-import { LocationTypeRepository, type ILocationTypeRepository } from './location-type.repository';
-import { NotFoundError, ConflictError } from '../../http';
+import { ConflictError, NotFoundError } from '../../http/app-error';
 
-export interface ILocationTypeService {
-  create(payload: unknown): Promise<LocationType>;
-  update(id: string, payload: unknown): Promise<LocationType>;
-  get(id: string): Promise<LocationType>;
-  list(query: unknown): Promise<PageResult<LocationType>>;
-  remove(id: string): Promise<void>;
-}
+export class LocationTypeService {
+  constructor(private readonly repo: LocationTypeRepository) {}
 
-export class LocationTypeService implements ILocationTypeService {
-  private readonly repo: ILocationTypeRepository;
-
-  constructor(ds: DataSource, repo?: ILocationTypeRepository) {
-    this.repo = repo ?? new LocationTypeRepository(ds);
+  static async createInstance() {
+    const repo = await new LocationTypeRepository().init();
+    return new LocationTypeService(repo);
   }
 
-  async create(payload: unknown): Promise<LocationType> {
-    const dto: CreateLocationTypeDto = CreateLocationTypeSchema.parse(payload);
+  async create(payload: unknown): Promise<LocationTypeDoc> {
+    const dto = CreateLocationTypeSchema.parse(payload);
+    const exists = await this.repo.findByCode(dto.code);
+    if (exists) throw new ConflictError(`Location type with code ${dto.code} already exists.`);
 
-    const existing = await this.repo.findByCode(dto.code);
-    if (existing) {
-      throw new ConflictError('A location type with this code already exists.');
-    }
-
-    const data: Partial<LocationType> = {
+    return this.repo.create({
       code: dto.code,
       displayName: dto.displayName,
       description: dto.description ?? null,
-    };
-
-    return this.repo.createAndSave(data);
+    });
   }
 
-  async update(id: string, payload: unknown): Promise<LocationType> {
-    const dto: UpdateLocationTypeDto = UpdateLocationTypeSchema.parse(payload);
+  async update(id: string, payload: unknown): Promise<LocationTypeDoc> {
+    const dto = UpdateLocationTypeSchema.parse(payload);
     const current = await this.repo.findById(id);
-    if (!current) throw new NotFoundError('Location type not found');
+    if (!current) throw new NotFoundError(`Location type with id ${id} not found.`);
 
-    if (dto.code && dto.code !== current.code) {
-      const exists = await this.repo.findByCode(dto.code);
-      if (exists && exists.id !== id) {
-        throw new ConflictError('A location type with this code already exists.');
-      }
+    if (dto.code && dto.code.trim().toUpperCase() !== current.code) {
+      const clash = await this.repo.findByCode(dto.code);
+      if (clash) throw new ConflictError(`Location type with code ${dto.code} already exists.`);
     }
 
-    const patch: Partial<LocationType> = {
+    const updated = await this.repo.update(id, {
       ...(dto.code !== undefined ? { code: dto.code } : {}),
       ...(dto.displayName !== undefined ? { displayName: dto.displayName } : {}),
       ...(dto.description !== undefined ? { description: dto.description } : {}),
-    };
+    });
 
-    const updated = await this.repo.updateAndSave(id, patch);
     if (!updated) throw new NotFoundError('Location type not found after update');
     return updated;
   }
 
-  async get(id: string): Promise<LocationType> {
-    const entity = await this.repo.findById(id);
-    if (!entity) throw new NotFoundError('Location type not found');
-    return entity;
+  async get(id: string): Promise<LocationTypeDoc> {
+    const found = await this.repo.findById(id);
+    if (!found) throw new NotFoundError(`Location type with id ${id} not found.`);
+    return found;
   }
 
-  async list(query: unknown): Promise<PageResult<LocationType>> {
-    const q: ListLocationTypesQuery = ListLocationTypesSchema.parse(query);
+  async list(query: unknown): Promise<PageResult<LocationTypeDoc>> {
+    const q = ListLocationTypesSchema.parse(query);
     return this.repo.list(q);
   }
 
   async remove(id: string): Promise<void> {
     const found = await this.repo.findById(id);
-    if (!found) throw new NotFoundError('Location type not found');
-    await this.repo.deleteHard(id);
+    if (!found) throw new NotFoundError(`Location type with id ${id} not found.`);
+    await this.repo.remove(id);
   }
 }
