@@ -1,3 +1,4 @@
+// src/modules/license-type/license-type.entity.ts
 import { Entity, Column, OneToMany, Index } from 'typeorm';
 import { BaseEntity } from '../../shared';
 import { BusinessLicense } from '../business-license';

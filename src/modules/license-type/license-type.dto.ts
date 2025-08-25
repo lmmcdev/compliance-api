@@ -1,3 +1,4 @@
+// license-type.dto.ts
 import { z } from 'zod';
 
 export const CreateLicenseTypeSchema = z.object({

@@ -1,3 +1,4 @@
+// src/modules/license-type/index.ts
 export * from './license-type.entity';
 export * from './license-type.dto';
 export * from './license-type.repository';

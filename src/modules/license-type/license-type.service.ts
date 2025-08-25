@@ -1,6 +1,4 @@
-import { DataSource } from 'typeorm';
-import { LicenseType } from './license-type.entity';
-import { LicenseTypeCode } from '../../types/enum.types';
+// src/modules/license-type/license-type.service.ts
 import { LicenseTypeRepository } from './license-type.repository';
 import {
   CreateLicenseTypeSchema,
@@ -11,77 +9,79 @@ import {
 } from './license-type.dto';
 import { PageResult } from '../../shared';
 import { ConflictError, NotFoundError } from '../../http/app-error';
+import { LicenseTypeDoc } from './license-type.doc';
 
 export interface ILicenseTypeService {
-  create(payload: unknown): Promise<LicenseType>;
-  update(id: string, payload: unknown): Promise<LicenseType>;
-  get(id: string): Promise<LicenseType | null>;
-  list(query: unknown): Promise<PageResult<LicenseType>>;
+  create(payload: unknown): Promise<LicenseTypeDoc>;
+  update(id: string, payload: unknown): Promise<LicenseTypeDoc>;
+  get(id: string): Promise<LicenseTypeDoc>;
+  list(query: unknown): Promise<PageResult<LicenseTypeDoc>>;
   remove(id: string): Promise<void>;
+  getByCode(code: string): Promise<LicenseTypeDoc | null>;
 }
 
 export class LicenseTypeService implements ILicenseTypeService {
-  private repo: LicenseTypeRepository;
+  constructor(private readonly repo: LicenseTypeRepository) {}
 
-  constructor(ds: DataSource, repo?: LicenseTypeRepository) {
-    this.repo = repo ?? new LicenseTypeRepository(ds);
+  static async createInstance(): Promise<LicenseTypeService> {
+    const repo = await new LicenseTypeRepository().init();
+    return new LicenseTypeService(repo);
   }
 
-  async create(payload: unknown): Promise<LicenseType> {
+  async create(payload: unknown): Promise<LicenseTypeDoc> {
     const dto: CreateLicenseTypeDto = CreateLicenseTypeSchema.parse(payload);
 
-    const existing = await this.repo.findByCode(dto.code as LicenseTypeCode);
-    if (existing) {
-      throw new ConflictError(`License type with code ${dto.code} already exists.`);
-    }
+    const existing = await this.repo.findByCode(dto.code);
+    if (existing) throw new ConflictError(`License type with code ${dto.code} already exists.`);
 
-    const data: Partial<LicenseType> = {
+    return this.repo.createAndSave({
       code: dto.code,
       displayName: dto.displayName,
       description: dto.description ?? null,
-    };
-
-    return this.repo.createAndSave(data);
+    });
   }
 
-  async update(id: string, payload: unknown): Promise<LicenseType> {
+  async update(id: string, payload: unknown): Promise<LicenseTypeDoc> {
     const dto: UpdateLicenseTypeDto = UpdateLicenseTypeSchema.parse(payload);
 
     const current = await this.repo.findById(id);
     if (!current) throw new NotFoundError(`License type with id ${id} not found.`);
 
-    if (dto.code !== current.code) {
-      const existing = await this.repo.findByCode(dto.code as LicenseTypeCode);
-      if (existing) {
-        throw new ConflictError(`License type with code ${dto.code} already exists.`);
-      }
+    if (dto.code && dto.code !== current.code) {
+      const clash = await this.repo.findByCode(dto.code);
+      if (clash) throw new ConflictError(`License type with code ${dto.code} already exists.`);
     }
 
-    const patch: Partial<LicenseType> = {
+    const updated = await this.repo.updateAndSave(id, {
       ...(dto.code !== undefined ? { code: dto.code } : {}),
       ...(dto.displayName !== undefined ? { displayName: dto.displayName } : {}),
       ...(dto.description !== undefined ? { description: dto.description } : {}),
-    };
+    });
 
-    const updated = await this.repo.updateAndSave(id, patch);
     if (!updated) throw new NotFoundError('License type not found after update');
     return updated;
   }
 
-  async get(id: string): Promise<LicenseType> {
+  async get(id: string): Promise<LicenseTypeDoc> {
     const found = await this.repo.findById(id);
     if (!found) throw new NotFoundError(`License type with id ${id} not found.`);
     return found;
   }
 
-  async list(query: unknown): Promise<PageResult<LicenseType>> {
+  async list(query: unknown): Promise<PageResult<LicenseTypeDoc>> {
     const q = ListLicenseTypesSchema.parse(query);
-    return await this.repo.list(q);
+    return this.repo.list(q);
   }
 
   async remove(id: string): Promise<void> {
     const found = await this.repo.findById(id);
     if (!found) throw new NotFoundError(`License type with id ${id} not found.`);
     await this.repo.deleteHard(id);
+  }
+
+  async getByCode(code: string): Promise<LicenseTypeDoc> {
+    const found = await this.repo.findByCode(code);
+    if (!found) throw new NotFoundError(`License type with code ${code} not found.`);
+    return found;
   }
 }

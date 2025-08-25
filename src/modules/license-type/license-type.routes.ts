@@ -1,6 +1,5 @@
 // src/modules/license-type/license-type.routes.ts
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { getDataSource } from '../../infrastructure/ds-runtime';
 import { LicenseTypeService } from './license-type.service';
 import {
   created,
@@ -10,6 +9,7 @@ import {
   ok,
   paginated,
   parseJson,
+  parseParams,
   parseQuery,
   withHttp,
 } from '../../http';
@@ -21,13 +21,14 @@ import {
 
 const path = 'license-types';
 const { prefixRoute, itemRoute } = createPrefixRoute(path);
+// http://localhost:7071/api/v1/license-types/code/:code
+const codeRoute = `${prefixRoute}/code/{code}`;
 
 // ---- handlers ----
 const licenseTypesListHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
     const query = await parseQuery(req, ListLicenseTypesSchema);
-    const ds = await getDataSource();
-    const service = new LicenseTypeService(ds);
+    const service = await LicenseTypeService.createInstance();
     const page = await service.list(query);
     return paginated(ctx, page);
   },
@@ -35,10 +36,18 @@ const licenseTypesListHandler = withHttp(
 
 const licenseTypesGetByIdHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const id = (req as any).params?.id as string;
-    const ds = await getDataSource();
-    const service = new LicenseTypeService(ds);
+    const { id } = IdParamSchema.parse((req as any).params ?? {});
+    const service = await LicenseTypeService.createInstance();
     const entity = await service.get(id);
+    return ok(ctx, entity);
+  },
+);
+
+const licenseTypesGetByCodeHandler = withHttp(
+  async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
+    const { code = '' } = parseParams(req, ListLicenseTypesSchema);
+    const service = await LicenseTypeService.createInstance();
+    const entity = await service.getByCode(code);
     return ok(ctx, entity);
   },
 );
@@ -46,8 +55,7 @@ const licenseTypesGetByIdHandler = withHttp(
 const licenseTypesCreateHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
     const dto = await parseJson(req, CreateLicenseTypeSchema);
-    const ds = await getDataSource();
-    const service = new LicenseTypeService(ds);
+    const service = await LicenseTypeService.createInstance();
     const entity = await service.create(dto);
     return created(ctx, entity);
   },
@@ -57,8 +65,7 @@ const licenseTypesUpdateHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
     const { id } = IdParamSchema.parse((req as any).params ?? {});
     const dto = await parseJson(req, UpdateLicenseTypeSchema);
-    const ds = await getDataSource();
-    const service = new LicenseTypeService(ds);
+    const service = await LicenseTypeService.createInstance();
     const updated = await service.update(id, dto);
     return ok(ctx, updated);
   },
@@ -67,8 +74,7 @@ const licenseTypesUpdateHandler = withHttp(
 export const licenseTypesDeleteHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
     const { id } = IdParamSchema.parse((req as any).params ?? {});
-    const ds = await getDataSource();
-    const service = new LicenseTypeService(ds);
+    const service = await LicenseTypeService.createInstance();
     await service.remove(id);
     return noContent(ctx);
   },
@@ -87,6 +93,13 @@ app.http('license-types-get-by-id', {
   route: itemRoute,
   authLevel: 'anonymous',
   handler: licenseTypesGetByIdHandler,
+});
+
+app.http('license-types-get-by-code', {
+  methods: ['GET'],
+  route: codeRoute,
+  authLevel: 'anonymous',
+  handler: licenseTypesGetByCodeHandler,
 });
 
 app.http('license-types-create', {
