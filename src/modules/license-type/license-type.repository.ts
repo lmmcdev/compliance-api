@@ -24,7 +24,7 @@ export class LicenseTypeRepository implements ILicenseTypeRepository {
   private container!: Container;
 
   async init() {
-    this.container = await getContainer(CONTAINER_ID, PK_PATH);
+    this.container = await getContainer({ id: CONTAINER_ID, partitionKeyPath: PK_PATH });
 
     return this;
   }
