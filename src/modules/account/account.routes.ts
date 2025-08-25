@@ -41,7 +41,7 @@ export const accountsCreateHandler = withHttp(
   },
 );
 
-export const accountsGetHandler = withHttp(
+export const accountsGetByIdHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
     const { id } = IdParamSchema.parse((req as any).params ?? {});
     const ds = await getDataSource();
@@ -107,7 +107,7 @@ app.http('accounts-get', {
   methods: ['GET'],
   route: itemRoute,
   authLevel: 'anonymous',
-  handler: accountsGetHandler,
+  handler: accountsGetByIdHandler,
 });
 
 app.http('accounts-update', {
