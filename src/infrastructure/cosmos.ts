@@ -1,13 +1,14 @@
 // src/infrastructure/cosmos.ts
 import { CosmosClient, Database, Container } from '@azure/cosmos';
+import { env } from '../config/env';
 
 let client: CosmosClient | null = null;
 let database: Database | null = null;
 
 export function getCosmosClient(): CosmosClient {
   if (!client) {
-    const endpoint = process.env.COSMOS_ENDPOINT;
-    const key = process.env.COSMOS_KEY;
+    const endpoint = env.COSMOS_ENDPOINT;
+    const key = env.COSMOS_KEY;
     if (!endpoint || !key) {
       throw new Error('COSMOS_ENDPOINT and COSMOS_KEY must be set');
     }
@@ -18,7 +19,7 @@ export function getCosmosClient(): CosmosClient {
 
 export async function getDb(): Promise<Database> {
   if (!database) {
-    const id = process.env.COSMOS_DB_NAME;
+    const id = env.COSMOS_DB_NAME;
     if (!id) throw new Error('COSMOS_DB_NAME must be set');
     const c = getCosmosClient();
     const { database: db } = await c.databases.createIfNotExists({ id });
@@ -38,7 +39,7 @@ export async function getContainer(init: ContainerInit): Promise<Container> {
     partitionKey: { paths: [partitionKeyPath] },
   });
   console.log('[cosmos] init', {
-    db: process.env.COSMOS_DB_NAME,
+    db: env.COSMOS_DB_NAME,
     container: id,
     pk: partitionKeyPath,
   });

@@ -18,6 +18,11 @@ export const env = {
   DB_PASS: process.env.DB_PASS,
   DB_NAME: process.env.DB_NAME,
   DB_ENCRYPT: process.env.DB_ENCRYPT,
+
+  // DB Cosmos
+  COSMOS_ENDPOINT: process.env.COSMOS_ENDPOINT,
+  COSMOS_KEY: process.env.COSMOS_KEY,
+  COSMOS_DB_NAME: process.env.COSMOS_DB_NAME,
 };
 
 export default env;
