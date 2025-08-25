@@ -1,5 +1,5 @@
 // src/infra/cosmos.ts
-import { CosmosClient, Database, Container } from '@azure/cosmos';
+import { CosmosClient, Database, Container, ContainerRequest } from '@azure/cosmos';
 
 let client: CosmosClient | null = null;
 let database: Database | null = null;
@@ -27,11 +27,11 @@ export async function getDb(): Promise<Database> {
 
 export async function getContainer(id: string, partitionKeyPath = '/id'): Promise<Container> {
   const db = await getDb();
-  const { container } = await db.containers.createIfNotExists({
+
+  const containerReq: ContainerRequest = {
     id,
     partitionKey: { paths: [partitionKeyPath] },
-    // Optional: add indexingPolicy if you want to optimize by 'code'
-    // indexingPolicy: { automatic: true, indexingMode: 'consistent', includedPaths: [{ path: '/*' }] }
-  });
+  };
+  const { container } = await db.containers.createIfNotExists(containerReq);
   return container;
 }
