@@ -5,109 +5,114 @@ import {
   IdParamSchema,
   noContent,
   ok,
-  paginated,
   parseJson,
-  parseParams,
   parseQuery,
   withHttp,
 } from '../../http';
+import { z } from 'zod';
 
+import { HealthcareFacilityService } from './healthcare-facility.service';
 import {
   CreateHealthcareFacilitySchema,
   UpdateHealthcareFacilitySchema,
   ListHealthcareFacilitiesSchema,
 } from './healthcare-facility.dto';
-import { getDataSource } from '../../infrastructure/ds-runtime';
-import { HealthcareFacilityService } from './healthcare-facility.service';
 
-const { prefixRoute, itemRoute } = createPrefixRoute('healthcare-facilities');
+// Prefix-only routes: /api/v1/healthcare-facilities
+const path = 'healthcare-facilities';
+const { prefixRoute, itemRoute } = createPrefixRoute(path);
+
+// Require PK (accountId) on item routes
+const PKQuerySchema = z.object({
+  accountId: z.string().uuid(),
+});
 
 // -------- Handlers --------
 
-export const healthcareFacilitiesListHandler = withHttp(
+export const facilitiesListHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const query = await parseQuery(req, ListHealthcareFacilitiesSchema);
-    const ds = await getDataSource();
-    const service = new HealthcareFacilityService(ds);
-    const page = await service.list(query);
-    return paginated(ctx, page);
+    // Expect: ?accountId=<uuid>&q=&addressId=&pageSize=&token=&sort=&order=
+    const q = await parseQuery(req, ListHealthcareFacilitiesSchema);
+    const service = await HealthcareFacilityService.createInstance();
+    const page = await service.list(q); // { items, continuationToken }
+    return ok(ctx, page);
   },
 );
 
-export const healthcareFacilitiesCreateHandler = withHttp(
+export const facilitiesCreateHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
+    // Body MUST include accountId since it's not in the path
     const dto = await parseJson(req, CreateHealthcareFacilitySchema);
-    const ds = await getDataSource();
-    const service = new HealthcareFacilityService(ds);
+    const service = await HealthcareFacilityService.createInstance();
     const entity = await service.create(dto);
     return created(ctx, entity);
   },
 );
 
-export const healthcareFacilitiesGetHandler = withHttp(
+export const facilitiesGetByIdHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { id } = parseParams(req, IdParamSchema);
-    const ds = await getDataSource();
-    const service = new HealthcareFacilityService(ds);
-    const entity = await service.get(id);
+    const { id } = IdParamSchema.parse((req as any).params ?? {});
+    const { accountId } = await parseQuery(req, PKQuerySchema); // PK required
+    const service = await HealthcareFacilityService.createInstance();
+    const entity = await service.get(id, accountId);
     return ok(ctx, entity);
   },
 );
 
-export const healthcareFacilitiesUpdateHandler = withHttp(
+export const facilitiesUpdateHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { id } = parseParams(req, IdParamSchema);
-    const dto = await parseJson(req, UpdateHealthcareFacilitySchema);
-    const ds = await getDataSource();
-    const service = new HealthcareFacilityService(ds);
-    const entity = await service.update(id, dto);
+    const { id } = IdParamSchema.parse((req as any).params ?? {});
+    const { accountId } = await parseQuery(req, PKQuerySchema); // PK required
+    const patch = await parseJson(req, UpdateHealthcareFacilitySchema);
+    const service = await HealthcareFacilityService.createInstance();
+    const entity = await service.update(id, accountId, patch);
     return ok(ctx, entity);
   },
 );
 
-export const healthcareFacilitiesDeleteHandler = withHttp(
+export const facilitiesDeleteHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { id } = parseParams(req, IdParamSchema);
-    const ds = await getDataSource();
-    const service = new HealthcareFacilityService(ds);
-    await service.remove(id);
+    const { id } = IdParamSchema.parse((req as any).params ?? {});
+    const { accountId } = await parseQuery(req, PKQuerySchema); // PK required
+    const service = await HealthcareFacilityService.createInstance();
+    await service.remove(id, accountId);
     return noContent(ctx);
   },
 );
 
-// -------- Routes --------
+// -------- Azure Functions registrations --------
 
 app.http('healthcare-facilities-list', {
   methods: ['GET'],
-  route: prefixRoute,
+  route: prefixRoute, // /api/v1/healthcare-facilities
   authLevel: 'anonymous',
-  handler: healthcareFacilitiesListHandler,
+  handler: facilitiesListHandler,
 });
 
 app.http('healthcare-facilities-create', {
   methods: ['POST'],
-  route: prefixRoute,
+  route: prefixRoute, // /api/v1/healthcare-facilities
   authLevel: 'anonymous',
-  handler: healthcareFacilitiesCreateHandler,
+  handler: facilitiesCreateHandler,
 });
 
-app.http('healthcare-facilities-get', {
+app.http('healthcare-facilities-getById', {
   methods: ['GET'],
-  route: itemRoute,
+  route: itemRoute, // /api/v1/healthcare-facilities/{id}
   authLevel: 'anonymous',
-  handler: healthcareFacilitiesGetHandler,
+  handler: facilitiesGetByIdHandler,
 });
 
 app.http('healthcare-facilities-update', {
   methods: ['PUT', 'PATCH'],
-  route: itemRoute,
+  route: itemRoute, // /api/v1/healthcare-facilities/{id}
   authLevel: 'anonymous',
-  handler: healthcareFacilitiesUpdateHandler,
+  handler: facilitiesUpdateHandler,
 });
 
 app.http('healthcare-facilities-delete', {
   methods: ['DELETE'],
-  route: itemRoute,
+  route: itemRoute, // /api/v1/healthcare-facilities/{id}
   authLevel: 'anonymous',
-  handler: healthcareFacilitiesDeleteHandler,
+  handler: facilitiesDeleteHandler,
 });

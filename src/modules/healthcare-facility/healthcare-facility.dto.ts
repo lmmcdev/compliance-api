@@ -1,49 +1,33 @@
+// src/modules/healthcare-facility/healthcare-facility.dto.ts
 import { z } from 'zod';
 
 export const CreateHealthcareFacilitySchema = z.object({
-  name: z.string().min(1).max(256),
   accountId: z.uuid(),
-
-  location: z.string().max(256).optional().nullable(),
-  locationType: z.string().max(128).optional().nullable(),
-  licensedBedCount: z.number().int().min(0).optional().nullable(),
-
-  facilityType: z.string().max(128).optional().nullable(),
-  availabilityExceptions: z.string().max(512).optional().nullable(),
+  name: z.string().min(1),
+  location: z.string().nullable().optional(),
+  locationType: z.string().nullable().optional(),
+  licensedBedCount: z.number().int().nullable().optional(),
+  facilityType: z.string().nullable().optional(),
+  availabilityExceptions: z.string().nullable().optional(),
   alwaysOpen: z.boolean().optional(),
-
-  sourceSystem: z.string().max(128).optional().nullable(),
-  sourceSystemId: z.string().max(128).optional().nullable(),
-  sourceSystemModified: z.coerce.date().optional().nullable(),
-
-  addressId: z.uuid().optional().nullable(),
+  sourceSystem: z.string().nullable().optional(),
+  sourceSystemId: z.string().nullable().optional(),
+  sourceSystemModified: z.iso.datetime().nullable().optional(),
+  addressId: z.uuid().nullable().optional(),
 });
 
 export const UpdateHealthcareFacilitySchema = CreateHealthcareFacilitySchema.partial();
 
-export type CreateHealthcareFacilityDto = z.infer<typeof CreateHealthcareFacilitySchema>;
-export type UpdateHealthcareFacilityDto = z.infer<typeof UpdateHealthcareFacilitySchema>;
-
 export const ListHealthcareFacilitiesSchema = z.object({
+  accountId: z.uuid(),
   q: z.string().optional(),
-
-  accountId: z.uuid().optional(),
-  locationType: z.string().optional(),
-  facilityType: z.string().optional(),
-  alwaysOpen: z.coerce.boolean().optional(),
-  sourceSystem: z.string().optional(),
-
-  licensedBedCountMin: z.coerce.number().int().min(0).optional(),
-  licensedBedCountMax: z.coerce.number().int().min(0).optional(),
-  sourceSystemModifiedFrom: z.coerce.date().optional(),
-  sourceSystemModifiedTo: z.coerce.date().optional(),
-
-  page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(100).default(20),
-  sort: z
-    .enum(['createdAt', 'updatedAt', 'name', 'licensedBedCount', 'sourceSystemModified'])
-    .default('createdAt'),
+  addressId: z.uuid().nullable().optional(),
+  pageSize: z.coerce.number().int().min(1).max(100).default(50),
+  token: z.string().optional(),
+  sort: z.enum(['createdAt', 'updatedAt', 'name']).default('createdAt'),
   order: z.enum(['ASC', 'DESC']).default('DESC'),
 });
 
+export type CreateHealthcareFacilityDto = z.infer<typeof CreateHealthcareFacilitySchema>;
+export type UpdateHealthcareFacilityDto = z.infer<typeof UpdateHealthcareFacilitySchema>;
 export type ListHealthcareFacilitiesQuery = z.infer<typeof ListHealthcareFacilitiesSchema>;

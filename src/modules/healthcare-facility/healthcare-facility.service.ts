@@ -1,104 +1,79 @@
-import { DataSource } from 'typeorm';
+import { HealthcareFacilityRepository } from './healthcare-facility.repository';
+import { HealthcareFacilityDoc } from './healthcare-facility.doc';
 import {
   CreateHealthcareFacilitySchema,
   UpdateHealthcareFacilitySchema,
   ListHealthcareFacilitiesSchema,
-  type CreateHealthcareFacilityDto,
-  type UpdateHealthcareFacilityDto,
-  type ListHealthcareFacilitiesQuery,
 } from './healthcare-facility.dto';
-
-import { HealthcareFacility } from './healthcare-facility.entity';
-import {
-  HealthcareFacilityRepository,
-  type IHealthcareFacilityRepository,
-} from './healthcare-facility.repository';
 import { NotFoundError } from '../../http/app-error';
-import { PageResult } from '../../shared';
 
 export interface IHealthcareFacilityService {
-  create(payload: unknown): Promise<HealthcareFacility>;
-  update(id: string, payload: unknown): Promise<HealthcareFacility>;
-  get(id: string): Promise<HealthcareFacility>;
-  list(query: unknown): Promise<PageResult<HealthcareFacility>>;
-  remove(id: string): Promise<void>;
+  create(payload: unknown): Promise<HealthcareFacilityDoc>;
+  update(id: string, accountId: string, payload: unknown): Promise<HealthcareFacilityDoc>;
+  get(id: string, accountId: string): Promise<HealthcareFacilityDoc>;
+  list(
+    query: unknown,
+  ): Promise<{ items: HealthcareFacilityDoc[]; continuationToken: string | null }>;
+  remove(id: string, accountId: string): Promise<void>;
 }
 
 export class HealthcareFacilityService implements IHealthcareFacilityService {
-  private readonly repo: IHealthcareFacilityRepository;
+  constructor(private readonly repo: HealthcareFacilityRepository) {}
 
-  constructor(ds: DataSource, repo?: IHealthcareFacilityRepository) {
-    this.repo = repo ?? new HealthcareFacilityRepository(ds);
+  static async createInstance(): Promise<HealthcareFacilityService> {
+    const repo = await new HealthcareFacilityRepository().init();
+    return new HealthcareFacilityService(repo);
   }
 
-  async create(payload: unknown): Promise<HealthcareFacility> {
-    const dto: CreateHealthcareFacilityDto = CreateHealthcareFacilitySchema.parse(payload);
-
-    const data: Partial<HealthcareFacility> = {
-      name: dto.name,
-      location: dto.location ?? null,
-      locationType: dto.locationType ?? null,
-      licensedBedCount: dto.licensedBedCount ?? null,
-      facilityType: dto.facilityType ?? null,
-      availabilityExceptions: dto.availabilityExceptions ?? null,
-      alwaysOpen: dto.alwaysOpen ?? false,
-      sourceSystem: dto.sourceSystem ?? null,
-      sourceSystemId: dto.sourceSystemId ?? null,
-      sourceSystemModified: dto.sourceSystemModified ?? null,
-
-      account: { id: dto.accountId } as any,
-      address: dto.addressId ? ({ id: dto.addressId } as any) : null,
-    };
-
-    return this.repo.createAndSave(data);
+  async create(payload: unknown): Promise<HealthcareFacilityDoc> {
+    const dto = CreateHealthcareFacilitySchema.parse(payload);
+    return this.repo.create(dto);
   }
 
-  async update(id: string, payload: unknown): Promise<HealthcareFacility> {
-    const dto: UpdateHealthcareFacilityDto = UpdateHealthcareFacilitySchema.parse(payload);
-    const current = await this.repo.findById(id);
-    if (!current) throw new NotFoundError('Healthcare facility not found');
+  async update(id: string, accountId: string, payload: unknown): Promise<HealthcareFacilityDoc> {
+    const patch = UpdateHealthcareFacilitySchema.parse(payload);
 
-    const patch: Partial<HealthcareFacility> = {
-      ...(dto.name !== undefined ? { name: dto.name } : {}),
-      ...(dto.location !== undefined ? { location: dto.location } : {}),
-      ...(dto.locationType !== undefined ? { locationType: dto.locationType } : {}),
-      ...(dto.licensedBedCount !== undefined ? { licensedBedCount: dto.licensedBedCount } : {}),
-      ...(dto.facilityType !== undefined ? { facilityType: dto.facilityType } : {}),
-      ...(dto.availabilityExceptions !== undefined
-        ? { availabilityExceptions: dto.availabilityExceptions }
-        : {}),
-      ...(dto.alwaysOpen !== undefined ? { alwaysOpen: dto.alwaysOpen } : {}),
-      ...(dto.sourceSystem !== undefined ? { sourceSystem: dto.sourceSystem } : {}),
-      ...(dto.sourceSystemId !== undefined ? { sourceSystemId: dto.sourceSystemId } : {}),
-      ...(dto.sourceSystemModified !== undefined
-        ? { sourceSystemModified: dto.sourceSystemModified }
-        : {}),
+    const current = await this.repo.findById(id, accountId);
+    if (!current) {
+      throw new NotFoundError(`Healthcare facility ${id} not found for account ${accountId}.`);
+    }
 
-      ...(dto.accountId !== undefined ? { account: { id: dto.accountId } as any } : {}),
-      ...(dto.addressId !== undefined
-        ? { address: dto.addressId ? ({ id: dto.addressId } as any) : null }
-        : {}),
-    };
-
-    const updated = await this.repo.updateAndSave(id, patch);
+    const updated = await this.repo.update(id, accountId, patch);
     if (!updated) throw new NotFoundError('Healthcare facility not found after update');
     return updated;
   }
 
-  async get(id: string): Promise<HealthcareFacility> {
-    const entity = await this.repo.findById(id);
-    if (!entity) throw new NotFoundError('Healthcare facility not found');
-    return entity;
+  async get(id: string, accountId: string): Promise<HealthcareFacilityDoc> {
+    const found = await this.repo.findById(id, accountId);
+    if (!found) {
+      throw new NotFoundError(`Healthcare facility ${id} not found for account ${accountId}.`);
+    }
+    return found;
   }
 
-  async list(query: unknown): Promise<PageResult<HealthcareFacility>> {
-    const q: ListHealthcareFacilitiesQuery = ListHealthcareFacilitiesSchema.parse(query);
-    return this.repo.list(q);
+  /**
+   * Token-based paging within a single partition (/accountId).
+   * Query: { accountId, q?, addressId?, pageSize?, token?, sort?, order? }
+   */
+  async list(
+    query: unknown,
+  ): Promise<{ items: HealthcareFacilityDoc[]; continuationToken: string | null }> {
+    const q = ListHealthcareFacilitiesSchema.parse(query);
+    return this.repo.listByAccount(q.accountId, {
+      pageSize: q.pageSize,
+      token: q.token,
+      q: q.q,
+      addressId: q.addressId,
+      sort: q.sort,
+      order: q.order,
+    });
   }
 
-  async remove(id: string): Promise<void> {
-    const found = await this.repo.findById(id);
-    if (!found) throw new NotFoundError('Healthcare facility not found');
-    await this.repo.deleteHard(id);
+  async remove(id: string, accountId: string): Promise<void> {
+    const found = await this.repo.findById(id, accountId);
+    if (!found) {
+      throw new NotFoundError(`Healthcare facility ${id} not found for account ${accountId}.`);
+    }
+    await this.repo.delete(id, accountId);
   }
 }

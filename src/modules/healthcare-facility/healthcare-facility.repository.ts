@@ -1,118 +1,189 @@
-import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
-import { HealthcareFacility } from './healthcare-facility.entity';
-import { ListHealthcareFacilitiesQuery } from './healthcare-facility.dto';
-import { PageResult } from '../../shared';
+// src/modules/healthcare-facility/healthcare-facility.repository.ts
+import { Container, SqlQuerySpec, RequestOptions, PatchOperation } from '@azure/cosmos';
+import { getContainer } from '../../infrastructure/cosmos';
+import { HealthcareFacilityDoc } from './healthcare-facility.doc';
+import { randomUUID } from 'crypto';
 
-export interface IHealthcareFacilityRepository {
-  createAndSave(data: Partial<HealthcareFacility>): Promise<HealthcareFacility>;
-  updateAndSave(id: string, patch: Partial<HealthcareFacility>): Promise<HealthcareFacility | null>;
-  findById(id: string): Promise<HealthcareFacility | null>;
-  list(query: ListHealthcareFacilitiesQuery): Promise<PageResult<HealthcareFacility>>;
-  deleteHard(id: string): Promise<void>;
-}
+const CONTAINER_ID = 'healthcare_facilities';
+const PK_PATH = '/accountId';
 
-export class HealthcareFacilityRepository implements IHealthcareFacilityRepository {
-  private repo: Repository<HealthcareFacility>;
+export class HealthcareFacilityRepository {
+  private container!: Container;
 
-  constructor(private readonly ds: DataSource) {
-    this.repo = ds.getRepository(HealthcareFacility);
+  async init() {
+    this.container = await getContainer({ id: CONTAINER_ID, partitionKeyPath: PK_PATH });
+    return this;
   }
 
-  async createAndSave(data: Partial<HealthcareFacility>): Promise<HealthcareFacility> {
-    const entity = this.repo.create(data);
-    return this.repo.save(entity);
-  }
+  async create(
+    data: Omit<HealthcareFacilityDoc, 'id' | 'createdAt' | 'updatedAt'>,
+  ): Promise<HealthcareFacilityDoc> {
+    if (!data.accountId) throw new Error('accountId is required');
 
-  async updateAndSave(
-    id: string,
-    patch: Partial<HealthcareFacility>,
-  ): Promise<HealthcareFacility | null> {
-    await this.repo.update({ id }, patch);
-    return this.findById(id);
-  }
+    const now = new Date().toISOString();
+    const doc: HealthcareFacilityDoc = {
+      id: randomUUID(),
+      createdAt: now,
+      updatedAt: now,
 
-  async findById(id: string): Promise<HealthcareFacility | null> {
-    return this.repo.findOne({
-      where: { id },
-      relations: {
-        account: true,
-        address: true,
-      },
-    });
-  }
+      accountId: data.accountId,
+      name: data.name.trim(),
 
-  async list(q: ListHealthcareFacilitiesQuery): Promise<PageResult<HealthcareFacility>> {
-    const { page, pageSize, sort, order } = q;
+      location: data.location ?? null,
+      locationType: data.locationType ?? null,
+      licensedBedCount: data.licensedBedCount ?? null,
 
-    const sortMap: Record<ListHealthcareFacilitiesQuery['sort'], string> = {
-      createdAt: 'hf.createdAt',
-      updatedAt: 'hf.updatedAt',
-      name: 'hf.name',
-      licensedBedCount: 'hf.licensedBedCount',
-      sourceSystemModified: 'hf.sourceSystemModified',
+      facilityType: data.facilityType ?? null,
+
+      availabilityExceptions: data.availabilityExceptions ?? null,
+      alwaysOpen: data.alwaysOpen ?? false,
+
+      sourceSystem: data.sourceSystem ?? null,
+      sourceSystemId: data.sourceSystemId ?? null,
+      sourceSystemModified: data.sourceSystemModified ?? null,
+
+      addressId: data.addressId ?? null,
     };
 
-    let qb: SelectQueryBuilder<HealthcareFacility> = this.repo
-      .createQueryBuilder('hf')
-      .leftJoinAndSelect('hf.account', 'acc')
-      .leftJoinAndSelect('hf.address', 'addr');
-
-    if (q.q) {
-      qb = qb.andWhere(
-        '(' +
-          'hf.name LIKE :q OR ' +
-          'hf.location LIKE :q OR ' +
-          'hf.locationType LIKE :q OR ' +
-          'hf.facilityType LIKE :q OR ' +
-          'hf.sourceSystem LIKE :q OR ' +
-          'hf.sourceSystemId LIKE :q OR ' +
-          'hf.availabilityExceptions LIKE :q' +
-          ')',
-        { q: `%${q.q}%` },
-      );
-    }
-
-    if (q.accountId) qb = qb.andWhere('acc.id = :accountId', { accountId: q.accountId });
-    if (q.locationType)
-      qb = qb.andWhere('hf.locationType = :locationType', { locationType: q.locationType });
-    if (q.facilityType)
-      qb = qb.andWhere('hf.facilityType = :facilityType', { facilityType: q.facilityType });
-    if (typeof q.alwaysOpen === 'boolean')
-      qb = qb.andWhere('hf.alwaysOpen = :alwaysOpen', { alwaysOpen: q.alwaysOpen });
-    if (q.sourceSystem)
-      qb = qb.andWhere('hf.sourceSystem = :sourceSystem', { sourceSystem: q.sourceSystem });
-
-    if (q.licensedBedCountMin !== undefined) {
-      qb = qb.andWhere('hf.licensedBedCount >= :licensedBedCountMin', {
-        licensedBedCountMin: q.licensedBedCountMin,
-      });
-    }
-    if (q.licensedBedCountMax !== undefined) {
-      qb = qb.andWhere('hf.licensedBedCount <= :licensedBedCountMax', {
-        licensedBedCountMax: q.licensedBedCountMax,
-      });
-    }
-    if (q.sourceSystemModifiedFrom) {
-      qb = qb.andWhere('hf.sourceSystemModified >= :sourceSystemModifiedFrom', {
-        sourceSystemModifiedFrom: q.sourceSystemModifiedFrom,
-      });
-    }
-    if (q.sourceSystemModifiedTo) {
-      qb = qb.andWhere('hf.sourceSystemModified <= :sourceSystemModifiedTo', {
-        sourceSystemModifiedTo: q.sourceSystemModifiedTo,
-      });
-    }
-
-    qb = qb
-      .orderBy(sortMap[sort], order)
-      .skip((page - 1) * pageSize)
-      .take(pageSize);
-
-    const [items, total] = await qb.getManyAndCount();
-    return { items, total, page, pageSize };
+    const { resource } = await this.container.items.create(doc);
+    return resource as HealthcareFacilityDoc;
   }
 
-  async deleteHard(id: string): Promise<void> {
-    await this.repo.delete(id);
+  /** Point read: requiere id y accountId (PK) */
+  async findById(id: string, accountId: string): Promise<HealthcareFacilityDoc | null> {
+    try {
+      const { resource } = await this.container.item(id, accountId).read<HealthcareFacilityDoc>();
+      return resource ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Búsqueda rápida por sistema externo (opcional) dentro de una cuenta */
+  async findBySourceSystemId(
+    accountId: string,
+    sourceSystemId: string,
+  ): Promise<HealthcareFacilityDoc | null> {
+    const spec: SqlQuerySpec = {
+      query: `SELECT TOP 1 * FROM c 
+              WHERE c.accountId = @accountId AND c.sourceSystemId = @ssid`,
+      parameters: [
+        { name: '@accountId', value: accountId },
+        { name: '@ssid', value: sourceSystemId },
+      ],
+    };
+    const { resources } = await this.container.items
+      .query<HealthcareFacilityDoc>(spec, { partitionKey: accountId })
+      .fetchAll();
+    return resources[0] ?? null;
+  }
+
+  /**
+   * List por cuenta (single-partition), con filtros básicos.
+   * - q: busca en name/location (case-insensitive)
+   * - addressId: filtra por dirección asociada
+   * - sort/order: 'createdAt' | 'updatedAt' | 'name'
+   */
+  async listByAccount(
+    accountId: string,
+    opts?: {
+      pageSize?: number;
+      token?: string;
+      q?: string;
+      addressId?: string | null;
+      sort?: 'createdAt' | 'updatedAt' | 'name';
+      order?: 'ASC' | 'DESC';
+    },
+  ): Promise<{ items: HealthcareFacilityDoc[]; continuationToken: string | null }> {
+    const { pageSize = 50, token, q, addressId, sort = 'createdAt', order = 'DESC' } = opts ?? {};
+
+    const filters: string[] = ['c.accountId = @accountId'];
+    const params: { name: string; value: any }[] = [{ name: '@accountId', value: accountId }];
+
+    if (q) {
+      filters.push('(CONTAINS(LOWER(c.name), @q) OR CONTAINS(LOWER(c.location), @q))');
+      params.push({ name: '@q', value: q.toLowerCase() });
+    }
+    if (addressId === null) {
+      filters.push('(NOT IS_DEFINED(c.addressId) OR IS_NULL(c.addressId))');
+    } else if (typeof addressId === 'string') {
+      filters.push('c.addressId = @addressId');
+      params.push({ name: '@addressId', value: addressId });
+    }
+
+    const spec: SqlQuerySpec = {
+      query: `
+        SELECT c.id, c.accountId, c.name, c.location, c.locationType, c.licensedBedCount,
+               c.facilityType, c.availabilityExceptions, c.alwaysOpen,
+               c.sourceSystem, c.sourceSystemId, c.sourceSystemModified,
+               c.addressId, c.createdAt, c.updatedAt
+        FROM c
+        WHERE ${filters.join(' AND ')}
+        ORDER BY c.${sort} ${order}
+      `,
+      parameters: params,
+    };
+
+    const iter = this.container.items.query<HealthcareFacilityDoc>(spec, {
+      partitionKey: accountId,
+      maxItemCount: pageSize,
+      continuationToken: token,
+    });
+
+    const { resources, continuationToken } = await iter.fetchNext();
+    return { items: resources, continuationToken: continuationToken ?? null };
+  }
+
+  /** PATCH eficiente para campos individuales */
+  async patch(
+    id: string,
+    accountId: string,
+    ops: PatchOperation[],
+    options?: RequestOptions,
+  ): Promise<HealthcareFacilityDoc | null> {
+    const { resource } = await this.container
+      .item(id, accountId)
+      .patch<HealthcareFacilityDoc>(
+        [...ops, { op: 'set', path: '/updatedAt', value: new Date().toISOString() }],
+        options,
+      );
+    return resource ?? null;
+  }
+
+  /** Update con replace (si prefieres full overwrite) */
+  async update(
+    id: string,
+    accountId: string,
+    patch: Partial<Omit<HealthcareFacilityDoc, 'id' | 'accountId' | 'createdAt'>>,
+  ): Promise<HealthcareFacilityDoc | null> {
+    const current = await this.findById(id, accountId);
+    if (!current) return null;
+
+    const updated: HealthcareFacilityDoc = {
+      ...current,
+      ...(patch.name !== undefined ? { name: patch.name.trim() } : {}),
+      ...(patch.location !== undefined ? { location: patch.location } : {}),
+      ...(patch.locationType !== undefined ? { locationType: patch.locationType } : {}),
+      ...(patch.licensedBedCount !== undefined ? { licensedBedCount: patch.licensedBedCount } : {}),
+      ...(patch.facilityType !== undefined ? { facilityType: patch.facilityType } : {}),
+      ...(patch.availabilityExceptions !== undefined
+        ? { availabilityExceptions: patch.availabilityExceptions }
+        : {}),
+      ...(patch.alwaysOpen !== undefined ? { alwaysOpen: !!patch.alwaysOpen } : {}),
+      ...(patch.sourceSystem !== undefined ? { sourceSystem: patch.sourceSystem } : {}),
+      ...(patch.sourceSystemId !== undefined ? { sourceSystemId: patch.sourceSystemId } : {}),
+      ...(patch.sourceSystemModified !== undefined
+        ? { sourceSystemModified: patch.sourceSystemModified }
+        : {}),
+      ...(patch.addressId !== undefined ? { addressId: patch.addressId } : {}),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const { resource } = await this.container.item(id, accountId).replace(updated);
+    return resource ?? null;
+  }
+
+  async delete(id: string, accountId: string): Promise<void> {
+    await this.container.item(id, accountId).delete();
   }
 }
