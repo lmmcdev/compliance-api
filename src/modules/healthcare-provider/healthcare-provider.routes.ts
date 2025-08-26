@@ -24,7 +24,7 @@ const { prefixRoute, itemRoute } = createPrefixRoute(path);
 
 // Require PK on item routes
 const PKQuerySchema = z.object({
-  accountId: z.string().uuid(),
+  accountId: z.uuid(),
 });
 
 // ---- Handlers ----

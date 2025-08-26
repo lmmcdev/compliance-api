@@ -38,10 +38,10 @@ export const UpdateHealthcareProviderSchema = CreateHealthcareProviderSchema.par
 
 export const ListHealthcareProvidersSchema = z.object({
   accountId: z.uuid(),
-  q: z.string().optional(), // search name/practitioner/npi/providerId
+  q: z.string().optional(),
   status: z.string().optional(),
   npi: z.string().optional(),
-  facilityId: z.uuid().nullable().optional(), // null = providers without facility
+  facilityId: z.uuid().nullable().optional(),
   pcp: z.coerce.boolean().optional(),
   attendingPhysician: z.coerce.boolean().optional(),
   inHouse: z.coerce.boolean().optional(),

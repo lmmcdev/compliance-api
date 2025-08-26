@@ -8,6 +8,7 @@ import {
   parseJson,
   createPrefixRoute,
   IdParamSchema,
+  parseQuery,
 } from '../../http';
 import { z } from 'zod';
 
@@ -19,7 +20,7 @@ const { prefixRoute, itemRoute } = createPrefixRoute('accounts');
 
 // ---- Param schemas ----
 const AccountParamSchema = z.object({
-  accountNumber: z.string().min(1), // PK
+  accountNumber: z.string().min(1),
 });
 
 const AccountParamWithIdSchema = AccountParamSchema.extend({
@@ -58,7 +59,8 @@ export const accountsCreateHandler = withHttp(
 // Get by ID
 export const accountsGetByIdHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { accountNumber, id } = AccountParamWithIdSchema.parse((req as any).params ?? {});
+    const { id } = IdParamSchema.parse((req as any).params ?? {});
+    const { accountNumber } = await parseQuery(req, AccountParamSchema);
     const service = await AccountService.createInstance();
     const entity = await service.get(id, accountNumber);
     return ok(ctx, entity);
@@ -69,7 +71,8 @@ export const accountsGetByIdHandler = withHttp(
 export const accountsUpdateHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
     const { id } = IdParamSchema.parse((req as any).params ?? {});
-    const { accountNumber, ...patch } = await parseJson(req, UpdateAccountSchema);
+    const { accountNumber } = await parseQuery(req, AccountParamSchema);
+    const { ...patch } = await parseJson(req, UpdateAccountSchema);
 
     const service = await AccountService.createInstance();
     const entity = await service.update(id, accountNumber, patch);
@@ -91,9 +94,10 @@ export const accountsDeleteHandler = withHttp(
 export const accountsSetBillingAddressHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
     const { id } = IdParamSchema.parse((req as any).params ?? {});
-    const { billingAddressId, accountNumber } = await parseJson(
+    const { accountNumber } = await parseQuery(req, AccountParamSchema);
+    const { billingAddressId } = await parseJson(
       req,
-      z.object({ billingAddressId: z.uuid().nullable(), accountNumber: z.string().min(1) }),
+      z.object({ billingAddressId: z.uuid().nullable() }),
     );
 
     const service = await AccountService.createInstance();
@@ -120,7 +124,7 @@ app.http('accounts-create', {
 
 app.http('accounts-getById', {
   methods: ['GET'],
-  route: `${itemRoute}/account-number/{accountNumber}`,
+  route: itemRoute,
   authLevel: 'anonymous',
   handler: accountsGetByIdHandler,
 });
@@ -134,7 +138,7 @@ app.http('accounts-update', {
 
 app.http('accounts-delete', {
   methods: ['DELETE'],
-  route: `${itemRoute}/account-number/{accountNumber}`,
+  route: itemRoute,
   authLevel: 'anonymous',
   handler: accountsDeleteHandler,
 });

@@ -35,9 +35,7 @@ export const CreateAccountSchema = z.object({
   physicalEvaluationLastYear: z.boolean().nullable().optional(),
 });
 
-export const UpdateAccountSchema = CreateAccountSchema.partial().extend({
-  accountNumber: z.string().min(1),
-});
+export const UpdateAccountSchema = CreateAccountSchema.partial();
 
 export const ListAccountsSchema = z.object({
   accountNumber: z.string().optional(),
