@@ -1,6 +1,7 @@
 // src/modules/license-type/license-type.routes.ts
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import { LicenseTypeService } from './license-type.service';
+import { shallowDiff, safeAuditLog } from '../audit-log/audit-helpers';
 import {
   created,
   createPrefixRoute,
@@ -56,6 +57,22 @@ const licenseTypesCreateHandler = withHttp(
     const dto = await parseJson(req, CreateLicenseTypeSchema);
     const service = await LicenseTypeService.createInstance();
     const entity = await service.create(dto);
+
+    // AUDIT: CREATE
+    await safeAuditLog({
+      entityType: 'licenseType',
+      entityId: entity.id,
+      action: 'CREATE',
+      req,
+      message: `LicenseType created (code=${entity.code})`,
+      after: {
+        id: entity.id,
+        code: entity.code,
+        displayName: entity.displayName,
+        description: entity.description,
+      },
+    });
+
     return created(ctx, entity);
   },
 );
@@ -65,7 +82,26 @@ const licenseTypesUpdateHandler = withHttp(
     const { id } = IdParamSchema.parse((req as any).params ?? {});
     const dto = await parseJson(req, UpdateLicenseTypeSchema);
     const service = await LicenseTypeService.createInstance();
+
+    const before = await service.get(id);
     const updated = await service.update(id, dto);
+
+    // AUDIT: UPDATE
+    const { changes, beforeMini, afterMini } = shallowDiff(
+      { code: before.code, displayName: before.displayName, description: before.description },
+      { code: updated.code, displayName: updated.displayName, description: updated.description },
+    );
+    await safeAuditLog({
+      entityType: 'licenseType',
+      entityId: id,
+      action: 'UPDATE',
+      req,
+      message: `LicenseType updated`,
+      changes,
+      before: beforeMini,
+      after: afterMini,
+    });
+
     return ok(ctx, updated);
   },
 );
@@ -74,7 +110,25 @@ export const licenseTypesDeleteHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
     const { id } = IdParamSchema.parse((req as any).params ?? {});
     const service = await LicenseTypeService.createInstance();
+
+    const before = await service.get(id);
     await service.remove(id);
+
+    // AUDIT: DELETE
+    await safeAuditLog({
+      entityType: 'licenseType',
+      entityId: id,
+      action: 'DELETE',
+      req,
+      message: `LicenseType deleted (code=${before?.code ?? id})`,
+      before: {
+        id: before?.id,
+        code: before?.code,
+        displayName: before?.displayName,
+        description: before?.description,
+      },
+    });
+
     return noContent(ctx);
   },
 );
