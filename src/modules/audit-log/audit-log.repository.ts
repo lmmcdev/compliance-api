@@ -1,112 +1,109 @@
-// src/modules/audit-log/audit-log.repository.ts
-import { Container, SqlQuerySpec } from '@azure/cosmos';
+import { CosmosClient, Container, SqlParameter, SqlQuerySpec } from '@azure/cosmos';
 import { randomUUID } from 'crypto';
-import { getContainer } from '../../infrastructure/cosmos';
+import { CreateAuditLogDto, ListAuditLogsQuery } from './audit-log.dto';
 import { AuditLogDoc } from './audit-log.doc';
 
-const CONTAINER_ID = 'audit_logs';
-const PK_PATH = '/pk';
-
-function makePk(entityType: string, entityId: string) {
-  return `${entityType}:${entityId}`;
-}
+const buildPk = (entityType: string, entityId: string) => `${entityType}:${entityId}`;
 
 export class AuditLogRepository {
   private container!: Container;
 
-  async init() {
-    this.container = await getContainer({ id: CONTAINER_ID, partitionKeyPath: PK_PATH });
+  async init(): Promise<this> {
+    const endpoint = process.env.COSMOS_ENDPOINT!;
+    const key = process.env.COSMOS_KEY!;
+    const dbId = process.env.COSMOS_DB!;
+    const containerId = process.env.COSMOS_CONTAINER_AUDIT ?? 'audit_logs';
+    const defaultTtlSeconds = Number(process.env.AUDIT_LOG_TTL_SECONDS ?? 220_752_000); // ~7 años
+
+    const client = new CosmosClient({ endpoint, key });
+    const { database } = await client.databases.createIfNotExists({ id: dbId });
+
+    const { container } = await database.containers.createIfNotExists({
+      id: containerId,
+      partitionKey: { paths: ['/pk'] },
+      defaultTtl: defaultTtlSeconds,
+      indexingPolicy: {
+        indexingMode: 'consistent',
+        includedPaths: [{ path: '/*' }],
+        excludedPaths: [{ path: '/"before"/*' }, { path: '/"after"/*' }], // reduce RU si son grandes
+      },
+    });
+
+    this.container = container;
     return this;
   }
 
-  async create(
-    data: Omit<AuditLogDoc, 'id' | 'createdAt' | 'updatedAt' | 'pk'>,
-  ): Promise<AuditLogDoc> {
-    const now = new Date().toISOString();
-    const pk = makePk(data.entityType, data.entityId);
+  async create(dto: CreateAuditLogDto): Promise<AuditLogDoc> {
+    const now = new Date();
     const doc: AuditLogDoc = {
       id: randomUUID(),
-      createdAt: now,
-      updatedAt: now,
-      pk,
-      ...data,
-    };
-    const { resource } = await this.container.items.create(doc);
+      pk: buildPk(dto.entityType, dto.entityId),
+
+      entityType: dto.entityType,
+      entityId: dto.entityId,
+      action: dto.action,
+      actor: dto.actor ?? undefined,
+      context: dto.context ?? undefined,
+      changes: dto.changes ?? undefined,
+      before: dto.before ?? undefined,
+      after: dto.after ?? undefined,
+      message: dto.message ?? null,
+
+      // BaseDoc (habituales)
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString(),
+      createdBy: dto.actor?.id ?? null,
+      updatedBy: dto.actor?.id ?? null,
+    } as AuditLogDoc;
+
+    const { resource } = await this.container.items.create(doc, {
+      disableAutomaticIdGeneration: true,
+    });
     return resource as AuditLogDoc;
   }
 
-  /**
-   * List with filters. If both entityType & entityId are provided, we add `partitionKey`
-   * to keep it single-partition and cheap.
-   */
-  async list(opts: {
-    entityType?: string;
-    entityId?: string;
-    action?: string;
-    actorId?: string;
-    traceId?: string;
-    from?: string;
-    to?: string;
-    pageSize?: number;
-    token?: string;
-  }): Promise<{ items: AuditLogDoc[]; continuationToken: string | null }> {
-    const { entityType, entityId, action, actorId, traceId, from, to, pageSize = 50, token } = opts;
+  async list(
+    q: ListAuditLogsQuery,
+  ): Promise<{ items: AuditLogDoc[]; continuationToken: string | null }> {
+    // Si viene entityType + entityId, podemos usar pk → mucho más eficiente
+    const hasPk = q.entityType && q.entityId;
+    const params: SqlParameter[] = [];
+    let sql = 'SELECT * FROM c WHERE 1 = 1';
 
-    const filters: string[] = [];
-    const params: { name: string; value: any }[] = [];
-
-    if (entityType) {
-      filters.push('c.entityType = @entityType');
-      params.push({ name: '@entityType', value: entityType });
+    if (q.entityType) {
+      sql += ' AND c.entityType = @entityType';
+      params.push({ name: '@entityType', value: q.entityType });
     }
-    if (entityId) {
-      filters.push('c.entityId = @entityId');
-      params.push({ name: '@entityId', value: entityId });
+    if (q.entityId) {
+      sql += ' AND c.entityId = @entityId';
+      params.push({ name: '@entityId', value: q.entityId });
     }
-    if (action) {
-      filters.push('c.action = @action');
-      params.push({ name: '@action', value: action });
+    if (q.action) {
+      sql += ' AND c.action = @action';
+      params.push({ name: '@action', value: q.action });
     }
-    if (actorId) {
-      filters.push('c.actor.id = @actorId');
-      params.push({ name: '@actorId', value: actorId });
+    if (q.from) {
+      sql += ' AND c.createdAt >= @from';
+      params.push({ name: '@from', value: q.from });
     }
-    if (traceId) {
-      filters.push('c.context.traceId = @traceId');
-      params.push({ name: '@traceId', value: traceId });
+    if (q.to) {
+      sql += ' AND c.createdAt <= @to';
+      params.push({ name: '@to', value: q.to });
     }
-    if (from) {
-      filters.push('c.createdAt >= @from');
-      params.push({ name: '@from', value: from });
-    }
-    if (to) {
-      filters.push('c.createdAt <= @to');
-      params.push({ name: '@to', value: to });
+    if (q.q) {
+      sql += ' AND IS_STRING(c.message) AND CONTAINS(c.message, @q, true)';
+      params.push({ name: '@q', value: q.q });
     }
 
-    const where = filters.length ? `WHERE ${filters.join(' AND ')}` : '';
-    const query: SqlQuerySpec = {
-      query: `
-        SELECT c.id, c.pk, c.entityType, c.entityId, c.action, c.actor, c.context,
-               c.changes, c.before, c.after, c.message, c.createdAt, c.updatedAt
-        FROM c
-        ${where}
-        ORDER BY c.createdAt DESC
-      `,
-      parameters: params,
-    };
+    sql += ' ORDER BY c.createdAt DESC';
 
-    const queryOptions: any = {
-      maxItemCount: pageSize,
-      continuationToken: token,
-    };
+    const query: SqlQuerySpec = { query: sql, parameters: params };
+    const iterator = this.container.items.query<AuditLogDoc>(query, {
+      maxItemCount: q.limit,
+      partitionKey: hasPk ? (buildPk(q.entityType!, q.entityId!) as any) : undefined,
+    });
 
-    // If we know the exact partition key, pin the query to it for low RUs
-    if (entityType && entityId) queryOptions.partitionKey = makePk(entityType, entityId);
-
-    const iter = this.container.items.query<AuditLogDoc>(query, queryOptions);
-    const { resources, continuationToken } = await iter.fetchNext();
-
-    return { items: resources as AuditLogDoc[], continuationToken: continuationToken ?? null };
+    const { resources, continuationToken } = await iterator.fetchNext();
+    return { items: resources, continuationToken: continuationToken ?? null };
   }
 }

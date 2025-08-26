@@ -1,15 +1,25 @@
-// src/modules/audit-log/audit-log.dto.ts
 import { z } from 'zod';
+
+export const AuditActionEnum = z.enum([
+  'CREATE',
+  'UPDATE',
+  'DELETE',
+  'READ',
+  'LOGIN',
+  'LOGOUT',
+  'OTHER',
+]);
 
 export const AuditActorSchema = z
   .object({
-    id: z.string().optional().nullable(),
+    id: z.string().uuid().optional().nullable(),
     email: z.string().email().optional().nullable(),
     name: z.string().optional().nullable(),
     ip: z.string().optional().nullable(),
   })
   .strict()
-  .partial();
+  .optional()
+  .nullable();
 
 export const AuditContextSchema = z
   .object({
@@ -21,41 +31,45 @@ export const AuditContextSchema = z
     userAgent: z.string().optional().nullable(),
   })
   .strict()
-  .partial();
+  .optional()
+  .nullable();
 
 export const AuditChangeSchema = z.object({
-  path: z.string(),
-  from: z.unknown().optional(),
-  to: z.unknown().optional(),
+  path: z.string().min(1), // e.g. "displayName"
+  from: z.any().optional(),
+  to: z.any().optional(),
 });
 
-export const CreateAuditLogSchema = z.object({
-  entityType: z.string().min(1),
-  entityId: z.string().min(1),
-  action: z.enum(['CREATE', 'UPDATE', 'DELETE', 'READ', 'LOGIN', 'LOGOUT', 'OTHER']),
-  actor: AuditActorSchema.optional(),
-  context: AuditContextSchema.optional(),
-  changes: z.array(AuditChangeSchema).optional(),
-  before: z.unknown().optional(),
-  after: z.unknown().optional(),
-  message: z.string().nullable().optional(),
-});
+export const CreateAuditLogSchema = z
+  .object({
+    entityType: z.string().min(1),
+    entityId: z.string().uuid(), // si no es UUID, cambia a z.string().min(1)
+    action: AuditActionEnum,
+    actor: AuditActorSchema,
+    context: AuditContextSchema,
+    changes: z.array(AuditChangeSchema).optional(),
+    before: z.any().optional(),
+    after: z.any().optional(),
+    message: z.string().nullable().optional(),
+  })
+  .strict();
 
 export type CreateAuditLogDto = z.infer<typeof CreateAuditLogSchema>;
 
-export const ListAuditLogsSchema = z.object({
-  // Filters
-  entityType: z.string().optional(),
-  entityId: z.string().optional(),
-  action: z.enum(['CREATE', 'UPDATE', 'DELETE', 'READ', 'LOGIN', 'LOGOUT', 'OTHER']).optional(),
-  actorId: z.string().optional(),
-  traceId: z.string().optional(),
-  from: z.string().datetime().optional(), // ISO
-  to: z.string().datetime().optional(),
+export const ListAuditLogsSchema = z
+  .object({
+    // filtros
+    entityType: z.string().optional(),
+    entityId: z.string().optional(),
+    action: AuditActionEnum.optional(),
+    from: z.string().datetime().optional(),
+    to: z.string().datetime().optional(),
+    q: z.string().optional(), // busca en message
 
-  // Paging
-  pageSize: z.coerce.number().int().min(1).max(100).default(50),
-  token: z.string().optional(),
-});
+    // paginación
+    limit: z.coerce.number().int().min(1).max(200).default(50),
+    continuationToken: z.string().optional().nullable(),
+  })
+  .strict();
 
 export type ListAuditLogsQuery = z.infer<typeof ListAuditLogsSchema>;
