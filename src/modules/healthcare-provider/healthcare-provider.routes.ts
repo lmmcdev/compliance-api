@@ -1,4 +1,3 @@
-// src/modules/healthcare-provider/healthcare-provider.routes.ts
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import {
   created,
@@ -6,109 +5,112 @@ import {
   IdParamSchema,
   noContent,
   ok,
-  paginated,
   parseJson,
-  parseParams,
   parseQuery,
   withHttp,
 } from '../../http';
+import { z } from 'zod';
 
+import { HealthcareProviderService } from './healthcare-provider.service';
 import {
   CreateHealthcareProviderSchema,
   UpdateHealthcareProviderSchema,
   ListHealthcareProvidersSchema,
 } from './healthcare-provider.dto';
-import { getDataSource } from '../../infrastructure/ds-runtime';
-import { HealthcareProviderService } from './healthcare-provider.service';
 
-const { prefixRoute, itemRoute } = createPrefixRoute('healthcare-providers');
+// /api/v1/healthcare-providers
+const path = 'healthcare-providers';
+const { prefixRoute, itemRoute } = createPrefixRoute(path);
 
-// -------- Handlers --------
+// Require PK on item routes
+const PKQuerySchema = z.object({
+  accountId: z.string().uuid(),
+});
 
-export const healthcareProvidersListHandler = withHttp(
+// ---- Handlers ----
+export const providersListHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const query = await parseQuery(req, ListHealthcareProvidersSchema);
-    const ds = await getDataSource();
-    const service = new HealthcareProviderService(ds);
-    const page = await service.list(query);
-    return paginated(ctx, page);
+    // ?accountId=&q=&status=&npi=&facilityId=&pcp=&attendingPhysician=&inHouse=&pageSize=&token=&sort=&order=
+    const q = await parseQuery(req, ListHealthcareProvidersSchema);
+    const svc = await HealthcareProviderService.createInstance();
+    const page = await svc.list(q);
+    return ok(ctx, page);
   },
 );
 
-export const healthcareProvidersCreateHandler = withHttp(
+export const providersCreateHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
+    // Body must include accountId (PK)
     const dto = await parseJson(req, CreateHealthcareProviderSchema);
-    const ds = await getDataSource();
-    const service = new HealthcareProviderService(ds);
-    const entity = await service.create(dto);
+    const svc = await HealthcareProviderService.createInstance();
+    const entity = await svc.create(dto);
     return created(ctx, entity);
   },
 );
 
-export const healthcareProvidersGetHandler = withHttp(
+export const providersGetByIdHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { id } = parseParams(req, IdParamSchema);
-    const ds = await getDataSource();
-    const service = new HealthcareProviderService(ds);
-    const entity = await service.get(id);
+    const { id } = IdParamSchema.parse((req as any).params ?? {});
+    const { accountId } = await parseQuery(req, PKQuerySchema);
+    const svc = await HealthcareProviderService.createInstance();
+    const entity = await svc.get(id, accountId);
     return ok(ctx, entity);
   },
 );
 
-export const healthcareProvidersUpdateHandler = withHttp(
+export const providersUpdateHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { id } = parseParams(req, IdParamSchema);
-    const dto = await parseJson(req, UpdateHealthcareProviderSchema);
-    const ds = await getDataSource();
-    const service = new HealthcareProviderService(ds);
-    const entity = await service.update(id, dto);
+    const { id } = IdParamSchema.parse((req as any).params ?? {});
+    const { accountId } = await parseQuery(req, PKQuerySchema);
+    const patch = await parseJson(req, UpdateHealthcareProviderSchema);
+    const svc = await HealthcareProviderService.createInstance();
+    const entity = await svc.update(id, accountId, patch);
     return ok(ctx, entity);
   },
 );
 
-export const healthcareProvidersDeleteHandler = withHttp(
+export const providersDeleteHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { id } = parseParams(req, IdParamSchema);
-    const ds = await getDataSource();
-    const service = new HealthcareProviderService(ds);
-    await service.remove(id);
+    const { id } = IdParamSchema.parse((req as any).params ?? {});
+    const { accountId } = await parseQuery(req, PKQuerySchema);
+    const svc = await HealthcareProviderService.createInstance();
+    await svc.remove(id, accountId);
     return noContent(ctx);
   },
 );
 
-// -------- Routes --------
-
+// ---- Azure Functions registrations ----
 app.http('healthcare-providers-list', {
   methods: ['GET'],
   route: prefixRoute,
   authLevel: 'anonymous',
-  handler: healthcareProvidersListHandler,
+  handler: providersListHandler,
 });
 
 app.http('healthcare-providers-create', {
   methods: ['POST'],
   route: prefixRoute,
   authLevel: 'anonymous',
-  handler: healthcareProvidersCreateHandler,
+  handler: providersCreateHandler,
 });
 
-app.http('healthcare-providers-get', {
+app.http('healthcare-providers-getById', {
   methods: ['GET'],
   route: itemRoute,
   authLevel: 'anonymous',
-  handler: healthcareProvidersGetHandler,
+  handler: providersGetByIdHandler,
 });
 
 app.http('healthcare-providers-update', {
   methods: ['PUT', 'PATCH'],
   route: itemRoute,
   authLevel: 'anonymous',
-  handler: healthcareProvidersUpdateHandler,
+  handler: providersUpdateHandler,
 });
 
 app.http('healthcare-providers-delete', {
   methods: ['DELETE'],
   route: itemRoute,
   authLevel: 'anonymous',
-  handler: healthcareProvidersDeleteHandler,
+  handler: providersDeleteHandler,
 });
