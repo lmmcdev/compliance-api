@@ -1,66 +1,54 @@
+// src/modules/business-license/business-license.dto.ts
 import { z } from 'zod';
-import { BusinessLicenseStatus } from './business-license.entity';
 
-export const BusinessLicenseStatusSchema = z
-  .enum(BusinessLicenseStatus)
-  .or(z.string().min(1))
-  .optional()
-  .nullable();
+export const BusinessLicenseStatusEnum = z.enum(['Completed', 'Active', 'Inactive', 'Pending']);
 
 export const CreateBusinessLicenseSchema = z.object({
-  name: z.string().min(1).max(256),
+  accountId: z.string().uuid(),
+  name: z.string().min(1),
 
-  issueDate: z.coerce.date().optional().nullable(),
-  renewalDate: z.coerce.date().optional().nullable(),
-  terminationDate: z.coerce.date().optional().nullable(),
+  issueDate: z.string().datetime().nullable().optional(),
+  renewalDate: z.string().datetime().nullable().optional(),
+  terminationDate: z.string().datetime().nullable().optional(),
 
-  licenseNumber: z.string().max(128).optional().nullable(),
-  certificateNumber: z.string().max(128).optional().nullable(),
+  licenseNumber: z.string().nullable().optional(),
+  certificateNumber: z.string().nullable().optional(),
 
-  status: BusinessLicenseStatusSchema,
-  isActive: z.boolean().optional(),
+  status: z.union([BusinessLicenseStatusEnum, z.string()]).nullable().optional(),
+  isActive: z.boolean().optional().default(false),
 
-  description: z.string().max(1024).optional().nullable(),
+  description: z.string().nullable().optional(),
 
-  licenseTypeId: z.uuid().optional().nullable(),
-  healthcareFacilityId: z.uuid().optional().nullable(),
-  healthcareProviderId: z.uuid().optional().nullable(),
-  accountId: z.uuid().optional().nullable(),
+  licenseTypeId: z.string().uuid().nullable().optional(),
+  healthcareFacilityId: z.string().uuid().nullable().optional(),
+  healthcareProviderId: z.string().uuid().nullable().optional(),
 });
 
 export const UpdateBusinessLicenseSchema = CreateBusinessLicenseSchema.partial();
 
-export type CreateBusinessLicenseDto = z.infer<typeof CreateBusinessLicenseSchema>;
-export type UpdateBusinessLicenseDto = z.infer<typeof UpdateBusinessLicenseSchema>;
-
 export const ListBusinessLicensesSchema = z.object({
-  q: z.string().optional(),
-
+  accountId: z.string().uuid(),
+  q: z.string().optional(), // searches name/licenseNumber/certificateNumber
   status: z.string().optional(),
   isActive: z.coerce.boolean().optional(),
-
-  licenseTypeId: z.uuid().optional(),
-  healthcareFacilityId: z.uuid().optional(),
-  healthcareProviderId: z.uuid().optional(),
-  accountId: z.uuid().optional(),
-
-  issueDateFrom: z.coerce.date().optional(),
-  issueDateTo: z.coerce.date().optional(),
-  renewalDateFrom: z.coerce.date().optional(),
-  renewalDateTo: z.coerce.date().optional(),
-
-  page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(100).default(20),
-  sort: z
-    .enum(['createdAt', 'updatedAt', 'issueDate', 'renewalDate', 'name', 'licenseNumber'])
-    .default('createdAt'),
+  licenseTypeId: z.string().uuid().nullable().optional(),
+  healthcareFacilityId: z.string().uuid().nullable().optional(),
+  healthcareProviderId: z.string().uuid().nullable().optional(),
+  pageSize: z.coerce.number().int().min(1).max(100).default(50),
+  token: z.string().optional(),
+  sort: z.enum(['createdAt', 'updatedAt', 'name', 'issueDate', 'renewalDate']).default('createdAt'),
   order: z.enum(['ASC', 'DESC']).default('DESC'),
 });
 
-export type ListBusinessLicensesQuery = z.infer<typeof ListBusinessLicensesSchema>;
-
-export const SetBusinessLicenseStatusSchema = z.object({
-  status: z.string().min(1),
-  isActive: z.boolean().optional(),
+export const SetStatusSchema = z.object({
+  status: z.string().nullable(), // null => clear
 });
-export type SetBusinessLicenseStatusDto = z.infer<typeof SetBusinessLicenseStatusSchema>;
+export const SetActiveSchema = z.object({
+  isActive: z.boolean(),
+});
+
+export type CreateBusinessLicenseDto = z.infer<typeof CreateBusinessLicenseSchema>;
+export type UpdateBusinessLicenseDto = z.infer<typeof UpdateBusinessLicenseSchema>;
+export type ListBusinessLicensesQuery = z.infer<typeof ListBusinessLicensesSchema>;
+export type SetStatusDto = z.infer<typeof SetStatusSchema>;
+export type SetActiveDto = z.infer<typeof SetActiveSchema>;

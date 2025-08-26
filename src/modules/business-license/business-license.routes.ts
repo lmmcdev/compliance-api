@@ -1,3 +1,4 @@
+// src/modules/business-license/business-license.routes.ts
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
 import {
   created,
@@ -5,127 +6,146 @@ import {
   IdParamSchema,
   noContent,
   ok,
-  paginated,
   parseJson,
-  parseParams,
   parseQuery,
   withHttp,
 } from '../../http';
+import { z } from 'zod';
+
+import { BusinessLicenseService } from './business-license.service';
 import {
   CreateBusinessLicenseSchema,
   UpdateBusinessLicenseSchema,
   ListBusinessLicensesSchema,
-  SetBusinessLicenseStatusSchema,
+  SetStatusSchema,
+  SetActiveSchema,
 } from './business-license.dto';
-import { getDataSource } from '../../infrastructure/ds-runtime';
-import { BusinessLicenseService } from './business-license.service';
 
-const { prefixRoute, itemRoute } = createPrefixRoute('business-licenses');
+const path = 'business-licenses';
+const { prefixRoute, itemRoute } = createPrefixRoute(path);
 
-// ---------- Handlers ----------
+const PKQuerySchema = z.object({ accountId: z.string().uuid() });
 
-export const businessLicensesListHandler = withHttp(
+// list
+export const blListHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const query = await parseQuery(req, ListBusinessLicensesSchema);
-    const ds = await getDataSource();
-    const service = new BusinessLicenseService(ds);
-    const page = await service.list(query);
-    return paginated(ctx, page);
+    const q = await parseQuery(req, ListBusinessLicensesSchema);
+    const svc = await BusinessLicenseService.createInstance();
+    const page = await svc.list(q);
+    return ok(ctx, page);
   },
 );
 
-export const businessLicensesCreateHandler = withHttp(
+// create
+export const blCreateHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
     const dto = await parseJson(req, CreateBusinessLicenseSchema);
-    const ds = await getDataSource();
-    const service = new BusinessLicenseService(ds);
-    const entity = await service.create(dto);
+    const svc = await BusinessLicenseService.createInstance();
+    const entity = await svc.create(dto);
     return created(ctx, entity);
   },
 );
 
-export const businessLicensesGetHandler = withHttp(
+// get
+export const blGetHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { id } = parseParams(req, IdParamSchema);
-    const ds = await getDataSource();
-    const service = new BusinessLicenseService(ds);
-    const entity = await service.get(id);
+    const { id } = IdParamSchema.parse((req as any).params ?? {});
+    const { accountId } = await parseQuery(req, PKQuerySchema);
+    const svc = await BusinessLicenseService.createInstance();
+    const entity = await svc.get(id, accountId);
     return ok(ctx, entity);
   },
 );
 
-export const businessLicensesUpdateHandler = withHttp(
+// update
+export const blUpdateHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { id } = parseParams(req, IdParamSchema);
-    const dto = await parseJson(req, UpdateBusinessLicenseSchema);
-    const ds = await getDataSource();
-    const service = new BusinessLicenseService(ds);
-    const entity = await service.update(id, dto);
+    const { id } = IdParamSchema.parse((req as any).params ?? {});
+    const { accountId } = await parseQuery(req, PKQuerySchema);
+    const patch = await parseJson(req, UpdateBusinessLicenseSchema);
+    const svc = await BusinessLicenseService.createInstance();
+    const entity = await svc.update(id, accountId, patch);
     return ok(ctx, entity);
   },
 );
 
-export const businessLicensesDeleteHandler = withHttp(
+// delete
+export const blDeleteHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { id } = parseParams(req, IdParamSchema);
-    const ds = await getDataSource();
-    const service = new BusinessLicenseService(ds);
-    await service.remove(id);
+    const { id } = IdParamSchema.parse((req as any).params ?? {});
+    const { accountId } = await parseQuery(req, PKQuerySchema);
+    const svc = await BusinessLicenseService.createInstance();
+    await svc.remove(id, accountId);
     return noContent(ctx);
   },
 );
 
-export const businessLicensesSetStatusHandler = withHttp(
+// PATCH status
+export const blPatchStatusHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { id } = parseParams(req, IdParamSchema);
-    const statusDto = await parseJson(req, SetBusinessLicenseStatusSchema);
-    const ds = await getDataSource();
-    const service = new BusinessLicenseService(ds);
-    const entity = await service.setStatus(id, statusDto);
+    const { id } = IdParamSchema.parse((req as any).params ?? {});
+    const { accountId } = await parseQuery(req, PKQuerySchema);
+    const body = await parseJson(req, SetStatusSchema);
+    const etag = req.headers.get('if-match') ?? undefined;
+    const svc = await BusinessLicenseService.createInstance();
+    const entity = await svc.setStatus(id, accountId, body, etag);
     return ok(ctx, entity);
   },
 );
 
-// ---------- Routes ----------
+// PATCH active
+export const blPatchActiveHandler = withHttp(
+  async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
+    const { id } = IdParamSchema.parse((req as any).params ?? {});
+    const { accountId } = await parseQuery(req, PKQuerySchema);
+    const body = await parseJson(req, SetActiveSchema);
+    const etag = req.headers.get('if-match') ?? undefined;
+    const svc = await BusinessLicenseService.createInstance();
+    const entity = await svc.setActive(id, accountId, body, etag);
+    return ok(ctx, entity);
+  },
+);
 
+// registrations
 app.http('business-licenses-list', {
   methods: ['GET'],
   route: prefixRoute,
   authLevel: 'anonymous',
-  handler: businessLicensesListHandler,
+  handler: blListHandler,
 });
-
 app.http('business-licenses-create', {
   methods: ['POST'],
   route: prefixRoute,
   authLevel: 'anonymous',
-  handler: businessLicensesCreateHandler,
+  handler: blCreateHandler,
 });
-
-app.http('business-licenses-get', {
+app.http('business-licenses-getById', {
   methods: ['GET'],
   route: itemRoute,
   authLevel: 'anonymous',
-  handler: businessLicensesGetHandler,
+  handler: blGetHandler,
 });
-
 app.http('business-licenses-update', {
   methods: ['PUT', 'PATCH'],
   route: itemRoute,
   authLevel: 'anonymous',
-  handler: businessLicensesUpdateHandler,
+  handler: blUpdateHandler,
 });
-
 app.http('business-licenses-delete', {
   methods: ['DELETE'],
   route: itemRoute,
   authLevel: 'anonymous',
-  handler: businessLicensesDeleteHandler,
+  handler: blDeleteHandler,
 });
-
-app.http('business-licenses-set-status', {
+app.http('business-licenses-patch-status', {
   methods: ['PATCH'],
-  route: `${itemRoute}/status`,
+  route: `${itemRoute}/status`, // /api/v1/business-licenses/{id}/status
   authLevel: 'anonymous',
-  handler: businessLicensesSetStatusHandler,
+  handler: blPatchStatusHandler,
+});
+app.http('business-licenses-patch-active', {
+  methods: ['PATCH'],
+  route: `${itemRoute}/active`, // /api/v1/business-licenses/{id}/active
+  authLevel: 'anonymous',
+  handler: blPatchActiveHandler,
 });
