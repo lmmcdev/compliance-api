@@ -1,93 +1,101 @@
-import { z } from 'zod';
+// src/modules/account/account.routes.ts
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import {
-  created,
-  createPrefixRoute,
-  IdParamSchema,
-  noContent,
-  ok,
-  paginated,
-  parseJson,
-  parseQuery,
-  withHttp,
-} from '../../http';
-import { CreateAccountSchema, UpdateAccountSchema, ListAccountsSchema } from './account.dto';
-import { getDataSource } from '../../infrastructure/ds-runtime';
-import { AccountService } from './account.service';
+import { withHttp, ok, created, noContent, parseJson, createPrefixRoute } from '../../http';
+import { z } from 'zod';
 
-const path = 'accounts';
-const { prefixRoute, itemRoute, itemSub } = createPrefixRoute(path);
-const billingRoute = itemSub('billing-address');
+import { AccountService } from './account.service';
+import { CreateAccountSchema, UpdateAccountSchema, ListAccountsSchema } from './account.dto';
+
+// Nested under /v1/accounts — PK = accountNumber comes from body or query
+const { prefixRoute, itemRoute } = createPrefixRoute('accounts');
+
+// ---- Param schemas ----
+const AccountParamSchema = z.object({
+  accountNumber: z.string().min(1), // PK
+});
+
+const AccountParamWithIdSchema = AccountParamSchema.extend({
+  id: z.string().uuid(),
+});
+
+// Body for POST comes without PK injection (unlike locations)
+const CreateAccountBodySchema = CreateAccountSchema;
 
 // -------- Handlers --------
 
+// List
 export const accountsListHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const query = await parseQuery(req, ListAccountsSchema);
-    const ds = await getDataSource();
-    const service = new AccountService(ds);
+    const rawQuery = Object.fromEntries(new URL(req.url).searchParams.entries());
+    const query = ListAccountsSchema.parse(rawQuery);
+
+    const service = await AccountService.createInstance();
     const page = await service.list(query);
-    return paginated(ctx, page);
+    return ok(ctx, page);
   },
 );
 
+// Create
 export const accountsCreateHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const dto = await parseJson(req, CreateAccountSchema);
-    const ds = await getDataSource();
-    const service = new AccountService(ds);
+    const body = await parseJson(req, CreateAccountBodySchema);
+    const dto = CreateAccountSchema.parse(body);
+
+    const service = await AccountService.createInstance();
     const entity = await service.create(dto);
     return created(ctx, entity);
   },
 );
 
+// Get by ID
 export const accountsGetByIdHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { id } = IdParamSchema.parse((req as any).params ?? {});
-    const ds = await getDataSource();
-    const service = new AccountService(ds);
-    const entity = await service.get(id);
+    const { accountNumber, id } = AccountParamWithIdSchema.parse((req as any).params ?? {});
+    const service = await AccountService.createInstance();
+    const entity = await service.get(id, accountNumber);
     return ok(ctx, entity);
   },
 );
 
+// Update
 export const accountsUpdateHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { id } = IdParamSchema.parse((req as any).params ?? {});
-    const dto = await parseJson(req, UpdateAccountSchema);
-    const ds = await getDataSource();
-    const service = new AccountService(ds);
-    const entity = await service.update(id, dto);
+    const { accountNumber, id } = AccountParamWithIdSchema.parse((req as any).params ?? {});
+    const patch = await parseJson(req, UpdateAccountSchema);
+
+    const service = await AccountService.createInstance();
+    const entity = await service.update(id, accountNumber, patch);
     return ok(ctx, entity);
   },
 );
 
+// Delete
 export const accountsDeleteHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { id } = IdParamSchema.parse((req as any).params ?? {});
-    const ds = await getDataSource();
-    const service = new AccountService(ds);
-    await service.remove(id);
+    const { accountNumber, id } = AccountParamWithIdSchema.parse((req as any).params ?? {});
+    const service = await AccountService.createInstance();
+    await service.remove(id, accountNumber);
     return noContent(ctx);
   },
 );
 
-const BillingAddressSchema = z.object({
-  billingAddressId: z.uuid().nullable().optional(),
-});
-
+// Set Billing Address
 export const accountsSetBillingAddressHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { id } = IdParamSchema.parse((req as any).params ?? {});
-    const { billingAddressId } = await parseJson(req, BillingAddressSchema);
-    const ds = await getDataSource();
-    const service = new AccountService(ds);
-    const entity = await service.setBillingAddress(id, billingAddressId ?? null);
+    const { accountNumber, id } = AccountParamWithIdSchema.parse((req as any).params ?? {});
+    const body = await parseJson(req, z.object({ billingAddressId: z.string().uuid().nullable() }));
+
+    const service = await AccountService.createInstance();
+    const entity = await service.setBillingAddress(
+      id,
+      accountNumber,
+      body.billingAddressId ?? null,
+    );
     return ok(ctx, entity);
   },
 );
 
-// -------- Routes --------
+// -------- Azure Functions route registrations --------
 
 app.http('accounts-list', {
   methods: ['GET'],
@@ -103,7 +111,7 @@ app.http('accounts-create', {
   handler: accountsCreateHandler,
 });
 
-app.http('accounts-get', {
+app.http('accounts-getById', {
   methods: ['GET'],
   route: itemRoute,
   authLevel: 'anonymous',
@@ -124,9 +132,9 @@ app.http('accounts-delete', {
   handler: accountsDeleteHandler,
 });
 
-app.http('accounts-set-billing-address', {
+app.http('accounts-setBillingAddress', {
   methods: ['PATCH'],
-  route: billingRoute,
+  route: `${prefixRoute}/{accountNumber}/{id}/billing-address`,
   authLevel: 'anonymous',
   handler: accountsSetBillingAddressHandler,
 });

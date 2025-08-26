@@ -11,10 +11,10 @@ const base = 'v1/location-types/{locationTypeId}/locations';
 
 // ---- Param schemas ----
 const LTParamSchema = z.object({
-  locationTypeId: z.string().uuid(),
+  locationTypeId: z.uuid(),
 });
 const LTParamWithIdSchema = LTParamSchema.extend({
-  id: z.string().uuid(),
+  id: z.uuid(),
 });
 
 // Body for POST comes without locationTypeId (we inject from path)
