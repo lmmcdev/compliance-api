@@ -156,4 +156,12 @@ export class LicenseTypeRepository implements ILicenseTypeRepository {
     const pk = PK_PATH === '/id' ? id : id;
     await this.container.item(id, pk).delete();
   }
+
+  async deleteAll(): Promise<void> {
+    const query = { query: 'SELECT c.id FROM c' };
+    const { resources } = await this.container.items.query<{ id: string }>(query).fetchAll();
+    for (const doc of resources) {
+      await this.deleteHard(doc.id);
+    }
+  }
 }

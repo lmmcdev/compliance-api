@@ -21,7 +21,6 @@ import {
 
 const path = 'license-types';
 const { prefixRoute, itemRoute } = createPrefixRoute(path);
-// http://localhost:7071/api/v1/license-types/code/:code
 const codeRoute = `${prefixRoute}/code/{code}`;
 
 // ---- handlers ----

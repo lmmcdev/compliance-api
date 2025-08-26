@@ -4,7 +4,7 @@ import { z } from 'zod';
 export const CreateLicenseTypeSchema = z.object({
   code: z.string().min(2).max(100),
   displayName: z.string().min(2).max(100),
-  description: z.string().max(500).optional(),
+  description: z.string().max(500).nullable().optional(),
 });
 
 export const UpdateLicenseTypeSchema = CreateLicenseTypeSchema.partial();
