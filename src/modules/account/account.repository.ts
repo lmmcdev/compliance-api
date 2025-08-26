@@ -136,7 +136,7 @@ export class AccountRepository {
   async setBillingAddress(
     id: string,
     accountNumber: string,
-    billingAddressId: string | null,
+    billingAddressId: string,
   ): Promise<AccountDoc | null> {
     const found = await this.findById(id, accountNumber);
     if (!found)

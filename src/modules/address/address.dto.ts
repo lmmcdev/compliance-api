@@ -20,13 +20,12 @@ export const CreateAddressSchema = z.object({
 
   country: z
     .string()
-    .length(2)
+    .length(100)
     .transform((s) => s.toUpperCase())
-    .default('US'),
+    .default('UNITED STATES'),
 
   county: z.string().min(1),
 
-  // TS enum -> use nativeEnum
   addressType: z.enum(AddressType),
 
   drivingDirections: z.string().optional(),

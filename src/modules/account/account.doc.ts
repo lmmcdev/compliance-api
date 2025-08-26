@@ -6,11 +6,11 @@ export interface AccountDoc extends BaseDoc {
   accountNumber: string;
 
   name: string;
-  type?: AccountType | null;
+  type?: AccountType;
   phone?: string | null;
   lastCallDate?: string | null;
 
-  billingAddressId?: string | null;
+  billingAddressId?: string;
 
   terminationDateInMDVita?: string | null;
   mdvitaDisenrollment: boolean;

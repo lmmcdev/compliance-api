@@ -58,15 +58,7 @@ export class AccountService {
     return this.accountRepository.delete(id, pk);
   }
 
-  async setBillingAddress(
-    accountId: string,
-    accountNumber: string,
-    billingAddressId: string | null,
-  ) {
-    if (billingAddressId === null) {
-      return this.accountRepository.setBillingAddress(accountId, accountNumber, null);
-    }
-
+  async setBillingAddress(accountId: string, accountNumber: string, billingAddressId: string) {
     // Resolve the PK once, then verify with a cheap point read
     const addressLocationTypeId =
       await this.addressRepository.resolveLocationTypeId(billingAddressId);

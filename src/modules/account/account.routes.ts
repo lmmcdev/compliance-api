@@ -83,7 +83,8 @@ export const accountsUpdateHandler = withHttp(
 // Delete
 export const accountsDeleteHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { accountNumber, id } = AccountParamWithIdSchema.parse((req as any).params ?? {});
+    const { id } = IdParamSchema.parse((req as any).params ?? {});
+    const { accountNumber } = await parseQuery(req, AccountParamSchema);
     const service = await AccountService.createInstance();
     await service.remove(id, accountNumber);
     return noContent(ctx);
@@ -95,13 +96,10 @@ export const accountsSetBillingAddressHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
     const { id } = IdParamSchema.parse((req as any).params ?? {});
     const { accountNumber } = await parseQuery(req, AccountParamSchema);
-    const { billingAddressId } = await parseJson(
-      req,
-      z.object({ billingAddressId: z.uuid().nullable() }),
-    );
+    const { billingAddressId } = await parseJson(req, z.object({ billingAddressId: z.uuid() }));
 
     const service = await AccountService.createInstance();
-    const entity = await service.setBillingAddress(id, accountNumber, billingAddressId ?? null);
+    const entity = await service.setBillingAddress(id, accountNumber, billingAddressId);
     return ok(ctx, entity);
   },
 );

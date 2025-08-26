@@ -8,11 +8,11 @@ export const CreateAccountSchema = z.object({
   accountNumber: z.string().min(1).toUpperCase(),
   name: z.string().min(1).toUpperCase(),
 
-  type: z.enum(AccountType).nullable().optional(),
+  type: z.enum(AccountType),
   phone: z.string().nullable().optional(),
   lastCallDate: z.iso.datetime().nullable().optional(),
 
-  billingAddressId: z.uuid().nullable().optional(),
+  billingAddressId: z.uuid(),
 
   terminationDateInMDVita: z.iso.datetime().nullable().optional(),
   mdvitaDisenrollment: z.boolean().default(false),
