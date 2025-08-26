@@ -4,7 +4,7 @@ import { z, ZodType } from 'zod';
 import { uuidLooseNormalized } from '../shared/validation';
 
 export const IdParamSchema = z.object({
-  id: uuidLooseNormalized, // was z.uuid()
+  id: uuidLooseNormalized,
 });
 
 export const UuidParam = (name: string) =>

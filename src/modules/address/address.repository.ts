@@ -110,4 +110,14 @@ export class AddressRepository {
   async delete(id: string, locationTypeId: string): Promise<void> {
     await this.container.item(id, locationTypeId).delete();
   }
+
+  async resolveLocationTypeId(id: string): Promise<string | null> {
+    const spec: SqlQuerySpec = {
+      query:
+        'SELECT TOP 1 VALUE c.locationTypeId FROM c WHERE c.id = @id AND (NOT IS_DEFINED(c.isDeleted) OR c.isDeleted != true)',
+      parameters: [{ name: '@id', value: id }],
+    };
+    const { resources } = await this.container.items.query<string>(spec).fetchAll();
+    return resources[0] ?? null;
+  }
 }

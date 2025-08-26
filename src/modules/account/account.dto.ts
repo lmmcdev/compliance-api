@@ -3,8 +3,10 @@ import { z } from 'zod';
 import { AccountType } from '../../types';
 
 export const CreateAccountSchema = z.object({
-  accountNumber: z.string().min(1), // PK
-  name: z.string().min(1),
+  // accountNumber unique identifier for the account
+
+  accountNumber: z.string().min(1).toUpperCase(),
+  name: z.string().min(1).toUpperCase(),
 
   type: z.enum(AccountType).nullable().optional(),
   phone: z.string().nullable().optional(),
@@ -34,13 +36,12 @@ export const CreateAccountSchema = z.object({
 });
 
 export const UpdateAccountSchema = CreateAccountSchema.partial().extend({
-  id: z.uuid(), // required to update
   accountNumber: z.string().min(1),
 });
 
 export const ListAccountsSchema = z.object({
-  accountNumber: z.string().optional(), // filter by PK if needed
-  q: z.string().optional(), // search query
+  accountNumber: z.string().optional(),
+  q: z.string().optional(),
   plan: z.string().optional(),
   payer: z.string().optional(),
   pageSize: z.coerce.number().int().min(1).max(100).default(50),

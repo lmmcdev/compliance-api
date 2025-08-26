@@ -1,6 +1,14 @@
 // src/modules/account/account.routes.ts
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { withHttp, ok, created, noContent, parseJson, createPrefixRoute } from '../../http';
+import {
+  withHttp,
+  ok,
+  created,
+  noContent,
+  parseJson,
+  createPrefixRoute,
+  IdParamSchema,
+} from '../../http';
 import { z } from 'zod';
 
 import { AccountService } from './account.service';
@@ -15,7 +23,7 @@ const AccountParamSchema = z.object({
 });
 
 const AccountParamWithIdSchema = AccountParamSchema.extend({
-  id: z.string().uuid(),
+  id: z.uuid(),
 });
 
 // Body for POST comes without PK injection (unlike locations)
@@ -60,8 +68,8 @@ export const accountsGetByIdHandler = withHttp(
 // Update
 export const accountsUpdateHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { accountNumber, id } = AccountParamWithIdSchema.parse((req as any).params ?? {});
-    const patch = await parseJson(req, UpdateAccountSchema);
+    const { id } = IdParamSchema.parse((req as any).params ?? {});
+    const { accountNumber, ...patch } = await parseJson(req, UpdateAccountSchema);
 
     const service = await AccountService.createInstance();
     const entity = await service.update(id, accountNumber, patch);
@@ -82,15 +90,14 @@ export const accountsDeleteHandler = withHttp(
 // Set Billing Address
 export const accountsSetBillingAddressHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { accountNumber, id } = AccountParamWithIdSchema.parse((req as any).params ?? {});
-    const body = await parseJson(req, z.object({ billingAddressId: z.string().uuid().nullable() }));
+    const { id } = IdParamSchema.parse((req as any).params ?? {});
+    const { billingAddressId, accountNumber } = await parseJson(
+      req,
+      z.object({ billingAddressId: z.uuid().nullable(), accountNumber: z.string().min(1) }),
+    );
 
     const service = await AccountService.createInstance();
-    const entity = await service.setBillingAddress(
-      id,
-      accountNumber,
-      body.billingAddressId ?? null,
-    );
+    const entity = await service.setBillingAddress(id, accountNumber, billingAddressId ?? null);
     return ok(ctx, entity);
   },
 );
@@ -113,7 +120,7 @@ app.http('accounts-create', {
 
 app.http('accounts-getById', {
   methods: ['GET'],
-  route: itemRoute,
+  route: `${itemRoute}/account-number/{accountNumber}`,
   authLevel: 'anonymous',
   handler: accountsGetByIdHandler,
 });
@@ -127,14 +134,14 @@ app.http('accounts-update', {
 
 app.http('accounts-delete', {
   methods: ['DELETE'],
-  route: itemRoute,
+  route: `${itemRoute}/account-number/{accountNumber}`,
   authLevel: 'anonymous',
   handler: accountsDeleteHandler,
 });
 
 app.http('accounts-setBillingAddress', {
   methods: ['PATCH'],
-  route: `${prefixRoute}/{accountNumber}/{id}/billing-address`,
+  route: `${itemRoute}/billing-address`,
   authLevel: 'anonymous',
   handler: accountsSetBillingAddressHandler,
 });

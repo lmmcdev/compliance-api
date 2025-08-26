@@ -3,6 +3,7 @@ import { Container, SqlQuerySpec } from '@azure/cosmos';
 import { getContainer } from '../../infrastructure/cosmos';
 import { AccountDoc } from './account.doc';
 import { randomUUID } from 'crypto';
+import { ConflictError, NotFoundError } from '../../http';
 
 const CONTAINER_ID = 'accounts';
 const PK_PATH = '/accountNumber';
@@ -15,7 +16,26 @@ export class AccountRepository {
     return this;
   }
 
+  async findByAccountNumber(accountNumber: string): Promise<AccountDoc | null> {
+    try {
+      const { resources } = await this.container.items
+        .query<AccountDoc>({
+          query: 'SELECT * FROM c WHERE c.accountNumber = @accountNumber',
+          parameters: [{ name: '@accountNumber', value: accountNumber }],
+        })
+        .fetchNext();
+      return resources && resources.length > 0 ? (resources[0] as AccountDoc) : null;
+    } catch {
+      return null;
+    }
+  }
+
   async create(data: Omit<AccountDoc, 'id' | 'createdAt' | 'updatedAt'>): Promise<AccountDoc> {
+    const { accountNumber } = data;
+    const existing = await this.findByAccountNumber(accountNumber);
+    if (existing)
+      throw new ConflictError(`Account with accountNumber ${accountNumber} already exists`);
+
     const now = new Date().toISOString();
     const doc: AccountDoc = {
       id: randomUUID(),
@@ -86,7 +106,7 @@ export class AccountRepository {
 
     const { resources, continuationToken } = await iter.fetchNext();
     return {
-      items: resources.map((item) => item as AccountDoc),
+      items: resources ? resources.map((item) => item as AccountDoc) : [],
       continuationToken: continuationToken ?? null,
     };
   }
@@ -118,6 +138,12 @@ export class AccountRepository {
     accountNumber: string,
     billingAddressId: string | null,
   ): Promise<AccountDoc | null> {
+    const found = await this.findById(id, accountNumber);
+    if (!found)
+      throw new NotFoundError(`Account with id ${id} or accountNumber ${accountNumber} not found`);
+    // check if billingAddressId exists
+    if (found.billingAddressId === billingAddressId) return found;
+
     return this.update(id, accountNumber, { billingAddressId });
   }
 }
