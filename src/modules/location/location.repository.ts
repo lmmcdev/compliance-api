@@ -51,13 +51,18 @@ export class LocationRepository {
     }
   }
 
-  /**
-   * List locations by locationTypeId (single-partition), with optional search & parent filter.
-   * - q: searches name and externalReference (case-insensitive)
-   * - parentLocationId: filter children of a parent; pass null to get roots (no parent)
-   * - sort: createdAt | updatedAt | name
-   * - order: ASC | DESC
-   */
+  // find by id only (no partition key) - requires a query
+  async findByIdWithoutType(id: string): Promise<LocationDoc | null> {
+    const query: SqlQuerySpec = {
+      query: 'SELECT * FROM c WHERE c.id = @id',
+      parameters: [{ name: '@id', value: id }],
+    };
+
+    const iter = this.container.items.query<LocationDoc>(query, { maxItemCount: 1 });
+    const { resources } = await iter.fetchNext();
+    return resources.length > 0 ? (resources[0] as LocationDoc) : null;
+  }
+
   async listByLocationType(
     locationTypeId: string,
     opts?: {

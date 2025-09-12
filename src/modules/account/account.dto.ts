@@ -12,7 +12,7 @@ export const CreateAccountSchema = z.object({
   phone: z.string().nullable().optional(),
   lastCallDate: z.iso.datetime().nullable().optional(),
 
-  billingAddressId: z.uuid(),
+  billingAddressId: z.uuid().nullable().optional(),
 
   terminationDateInMDVita: z.iso.datetime().nullable().optional(),
   mdvitaDisenrollment: z.boolean().default(false),

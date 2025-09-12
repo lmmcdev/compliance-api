@@ -22,8 +22,14 @@ export class AddressService implements IAddressService {
   }
 
   async create(payload: unknown): Promise<AddressDoc> {
-    const dto = CreateAddressSchema.parse(payload);
-    return this.repo.create(dto);
+    try {
+      const dto = CreateAddressSchema.parse(payload);
+      console.log(`[address.service] Creating address for locationTypeId ${dto.locationTypeId}`);
+      return this.repo.create(dto);
+    } catch (error) {
+      console.error(`[address.service] Error creating address: ${error}`);
+      throw error;
+    }
   }
 
   async update(id: string, locationTypeId: string, payload: unknown): Promise<AddressDoc> {

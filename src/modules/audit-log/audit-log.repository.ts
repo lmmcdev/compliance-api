@@ -2,34 +2,16 @@ import { CosmosClient, Container, SqlParameter, SqlQuerySpec } from '@azure/cosm
 import { randomUUID } from 'crypto';
 import { CreateAuditLogDto, ListAuditLogsQuery } from './audit-log.dto';
 import { AuditLogDoc } from './audit-log.doc';
+import { getContainer } from '../../infrastructure/cosmos';
 
 const buildPk = (entityType: string, entityId: string) => `${entityType}:${entityId}`;
+const CONTAINER_ID = 'audit_logs';
 
 export class AuditLogRepository {
   private container!: Container;
 
-  async init(): Promise<this> {
-    const endpoint = process.env.COSMOS_ENDPOINT!;
-    const key = process.env.COSMOS_KEY!;
-    const dbId = process.env.COSMOS_DB!;
-    const containerId = process.env.COSMOS_CONTAINER_AUDIT ?? 'audit_logs';
-    const defaultTtlSeconds = Number(process.env.AUDIT_LOG_TTL_SECONDS ?? 220_752_000); // ~7 años
-
-    const client = new CosmosClient({ endpoint, key });
-    const { database } = await client.databases.createIfNotExists({ id: dbId });
-
-    const { container } = await database.containers.createIfNotExists({
-      id: containerId,
-      partitionKey: { paths: ['/pk'] },
-      defaultTtl: defaultTtlSeconds,
-      indexingPolicy: {
-        indexingMode: 'consistent',
-        includedPaths: [{ path: '/*' }],
-        excludedPaths: [{ path: '/"before"/*' }, { path: '/"after"/*' }], // reduce RU si son grandes
-      },
-    });
-
-    this.container = container;
+  async init() {
+    this.container = await getContainer({ id: CONTAINER_ID });
     return this;
   }
 

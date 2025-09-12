@@ -16,20 +16,26 @@ export class AddressRepository {
   }
 
   async create(data: Omit<AddressDoc, 'id' | 'createdAt' | 'updatedAt'>): Promise<AddressDoc> {
-    const now = new Date().toISOString();
-    const doc: AddressDoc = {
-      id: randomUUID(),
-      createdAt: now,
-      updatedAt: now,
-      ...data,
-      // normalization examples (optional)
-      state: data.state.toUpperCase(),
-      country: data.country.toUpperCase(),
-      zip: String(data.zip),
-    };
-
-    const { resource } = await this.container.items.create(doc);
-    return resource as AddressDoc;
+    try {
+      const now = new Date().toISOString();
+      const document: AddressDoc = {
+        id: randomUUID(),
+        createdAt: now,
+        updatedAt: now,
+        ...data,
+        // normalization examples (optional)
+        state: data.state,
+        country: data.country,
+        zip: String(data.zip),
+      };
+      console.log(`[address.repository] Creating address: ${JSON.stringify(document)}`);
+      const { resource } = await this.container.items.create(document);
+      console.log(`[address.repository] Created address: ${JSON.stringify(resource)}`);
+      return resource as AddressDoc;
+    } catch (error) {
+      console.error(`[address.repository] Error creating address: ${error}`);
+      throw error;
+    }
   }
 
   // Point read: you MUST provide the partition key (locationTypeId)

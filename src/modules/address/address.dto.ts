@@ -18,11 +18,7 @@ export const CreateAddressSchema = z.object({
     .default('FL'),
   zip: z.string().min(3).max(15),
 
-  country: z
-    .string()
-    .length(100)
-    .transform((s) => s.toUpperCase())
-    .default('UNITED STATES'),
+  country: z.string().default('United States'),
 
   county: z.string().min(1),
 

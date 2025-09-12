@@ -12,7 +12,7 @@ export const AuditActionEnum = z.enum([
 
 export const AuditActorSchema = z
   .object({
-    id: z.string().uuid().optional().nullable(),
+    id: z.uuid().optional().nullable(),
     email: z.string().email().optional().nullable(),
     name: z.string().optional().nullable(),
     ip: z.string().optional().nullable(),
@@ -43,7 +43,7 @@ export const AuditChangeSchema = z.object({
 export const CreateAuditLogSchema = z
   .object({
     entityType: z.string().min(1),
-    entityId: z.string().uuid(), // si no es UUID, cambia a z.string().min(1)
+    entityId: z.uuid(),
     action: AuditActionEnum,
     actor: AuditActorSchema,
     context: AuditContextSchema,

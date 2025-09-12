@@ -10,7 +10,7 @@ export interface AccountDoc extends BaseDoc {
   phone?: string | null;
   lastCallDate?: string | null;
 
-  billingAddressId?: string;
+  billingAddressId?: string | null;
 
   terminationDateInMDVita?: string | null;
   mdvitaDisenrollment: boolean;

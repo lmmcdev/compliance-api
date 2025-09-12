@@ -14,10 +14,12 @@ export interface IAuditLogService {
 
 export class AuditLogService implements IAuditLogService {
   constructor(private readonly repo: AuditLogRepository) {}
+
   static async createInstance(): Promise<AuditLogService> {
     const repo = await new AuditLogRepository().init();
     return new AuditLogService(repo);
   }
+
   async log(payload: unknown): Promise<AuditLogDoc> {
     const dto: CreateAuditLogDto = CreateAuditLogSchema.parse(payload);
     return this.repo.create(dto);

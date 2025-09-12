@@ -1,6 +1,5 @@
 export enum EntityName {
   LOCATION = 'locations',
-  USER = 'users',
   AUDIT_LOG = 'audit_logs',
 }
 
@@ -24,6 +23,7 @@ export enum LocationTypeCode {
   ADULT_DAY_CARE = 'Adult Day Care',
   OPTICAL = 'Optical',
   OTHER = 'Other',
+  CENTER = 'Center',
 }
 
 export enum LicenseTypeCode {
@@ -48,4 +48,10 @@ export enum LicenseTypeCode {
   PROFESSIONAL_LICENSE = 'Professional License',
   RADIATION_CONTROL = 'Radiation Control',
   SIMPLY = 'Simply',
+}
+
+export enum JurisdictionType {
+  STATE = 'State',
+  FEDERAL = 'County',
+  LOCAL = 'City',
 }

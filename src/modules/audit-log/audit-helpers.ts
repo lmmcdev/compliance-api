@@ -22,7 +22,6 @@ export function contextFromReq(req: HttpRequest, status?: number) {
   };
 }
 
-/** Diff superficial (top-level) para generar `changes` y snapshots chicos */
 export function shallowDiff(
   before: any,
   after: any,

@@ -76,6 +76,15 @@ export const locationsDeleteHandler = withHttp(
   },
 );
 
+export const locationsFindByIdHandler = withHttp(
+  async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
+    const { id } = z.object({ id: z.string().uuid() }).parse((req as any).params ?? {});
+    const service = await LocationService.createInstance();
+    const entity = await service.findById(id);
+    return ok(ctx, entity);
+  },
+);
+
 // -------- Azure Functions route registrations --------
 
 app.http('locations-list', {
@@ -111,4 +120,12 @@ app.http('locations-delete', {
   route: `${base}/{id}`,
   authLevel: 'anonymous',
   handler: locationsDeleteHandler,
+});
+
+// Non-partitioned findById (for UI convenience, e.g. when we have just the locationId)
+app.http('locations-findById', {
+  methods: ['GET'],
+  route: `v1/locations/{id}/find`,
+  authLevel: 'anonymous',
+  handler: locationsFindByIdHandler,
 });

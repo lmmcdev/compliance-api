@@ -1,7 +1,6 @@
 // src/modules/business-license/business-license.doc.ts
 import { BaseDoc } from '../../shared/base.doc';
-
-export type BusinessLicenseStatus = 'Completed' | 'Active' | 'Inactive' | 'Pending';
+import { JurisdictionType, LicenseStatus } from '../../types';
 
 export interface BusinessLicenseDoc extends BaseDoc {
   /** Partition key */
@@ -12,16 +11,20 @@ export interface BusinessLicenseDoc extends BaseDoc {
   issueDate?: string | null; // ISO
   renewalDate?: string | null; // ISO
   terminationDate?: string | null; // ISO
-
   licenseNumber?: string | null;
   certificateNumber?: string | null;
 
-  status?: BusinessLicenseStatus | string | null;
+  status?: LicenseStatus | string | null;
   isActive?: boolean; // default false
 
   description?: string | null;
 
   licenseTypeId?: string | null;
-  healthcareFacilityId?: string | null;
+
   healthcareProviderId?: string | null;
+  healthcareFacilityId?: string | null;
+  healthcareFacilityId2?: string | null;
+
+  jurisdictionType?: JurisdictionType | string | null;
+  jurisdictionOther?: string | null;
 }

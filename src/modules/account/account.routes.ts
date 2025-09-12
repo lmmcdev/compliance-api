@@ -47,7 +47,7 @@ export const accountsListHandler = withHttp(
 // Create
 export const accountsCreateHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const body = await parseJson(req, CreateAccountBodySchema);
+    const body = await parseJson(req, CreateAccountSchema);
     const dto = CreateAccountSchema.parse(body);
 
     const service = await AccountService.createInstance();

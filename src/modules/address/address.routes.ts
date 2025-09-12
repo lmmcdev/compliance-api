@@ -13,7 +13,7 @@ import { z } from 'zod';
 
 import { AddressService } from './address.service';
 import { CreateAddressSchema, UpdateAddressSchema, ListAddressesSchema } from './address.dto';
-import { audit } from '../audit-log/audit';
+import { shallowDiff, safeAuditLog } from '../audit-log/audit-helpers';
 
 // ----- Route base: nested under LocationType (ensures PK is always present)
 const base = 'v1/location-types/{locationTypeId}/addresses';
@@ -44,32 +44,34 @@ export const addressesListHandler = withHttp(
 
 export const addressesCreateHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const { locationTypeId, ...body } = await parseJson(req, CreateAddressSchema);
-    const dto = CreateAddressSchema.parse({ ...body, locationTypeId });
+    try {
+      const dto = await parseJson(req, CreateAddressSchema);
 
-    const service = await AddressService.createInstance();
-    const entity = await service.create(dto);
-    if (entity) {
-      await audit(ctx, {
-        entityType: 'address',
+      ctx.log(`[address.routes] Creating address for locationTypeId ${dto.locationTypeId}`);
+
+      const service = await AddressService.createInstance();
+      const entity = await service.create(dto);
+
+      ctx.log(
+        `[address.routes] Created address ${entity.id} for locationTypeId ${dto.locationTypeId}`,
+      );
+      // AUDIT: CREATE
+      await safeAuditLog({
+        entityType: 'addresses',
         entityId: entity.id,
         action: 'CREATE',
-        actor: {
-          id: (req as any).user?.id,
-          email: (req as any).user?.email,
-          ip: req.headers.get('x-forwarded-for') ?? undefined,
+        req,
+        message: `addresses created (code=${entity.addressType})`,
+        after: {
+          id: entity.id,
         },
-        context: {
-          method: req.method,
-          path: new URL(req.url).pathname,
-          status: 201,
-          userAgent: req.headers.get('user-agent') ?? undefined,
-        },
-        after: { id: entity.id, street: entity.street, city: entity.city }, // keep it small
-        message: 'Created address',
       });
+      const response: HttpResponseInit = created(ctx, entity);
+      return response;
+    } catch (error) {
+      ctx.error(error);
+      throw error;
     }
-    return created(ctx, entity);
   },
 );
 

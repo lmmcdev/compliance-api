@@ -10,6 +10,7 @@ export interface ILocationService {
   get(id: string, locationTypeId: string): Promise<LocationDoc>;
   list(query: unknown): Promise<{ items: LocationDoc[]; continuationToken: string | null }>;
   remove(id: string, locationTypeId: string): Promise<void>;
+  findById(id: string): Promise<LocationDoc | null>;
 }
 
 export class LocationService implements ILocationService {
@@ -80,5 +81,10 @@ export class LocationService implements ILocationService {
       throw new NotFoundError(`Location ${id} not found for locationType ${locationTypeId}.`);
     }
     await this.repo.delete(id, locationTypeId);
+  }
+
+  // find by id within a given locationTypeId (partitionKey)
+  async findById(id: string): Promise<LocationDoc | null> {
+    return this.repo.findByIdWithoutType(id);
   }
 }
