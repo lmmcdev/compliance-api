@@ -23,6 +23,8 @@ export const env = {
   COSMOS_ENDPOINT: process.env.COSMOS_ENDPOINT,
   COSMOS_KEY: process.env.COSMOS_KEY,
   COSMOS_DB_NAME: process.env.COSMOS_DB_NAME,
+  // Azure Blob Storage
+  AZURE_BLOB_CONNECTION_STRING: process.env.AZURE_BLOB_CONNECTION_STRING,
 };
 
 export default env;
