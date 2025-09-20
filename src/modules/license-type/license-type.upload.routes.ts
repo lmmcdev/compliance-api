@@ -10,20 +10,41 @@ const licenseTypesUploadHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
     // Parse form-data or JSON
     const body = await req.formData();
-    const file = body.get('file');
-    const fileName = body.get('fileName');
-    const contentType = body.get('contentType') || file?.type || 'application/octet-stream';
+    const fileEntry = body.get('file');
+    const fileNameEntry = body.get('fileName');
+    const contentTypeEntry = body.get('contentType');
 
-    if (!file || !fileName) {
+    let fileBuffer: Buffer | undefined;
+    let fileName: string | undefined;
+    let contentType: string = 'application/octet-stream';
+
+    if (typeof fileNameEntry === 'string') {
+      fileName = fileNameEntry;
+    }
+    if (typeof contentTypeEntry === 'string') {
+      contentType = contentTypeEntry;
+    }
+
+    if (fileEntry instanceof Buffer) {
+      fileBuffer = fileEntry;
+    } else if (typeof File !== 'undefined' && fileEntry instanceof File) {
+      // @ts-ignore
+      fileBuffer = Buffer.from(await fileEntry.arrayBuffer());
+      // @ts-ignore
+      if (fileEntry.type) contentType = fileEntry.type;
+    } else if (typeof fileEntry === 'string') {
+      fileBuffer = Buffer.from(fileEntry, 'base64');
+    }
+
+    if (!fileBuffer || !fileName) {
       return {
         status: 400,
         body: 'Missing file or fileName',
       };
     }
 
-    const buffer = Buffer.isBuffer(file) ? file : Buffer.from(await file.arrayBuffer());
     const service = new LicenseTypeUploadService();
-    const url = await service.uploadFile(fileName, buffer, contentType);
+    const url = await service.uploadFile(fileName, fileBuffer, contentType);
     return created(ctx, { url });
   }
 );
