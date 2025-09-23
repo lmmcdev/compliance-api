@@ -25,6 +25,16 @@ export const env = {
   COSMOS_DB_NAME: process.env.COSMOS_DB_NAME,
   // Azure Blob Storage
   AZURE_BLOB_CONNECTION_STRING: process.env.AZURE_BLOB_CONNECTION_STRING,
+
+  // Azure AD Configuration
+  AZURE_TENANT_ID: process.env.AZURE_TENANT_ID,
+  AZURE_CLIENT_ID: process.env.AZURE_CLIENT_ID,
+  AZURE_CLIENT_SECRET: process.env.AZURE_CLIENT_SECRET,
+
+  // AIXAAI API Configuration
+  AIXAAI_API_SCOPE: process.env.AIXAAI_API_SCOPE,
+  AIXAAI_EXTRACTION_API_URL: process.env.AIXAAI_EXTRACTION_API_URL,
+  AIXAAI_CLASSIFICATION_API_URL: process.env.AIXAAI_CLASSIFICATION_API_URL,
 };
 
 export default env;
