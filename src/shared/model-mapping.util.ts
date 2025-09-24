@@ -19,7 +19,7 @@ export const CLASSIFICATION_TO_MODEL_MAPPING: Record<string, string> = {
   'DEA': 'DEA',
   'Elevators': 'elevators',
   'Fire Permit': 'FireDeptAnnualOperatingPermit',
-  'HCCE (Dispensary Permits)': 'HCEE',
+  'HCCE (Dispensary Permits)': 'HCCE',
   'Professional License': 'ProfessionalLicense',
   'RadiationPermit': 'RadiationMachineRegistration'
 };
