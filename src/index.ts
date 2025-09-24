@@ -1,6 +1,7 @@
 import './config/env';
 import './functions/health.route';
-import './modules/doc-ai';
+import './modules/doc-classification';
+import './modules/doc-extraction';
 import './modules/account/account.routes';
 import './modules/business-license/business-license.routes';
 import './modules/healthcare-facility/healthcare-facility.routes';

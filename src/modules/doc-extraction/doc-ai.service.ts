@@ -1,13 +1,11 @@
 import { InvocationContext } from '@azure/functions';
 import { ClientSecretCredential } from '@azure/identity';
 import { env } from '../../config/env';
-import { getModelIdForDocType } from '../../shared/model-mapping.util';
 import {
-  ClassificationRequest,
-  ClassificationResponse,
+  ExtractionRequest,
+  ExtractionResponse,
   AzureAdConfig,
   ApiConfig,
-  DocumentClassification,
 } from './doc-ai.dto';
 
 export class DocAiService {
@@ -23,15 +21,15 @@ export class DocAiService {
     };
 
     this.apiConfig = {
-      classificationUrl: env.AIXAAI_CLASSIFICATION_API_URL!,
+      extractionUrl: env.AIXAAI_EXTRACTION_API_URL!,
     };
   }
 
   private validateConfig(): void {
     const { tenantId, clientId, clientSecret, scope } = this.azureAdConfig;
-    const { classificationUrl } = this.apiConfig;
+    const { extractionUrl } = this.apiConfig;
 
-    if (!tenantId || !clientId || !clientSecret || !scope || !classificationUrl) {
+    if (!tenantId || !clientId || !clientSecret || !scope || !extractionUrl) {
       throw new Error('Missing required Azure AD or API configuration');
     }
   }
@@ -41,6 +39,7 @@ export class DocAiService {
 
     const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
     const tokenResponse = await credential.getToken(scope);
+    console.log(tokenResponse)
 
     ctx.log('Token response received:', !!tokenResponse?.token);
 
@@ -53,29 +52,56 @@ export class DocAiService {
 
   private async callExternalApi(
     url: string,
-    blobName: string,
+    request: ExtractionRequest,
     accessToken: string,
     ctx: InvocationContext
   ): Promise<any> {
-    const apiResponse = await fetch(url, {
+    console.log("=== EXTERNAL API REQUEST DEBUG ===");
+    console.log("Incoming request object:", JSON.stringify(request, null, 2));
+    console.log("Request.blobName:", request.blobName);
+    console.log("Request.modelId:", request.modelId);
+    console.log("Request.options:", request.options);
+    console.log("ModelId check - exists:", !!request.modelId, "value:", request.modelId);
+
+    const payload = {
+      blobName: request.blobName,
+      ...(request.modelId && { modelId: request.modelId }),
+      ...(request.options && { options: request.options })
+    };
+
+    console.log('=== FINAL PAYLOAD TO SEND ===');
+    console.log('Payload object keys:', Object.keys(payload));
+    console.log('Payload.blobName:', payload.blobName);
+    console.log('Payload.modelId:', payload.modelId);
+    console.log('Final JSON payload:', JSON.stringify(payload, null, 2));
+    console.log('API URL:', `${url}`);
+    console.log('Access token present:', !!accessToken);
+
+    const apiResponse = await fetch(`${url}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${accessToken}`,
       },
-      body: JSON.stringify({ blobName }),
+      body: JSON.stringify(payload),
     });
+
+    console.log('API Response status:', apiResponse.status);
+    console.log('API Response headers:', Object.fromEntries(apiResponse.headers.entries()));
 
     if (!apiResponse.ok) {
       const errorText = await apiResponse.text();
+      console.log('API Error response text:', errorText);
       ctx.error(`API call failed: ${apiResponse.status} - ${errorText}`);
 
       // Parse the error details if it's JSON
       let errorDetails;
       try {
         errorDetails = JSON.parse(errorText);
+        console.log('Parsed error details:', JSON.stringify(errorDetails, null, 2));
       } catch {
         errorDetails = { statusText: apiResponse.statusText, details: errorText };
+        console.log('Error details (not JSON):', errorDetails);
       }
 
       // Check for specific Document Intelligence errors
@@ -93,27 +119,33 @@ export class DocAiService {
     }
 
     const apiResult = await apiResponse.json();
+    console.log('API Success response:', JSON.stringify(apiResult, null, 2));
 
     if (!apiResult?.success) {
+      console.log('API returned unsuccessful response:', apiResult);
       const error = new Error('External API returned unsuccessful response');
       (error as any).code = 'EXTERNAL_API_UNSUCCESSFUL';
       (error as any).details = apiResult;
       throw error;
     }
 
+    console.log('=== END DOC EXTRACTION API CALL DEBUG ===');
     return apiResult;
   }
 
-  async classifyDocument(
-    request: ClassificationRequest,
+  async extractDocument(
+    request: ExtractionRequest,
     ctx: InvocationContext
-  ): Promise<ClassificationResponse> {
+  ): Promise<ExtractionResponse> {
+    console.log('=== STARTING DOCUMENT EXTRACTION ===');
+    console.log('Incoming request:', JSON.stringify(request, null, 2));
+
     this.validateConfig();
 
     const accessToken = await this.getAccessToken(ctx);
     const apiResult = await this.callExternalApi(
-      this.apiConfig.classificationUrl,
-      request.blobName,
+      this.apiConfig.extractionUrl,
+      request,
       accessToken,
       ctx
     );
@@ -121,7 +153,7 @@ export class DocAiService {
     const resultData = apiResult.data?.result;
     const analyzeResult = apiResult.data?.analyzeResult;
 
-    if (!resultData || !Array.isArray(resultData) || resultData.length === 0) {
+    if (!resultData) {
       return {
         result: null,
         analyzeResult: {
@@ -132,27 +164,14 @@ export class DocAiService {
       };
     }
 
-    // Extract docType and confidence from aixaai API response
-    const documents: DocumentClassification[] = resultData.map(d => {
-      const modelId = getModelIdForDocType(d.docType);
-      return {
-        docType: d.docType,
-        confidence: d.confidence,
-        boundingRegions: d.boundingRegions?.length || 0,
-        spans: d.spans?.length || 0,
-        ...(modelId && { modelId })
-      };
-    });
-
     return {
-      result: documents,
+      result: resultData,
       analyzeResult: {
         modelId: analyzeResult?.modelId,
         apiVersion: analyzeResult?.apiVersion,
-        documentsCount: documents.length,
+        documentsCount: Array.isArray(resultData) ? resultData.length : 1,
       },
       timestamp: apiResult.timestamp,
     };
   }
-
 }

@@ -2,21 +2,23 @@ import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/fu
 import { createPrefixRoute, ok, fail, withHttp } from '../../http';
 import { HTTP_STATUS } from '../../http/status';
 import { DocAiService } from './doc-ai.service';
-import { ClassificationRequestSchema } from './doc-ai.dto';
+import { ExtractionRequestSchema } from './doc-ai.dto';
 
-const classificationPath = 'docaiclassification';
+const extractionPath = 'docaiextraction';
 
-const { prefixRoute: classificationRoute } = createPrefixRoute(classificationPath);
+const { prefixRoute: extractionRoute } = createPrefixRoute(extractionPath);
 
 const docAiService = new DocAiService();
 
-export const docAiClassificationHandler = withHttp(
+export const docAiExtractionHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
     try {
       const body = await req.json();
 
+      console.log("All body", body);
       // Validate request body
-      const validationResult = ClassificationRequestSchema.safeParse(body);
+      const validationResult = ExtractionRequestSchema.safeParse(body);
+      console.log("Body validated", validationResult)
       if (!validationResult.success) {
         return fail(
           ctx,
@@ -27,11 +29,11 @@ export const docAiClassificationHandler = withHttp(
         );
       }
 
-      const result = await docAiService.classifyDocument(validationResult.data, ctx);
+      const result = await docAiService.extractDocument(validationResult.data, ctx);
       return ok(ctx, result);
 
     } catch (err: any) {
-      ctx.error('Error in docaiclassification:', err);
+      ctx.error('Error in docaiextraction:', err);
 
       // Handle specific error types
       if (err.name === 'TypeError' && err.message.includes('json')) {
@@ -85,19 +87,17 @@ export const docAiClassificationHandler = withHttp(
         ctx,
         HTTP_STATUS.SERVER_ERROR,
         'INTERNAL_ERROR',
-        'Internal server error during document classification',
+        'Internal server error during document extraction',
         err.message
       );
     }
   },
 );
 
-
 // Register Azure Functions
-app.http('docaiclassification', {
+app.http('docaiextraction', {
   methods: ['POST'],
-  route: classificationRoute,
+  route: extractionRoute,
   authLevel: 'anonymous',
-  handler: docAiClassificationHandler,
+  handler: docAiExtractionHandler,
 });
-

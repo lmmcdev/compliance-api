@@ -5,12 +5,7 @@ export const ClassificationRequestSchema = z.object({
   blobName: z.string().min(1, 'Blob name is required'),
 });
 
-export const ExtractionRequestSchema = z.object({
-  blobName: z.string().min(1, 'Blob name is required'),
-});
-
 export type ClassificationRequest = z.infer<typeof ClassificationRequestSchema>;
-export type ExtractionRequest = z.infer<typeof ExtractionRequestSchema>;
 
 // Response DTOs
 export interface DocumentClassification {
@@ -18,6 +13,7 @@ export interface DocumentClassification {
   confidence: number;
   boundingRegions: number;
   spans: number;
+  modelId?: string;
 }
 
 export interface AnalyzeResult {
@@ -32,11 +28,6 @@ export interface ClassificationResponse {
   timestamp?: string;
 }
 
-export interface ExtractionResponse {
-  result: any;
-  analyzeResult?: AnalyzeResult;
-  timestamp?: string;
-}
 
 // Azure AD Configuration
 export interface AzureAdConfig {
@@ -49,5 +40,4 @@ export interface AzureAdConfig {
 // API Configuration
 export interface ApiConfig {
   classificationUrl: string;
-  extractionUrl: string;
 }
