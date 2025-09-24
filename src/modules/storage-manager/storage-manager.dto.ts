@@ -87,6 +87,15 @@ export const StorageManagerResponseSchema = z.object({
 
 export type StorageManagerResponse = z.infer<typeof StorageManagerResponseSchema>;
 
+export const StorageListSchema = z.object({
+  container: z.string().min(1, 'Container name is required'),
+  prefix: z.string().optional(),
+  continuationToken: z.string().optional(),
+  maxResults: z.number().int().min(1).max(1000).optional(),
+});
+
+export type StorageList = z.infer<typeof StorageListSchema>;
+
 // Storage response with multiple blobs (for list operations)
 export const StorageListResponseSchema = z.object({
   data: z.object({

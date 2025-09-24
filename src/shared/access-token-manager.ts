@@ -1,8 +1,8 @@
 import { ClientSecretCredential } from '@azure/identity';
-import { AzureAdConfig } from '../modules/doc-ai/doc-ai.dto';
+import { AzureAdConfig } from '../modules/doc-classification';
 
 export interface TokenResponse {
-  accessToken: string;
+  token: string;
   expiresAt: Date;
 }
 
@@ -19,6 +19,7 @@ export class AccessTokenManager {
   }
 
   async getAccessToken(config: AzureAdConfig): Promise<TokenResponse> {
+    console.log('AccessTokenManager: Requesting access token with config:', config);
     this.validateConfig(config);
 
     const cacheKey = this.getCacheKey(config);
@@ -26,7 +27,7 @@ export class AccessTokenManager {
 
     if (cachedToken && this.isTokenValid(cachedToken)) {
       return {
-        accessToken: cachedToken.token,
+        token: cachedToken.token,
         expiresAt: cachedToken.expiresAt,
       };
     }
@@ -54,7 +55,7 @@ export class AccessTokenManager {
     });
 
     return {
-      accessToken: tokenResponse.token,
+      token: tokenResponse.token,
       expiresAt,
     };
   }
@@ -92,5 +93,5 @@ export const tokenManager = new AccessTokenManager();
 // Convenience function for simple usage
 export async function getAccessToken(config: AzureAdConfig): Promise<string> {
   const response = await tokenManager.getAccessToken(config);
-  return response.accessToken;
+  return response.token;
 }

@@ -1,22 +1,19 @@
 import { InvocationContext } from '@azure/functions';
 import { ClientSecretCredential } from '@azure/identity';
 import { env } from '../../config/env';
-import {
-  ExtractionRequest,
-  ExtractionResponse,
-  AzureAdConfig,
-  ApiConfig,
-} from './doc-ai.dto';
+import { ExtractionRequest, ExtractionResponse, AzureAdConfig, ApiConfig } from './doc-ai.dto';
+import { AccessTokenManager } from '../../shared/access-token-manager';
 
 export class DocAiService {
   private azureAdConfig: AzureAdConfig;
   private apiConfig: ApiConfig;
+  private tokenManager: AccessTokenManager = new AccessTokenManager();
 
   constructor() {
     this.azureAdConfig = {
       tenantId: env.AZURE_TENANT_ID!,
-      clientId: env.AZURE_CLIENT_ID!,
-      clientSecret: env.AZURE_CLIENT_SECRET!,
+      clientId: env.AZURE_AIXAAI_CLIENT_ID!,
+      clientSecret: env.AZURE_AIXAAI_CLIENT_SECRET!,
       scope: env.AIXAAI_API_SCOPE!,
     };
 
@@ -35,11 +32,10 @@ export class DocAiService {
   }
 
   private async getAccessToken(ctx: InvocationContext): Promise<string> {
-    const { tenantId, clientId, clientSecret, scope } = this.azureAdConfig;
-
-    const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
-    const tokenResponse = await credential.getToken(scope);
-    console.log(tokenResponse)
+    const config = this.azureAdConfig;
+    ctx.log('Getting access token with config:', config);
+    const tokenResponse = await this.tokenManager.getAccessToken(config);
+    console.log(tokenResponse.token);
 
     ctx.log('Token response received:', !!tokenResponse?.token);
 
@@ -54,19 +50,19 @@ export class DocAiService {
     url: string,
     request: ExtractionRequest,
     accessToken: string,
-    ctx: InvocationContext
+    ctx: InvocationContext,
   ): Promise<any> {
-    console.log("=== EXTERNAL API REQUEST DEBUG ===");
-    console.log("Incoming request object:", JSON.stringify(request, null, 2));
-    console.log("Request.blobName:", request.blobName);
-    console.log("Request.modelId:", request.modelId);
-    console.log("Request.options:", request.options);
-    console.log("ModelId check - exists:", !!request.modelId, "value:", request.modelId);
+    console.log('=== EXTERNAL API REQUEST DEBUG ===');
+    console.log('Incoming request object:', JSON.stringify(request, null, 2));
+    console.log('Request.blobName:', request.blobName);
+    console.log('Request.modelId:', request.modelId);
+    console.log('Request.options:', request.options);
+    console.log('ModelId check - exists:', !!request.modelId, 'value:', request.modelId);
 
     const payload = {
       blobName: request.blobName,
       ...(request.modelId && { modelId: request.modelId }),
-      ...(request.options && { options: request.options })
+      ...(request.options && { options: request.options }),
     };
 
     console.log('=== FINAL PAYLOAD TO SEND ===');
@@ -81,7 +77,7 @@ export class DocAiService {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify(payload),
     });
@@ -106,7 +102,9 @@ export class DocAiService {
 
       // Check for specific Document Intelligence errors
       if (errorDetails?.error?.code === 'DOCUMENT_INTELLIGENCE_ERROR') {
-        const error = new Error('Document Intelligence service error - model not found or document processing failed');
+        const error = new Error(
+          'Document Intelligence service error - model not found or document processing failed',
+        );
         (error as any).code = 'DOCUMENT_INTELLIGENCE_ERROR';
         (error as any).details = errorDetails;
         throw error;
@@ -135,7 +133,7 @@ export class DocAiService {
 
   async extractDocument(
     request: ExtractionRequest,
-    ctx: InvocationContext
+    ctx: InvocationContext,
   ): Promise<ExtractionResponse> {
     console.log('=== STARTING DOCUMENT EXTRACTION ===');
     console.log('Incoming request:', JSON.stringify(request, null, 2));
@@ -147,7 +145,7 @@ export class DocAiService {
       this.apiConfig.extractionUrl,
       request,
       accessToken,
-      ctx
+      ctx,
     );
 
     const resultData = apiResult.data?.result;

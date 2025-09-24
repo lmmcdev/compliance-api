@@ -1,6 +1,6 @@
 import { InvocationContext } from '@azure/functions';
 import { getAccessToken } from '../../shared/access-token-manager';
-import { AzureAdConfig } from '../../modules/doc-ai/doc-ai.dto';
+import { AzureAdConfig } from '../doc-classification';
 import { env } from '../../config/env';
 import {
   StorageManagerResponse,
@@ -10,7 +10,7 @@ import {
   FileUploadFormData,
   UploadRequestHeaders,
   StorageManagerResponseSchema,
-} from './storage.dto';
+} from './storage-manager.dto';
 
 export interface StorageServiceConfig {
   apiUrl: string;
@@ -49,7 +49,14 @@ export class StorageService {
     ctx: InvocationContext,
     requestId?: string,
   ): Promise<Record<string, string>> {
+    console.log('Storage Service initialized with config:', this.config);
     const accessToken = await getAccessToken(this.config.tokenConfig);
+
+    if (!accessToken) {
+      throw new Error('Failed to obtain access token');
+    }
+
+    ctx.log('Obtained access token for Storage Manager API');
 
     const headers: Record<string, string> = {
       Authorization: `Bearer ${accessToken}`,
@@ -210,7 +217,6 @@ export class StorageService {
   async listFiles(
     container: string,
     prefix?: string,
-    requestId?: string,
     ctx?: InvocationContext,
   ): Promise<StorageListResponse> {
     this.validateConfig();
@@ -218,7 +224,7 @@ export class StorageService {
     if (!ctx) {
       throw new Error('InvocationContext is required for listFiles operation');
     }
-
+    const requestId = ctx.invocationId;
     const headers = await this.getAuthHeaders(ctx, requestId);
     const searchParams = new URLSearchParams();
 
@@ -228,7 +234,7 @@ export class StorageService {
 
     const queryString = searchParams.toString();
     const url = `${this.config.apiUrl}/files/${encodeURIComponent(container)}${queryString ? `?${queryString}` : ''}`;
-
+    ctx.log(`Listing files with URL: ${url}`);
     try {
       const response = await fetch(url, {
         method: 'GET',

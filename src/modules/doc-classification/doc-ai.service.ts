@@ -39,10 +39,9 @@ export class DocAiService {
   }
 
   private async getAccessToken(ctx: InvocationContext): Promise<string> {
-    const { tenantId, clientId, clientSecret, scope } = this.azureAdConfig;
-
-    const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
-    const tokenResponse = await credential.getToken(scope);
+    const config = this.azureAdConfig;
+    ctx.log('Getting access token with config:', config);
+    const tokenResponse = await this.tokenManager.getAccessToken(config);
 
     ctx.log('Token response received:', !!tokenResponse?.token);
 
@@ -114,7 +113,7 @@ export class DocAiService {
   ): Promise<ClassificationResponse> {
     this.validateConfig();
 
-    const { accessToken } = await this.tokenManager.getAccessToken(this.azureAdConfig);
+    const accessToken = await this.getAccessToken(ctx);
     const apiResult = await this.callExternalApi(
       this.apiConfig.classificationUrl,
       request.blobName,
