@@ -9,16 +9,18 @@ import {
   ApiConfig,
   DocumentClassification,
 } from './doc-ai.dto';
+import { AccessTokenManager } from '../../shared/access-token-manager';
 
 export class DocAiService {
   private azureAdConfig: AzureAdConfig;
   private apiConfig: ApiConfig;
+  private tokenManager: AccessTokenManager = new AccessTokenManager();
 
   constructor() {
     this.azureAdConfig = {
       tenantId: env.AZURE_TENANT_ID!,
-      clientId: env.AZURE_CLIENT_ID!,
-      clientSecret: env.AZURE_CLIENT_SECRET!,
+      clientId: env.AZURE_AIXAAI_CLIENT_ID!,
+      clientSecret: env.AZURE_AIXAAI_CLIENT_SECRET!,
       scope: env.AIXAAI_API_SCOPE!,
     };
 
@@ -55,13 +57,13 @@ export class DocAiService {
     url: string,
     blobName: string,
     accessToken: string,
-    ctx: InvocationContext
+    ctx: InvocationContext,
   ): Promise<any> {
     const apiResponse = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify({ blobName }),
     });
@@ -80,7 +82,9 @@ export class DocAiService {
 
       // Check for specific Document Intelligence errors
       if (errorDetails?.error?.code === 'DOCUMENT_INTELLIGENCE_ERROR') {
-        const error = new Error('Document Intelligence service error - model not found or document processing failed');
+        const error = new Error(
+          'Document Intelligence service error - model not found or document processing failed',
+        );
         (error as any).code = 'DOCUMENT_INTELLIGENCE_ERROR';
         (error as any).details = errorDetails;
         throw error;
@@ -106,16 +110,16 @@ export class DocAiService {
 
   async classifyDocument(
     request: ClassificationRequest,
-    ctx: InvocationContext
+    ctx: InvocationContext,
   ): Promise<ClassificationResponse> {
     this.validateConfig();
 
-    const accessToken = await this.getAccessToken(ctx);
+    const { accessToken } = await this.tokenManager.getAccessToken(this.azureAdConfig);
     const apiResult = await this.callExternalApi(
       this.apiConfig.classificationUrl,
       request.blobName,
       accessToken,
-      ctx
+      ctx,
     );
 
     const resultData = apiResult.data?.result;
@@ -133,14 +137,14 @@ export class DocAiService {
     }
 
     // Extract docType and confidence from aixaai API response
-    const documents: DocumentClassification[] = resultData.map(d => {
+    const documents: DocumentClassification[] = resultData.map((d) => {
       const modelId = getModelIdForDocType(d.docType);
       return {
         docType: d.docType,
         confidence: d.confidence,
         boundingRegions: d.boundingRegions?.length || 0,
         spans: d.spans?.length || 0,
-        ...(modelId && { modelId })
+        ...(modelId && { modelId }),
       };
     });
 
@@ -154,5 +158,4 @@ export class DocAiService {
       timestamp: apiResult.timestamp,
     };
   }
-
 }

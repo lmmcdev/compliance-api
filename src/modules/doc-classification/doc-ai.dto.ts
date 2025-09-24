@@ -28,7 +28,6 @@ export interface ClassificationResponse {
   timestamp?: string;
 }
 
-
 // Azure AD Configuration
 export interface AzureAdConfig {
   tenantId: string;
