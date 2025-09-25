@@ -7,7 +7,6 @@ import {
   noContent,
   ok,
   paginated,
-  parseJson,
   parseQuery,
   withHttp,
 } from '../../http';
@@ -17,8 +16,9 @@ import {
   StorageListSchema,
 } from './storage-manager.dto';
 import { StorageService } from './storage-manager.service';
+import { DocAiService } from '../doc-classification/doc-ai.service';
 
-const path = 'storage-manager';
+const path = 'files';
 const { prefixRoute, itemRoute } = createPrefixRoute(path);
 
 const listHandler = withHttp(
@@ -28,20 +28,81 @@ const listHandler = withHttp(
       StorageListSchema,
     );
     const service = new StorageService();
-    const response = await service.listFiles(container, prefix, ctx);
-    return ok(ctx, response);
+    const { data } = await service.listFiles(container, prefix, ctx);
+    return ok(ctx, data);
   },
 );
 
-/* const createUploadHandler = withHttp(
+const createUploadHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
-    const dto = await parseJson(req, FileUploadFormDataSchema);
-    const service = new StorageService();
-    const entity = await service.uploadFile(dto);
-    return created(ctx, entity);
+    try {
+      // Parse multipart form data
+      const formData = await req.formData();
+
+      // Extract form fields
+      const container = 'temp-uploads'; // Fixed container for temp uploads
+      const path = 'compliance-api'; // Fixed path for temp uploads
+      const metadata = formData.get('metadata');
+      const metadataString = metadata === null ? undefined : (metadata as string);
+      const file = formData.get('file');
+
+      if (!file || typeof file === 'string') {
+        throw new Error('File is required and must be a file');
+      }
+
+      // Validate form data
+      const dto = FileUploadFormDataSchema.parse({
+        container,
+        path,
+        metadata: metadataString,
+      });
+
+      // Extract headers
+      const headers = {
+        'x-api-key': req.headers.get('x-api-key') || '',
+        'x-request-id': req.headers.get('x-request-id') || crypto.randomUUID(),
+        'content-type': req.headers.get('content-type') || '',
+      };
+
+      // Convert file to buffer and extract filename and content type
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const filename = file.name || 'uploaded-file';
+      const contentType = file.type || 'application/octet-stream';
+
+      const service = new StorageService();
+      const {
+        data: { blobName, id, url, size },
+      } = await service.uploadFile(buffer, filename, contentType, dto, headers, ctx);
+
+      // temp uploads are not stored in DB, so just return the response directly
+      // call classifyDocument
+
+      const docAiService = new DocAiService();
+      const classificationResult = await docAiService.classifyDocument(
+        {
+          blobName: `${container}/${blobName}`,
+        },
+        ctx,
+      );
+
+      if (!classificationResult) {
+        ctx.error('Document classification failed', classificationResult);
+        throw new Error('Document classification failed');
+      }
+
+      return created(ctx, {
+        message: 'File uploaded and classified successfully',
+        id,
+        url,
+      });
+    } catch (error) {
+      ctx.error('File upload failed', error);
+      throw new Error('File upload failed');
+    }
   },
 );
 
+/*
 const completeUploadHandler = withHttp(
   async (req: HttpRequest, ctx: InvocationContext): Promise<HttpResponseInit> => {
     const dto = await parseJson(req, CompleteUploadRequestSchema);
@@ -67,30 +128,9 @@ app.http('storage-files-list', {
   handler: listHandler,
 });
 
-/* app.http('getStorageItem', {
-  route: itemRoute,
-  methods: ['GET'],
-  authLevel: 'anonymous',
-  handler: getHandler,
-});
-
-app.http('createStorageUpload', {
-  route: `${prefixRoute}/upload`,
+app.http('storage-files-upload', {
+  route: `${prefixRoute}/temp-upload`,
   methods: ['POST'],
   authLevel: 'anonymous',
   handler: createUploadHandler,
 });
-
-app.http('completeStorageUpload', {
-  route: `${prefixRoute}/upload/complete`,
-  methods: ['POST'],
-  authLevel: 'anonymous',
-  handler: completeUploadHandler,
-});
-
-app.http('deleteStorageItem', {
-  route: itemRoute,
-  methods: ['DELETE'],
-  authLevel: 'anonymous',
-  handler: deleteHandler,
-}); */

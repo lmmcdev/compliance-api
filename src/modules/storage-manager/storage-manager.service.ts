@@ -106,6 +106,8 @@ export class StorageService {
 
   async uploadFile(
     file: Buffer | Blob,
+    filename: string,
+    contentType: string,
     formData: FileUploadFormData,
     headers: UploadRequestHeaders,
     ctx: InvocationContext,
@@ -113,7 +115,11 @@ export class StorageService {
     this.validateConfig();
 
     const uploadFormData = new FormData();
-    //uploadFormData.append('file', file, 'file');
+    if (file instanceof Buffer) {
+      uploadFormData.append('file', new Blob([file as any], { type: contentType }), filename);
+    } else {
+      uploadFormData.append('file', file as Blob, filename);
+    }
     uploadFormData.append('container', formData.container);
 
     if (formData.path) {
@@ -231,9 +237,12 @@ export class StorageService {
     if (prefix) {
       searchParams.append('prefix', prefix);
     }
+    if (container) {
+      searchParams.append('container', container);
+    }
 
     const queryString = searchParams.toString();
-    const url = `${this.config.apiUrl}/files/${encodeURIComponent(container)}${queryString ? `?${queryString}` : ''}`;
+    const url = `${this.config.apiUrl}/files/list${queryString ? `?${queryString}` : ''}`;
     ctx.log(`Listing files with URL: ${url}`);
     try {
       const response = await fetch(url, {
@@ -241,7 +250,9 @@ export class StorageService {
         headers,
       });
 
-      return await this.handleApiResponse<StorageListResponse>(response, ctx, 'list files');
+      const result = await this.handleApiResponse<StorageListResponse>(response, ctx, 'list files');
+
+      return result;
     } catch (error) {
       ctx.error('Error listing files from Storage Manager:', error);
       throw error;

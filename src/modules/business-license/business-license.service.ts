@@ -78,4 +78,6 @@ export class BusinessLicenseService {
     if (!updated) throw new NotFoundError('Business license not found after active update');
     return updated;
   }
+
+  // Additional methods for handling business license documents can be added here
 }

@@ -59,7 +59,7 @@ export type ParsedMetadata = z.infer<typeof ParsedMetadataSchema>;
 // Upload request headers schema
 export const UploadRequestHeadersSchema = z.object({
   'x-api-key': z.string().min(1, 'API key is required'),
-  'x-request-id': z.string().uuid('Request ID must be a valid UUID'),
+  'x-request-id': z.uuid('Request ID must be a valid UUID'),
   'content-type': z.string().optional(),
 });
 
@@ -82,7 +82,7 @@ export type CompleteUploadRequest = z.infer<typeof CompleteUploadRequestSchema>;
 // Storage-manager-api single blob response
 export const StorageManagerResponseSchema = z.object({
   data: StorageBlobSchema,
-  requestId: z.string().uuid('Request ID must be a valid UUID'),
+  requestId: z.uuid('Request ID must be a valid UUID'),
 });
 
 export type StorageManagerResponse = z.infer<typeof StorageManagerResponseSchema>;
@@ -99,11 +99,10 @@ export type StorageList = z.infer<typeof StorageListSchema>;
 // Storage response with multiple blobs (for list operations)
 export const StorageListResponseSchema = z.object({
   data: z.object({
-    blobs: z.array(StorageBlobSchema),
-    totalCount: z.number().int().min(0),
+    items: z.array(StorageBlobSchema),
     continuationToken: z.string().optional(),
   }),
-  requestId: z.string().uuid('Request ID must be a valid UUID'),
+  requestId: z.uuid('Request ID must be a valid UUID'),
 });
 
 export type StorageListResponse = z.infer<typeof StorageListResponseSchema>;
