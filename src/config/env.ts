@@ -29,7 +29,7 @@ export const env = {
   AIXAAI_CLASSIFICATION_API_URL: process.env.AIXAAI_CLASSIFICATION_API_URL,
 
   // storage-manager Configuration
-  STORAGE_MANAGER_API_URL: process.env.STORAGE_MANAGER_API_URL,
+  STORAGE_MANAGER_API_URL: `${process.env.STORAGE_MANAGER_API_URL}/api`,
 
   // paths
   TEMP_PATH: process.env.TEMP_PATH || '/tmp',
