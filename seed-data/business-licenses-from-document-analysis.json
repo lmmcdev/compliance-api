@@ -1,0 +1,20 @@
+[
+  {
+    "accountId": "7aee2413-8912-4291-b720-beac3f4b1744",
+    "name": "Health Care Clinic Establishment License",
+    "issueDate": "2024-05-21T00:00:00.000Z",
+    "renewalDate": "2026-01-31T00:00:00.000Z",
+    "terminationDate": null,
+    "licenseNumber": "6027968",
+    "certificateNumber": null,
+    "status": "Active",
+    "isActive": true,
+    "description": "Florida Health Care Clinic Establishment License for CLINICA LAS MERCEDES, LLC located at 2750 W. 68 STREET SUITE 127-128 HIALEAH FL 33016. License issued under Chapter 499, Florida Statutes.",
+    "licenseTypeId": null,
+    "healthcareProviderId": null,
+    "healthcareFacilityId": null,
+    "healthcareFacilityId2": null,
+    "jurisdictionType": "State",
+    "jurisdictionOther": "Florida Department of Business and Professional Regulation"
+  }
+]
