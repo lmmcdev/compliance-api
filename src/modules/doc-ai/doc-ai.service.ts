@@ -46,7 +46,7 @@ export class DocAiService {
 
   private async getAccessToken(ctx: InvocationContext): Promise<string> {
     const config = this.azureAdConfig;
-    ctx.log('Getting access token with config:', config);
+    //ctx.log('Getting access token with config:', config);
     const tokenResponse = await this.tokenManager.getAccessToken(config);
 
     if (tokenResponse?.token) {
