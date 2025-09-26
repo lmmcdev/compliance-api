@@ -48,20 +48,24 @@ export class StorageService {
   private async getAuthHeaders(
     ctx: InvocationContext,
     requestId?: string,
+    includeContentType: boolean = true,
   ): Promise<Record<string, string>> {
-    console.log('Storage Service initialized with config:', this.config);
+    console.log('Storage Service config for getAuthHeaders:', this.config);
     const accessToken = await getAccessToken(this.config.tokenConfig);
 
     if (!accessToken) {
       throw new Error('Failed to obtain access token');
     }
 
-    ctx.log('Obtained access token for Storage Manager API');
+    ctx.log(`Obtained access token for Storage Manager API: ${accessToken}`);
 
     const headers: Record<string, string> = {
       Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
     };
+
+    if (includeContentType) {
+      headers['Content-Type'] = 'application/json';
+    }
 
     if (requestId) {
       headers['x-request-id'] = requestId;
@@ -130,18 +134,14 @@ export class StorageService {
       uploadFormData.append('metadata', formData.metadata);
     }
 
-    const requestHeaders: Record<string, string> = {
-      'x-api-key': headers['x-api-key'],
-      'x-request-id': headers['x-request-id'],
-    };
-
+    const authHeaders = await this.getAuthHeaders(ctx, headers['x-request-id'], false);
     try {
       ctx.log(
         `Uploading file to Storage Manager: ${filename} to container ${formData.container} URL: ${this.config.apiUrl}/files/upload`,
       );
       const response = await fetch(`${this.config.apiUrl}/files/upload`, {
         method: 'POST',
-        headers: requestHeaders,
+        headers: authHeaders,
         body: uploadFormData,
       });
 
