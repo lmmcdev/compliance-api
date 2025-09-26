@@ -50,7 +50,7 @@ export class StorageService {
     requestId?: string,
     includeContentType: boolean = true,
   ): Promise<Record<string, string>> {
-    console.log('Storage Service config for getAuthHeaders:', this.config);
+    //console.log('Storage Service config for getAuthHeaders:', this.config);
     const accessToken = await getAccessToken(this.config.tokenConfig);
 
     if (!accessToken) {
