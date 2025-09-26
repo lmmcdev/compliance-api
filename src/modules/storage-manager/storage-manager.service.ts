@@ -136,6 +136,9 @@ export class StorageService {
     };
 
     try {
+      ctx.log(
+        `Uploading file to Storage Manager: ${filename} to container ${formData.container} URL: ${this.config.apiUrl}/files/upload`,
+      );
       const response = await fetch(`${this.config.apiUrl}/files/upload`, {
         method: 'POST',
         headers: requestHeaders,
