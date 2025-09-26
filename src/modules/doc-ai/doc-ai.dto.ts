@@ -13,10 +13,23 @@ export const ExtractionRequestSchema = z.object({
   options: ExtractionOptionsSchema.optional(),
 });
 
+export const ClassificationRequestSchema = z.object({
+  blobName: z.string().min(1, 'Blob name is required'),
+});
+
 export type ExtractionOptions = z.infer<typeof ExtractionOptionsSchema>;
 export type ExtractionRequest = z.infer<typeof ExtractionRequestSchema>;
+export type ClassificationRequest = z.infer<typeof ClassificationRequestSchema>;
 
 // Response DTOs
+export interface DocumentClassification {
+  docType: string;
+  confidence: number;
+  boundingRegions: number;
+  spans: number;
+  modelId?: string;
+}
+
 export interface AnalyzeResult {
   modelId?: string;
   apiVersion?: string;
@@ -25,6 +38,12 @@ export interface AnalyzeResult {
 
 export interface ExtractionResponse {
   result: any;
+  analyzeResult?: AnalyzeResult;
+  timestamp?: string;
+}
+
+export interface ClassificationResponse {
+  result: DocumentClassification[] | null;
   analyzeResult?: AnalyzeResult;
   timestamp?: string;
 }
@@ -40,4 +59,5 @@ export interface AzureAdConfig {
 // API Configuration
 export interface ApiConfig {
   extractionUrl: string;
+  classificationUrl: string;
 }

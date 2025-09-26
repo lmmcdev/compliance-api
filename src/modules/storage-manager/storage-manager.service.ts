@@ -1,6 +1,6 @@
 import { InvocationContext } from '@azure/functions';
 import { getAccessToken } from '../../shared/access-token-manager';
-import { AzureAdConfig } from '../doc-classification';
+import { AzureAdConfig } from '../doc-ai';
 import { env } from '../../config/env';
 import {
   StorageManagerResponse,

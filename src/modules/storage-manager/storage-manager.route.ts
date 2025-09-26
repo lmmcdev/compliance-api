@@ -16,7 +16,7 @@ import {
   StorageListSchema,
 } from './storage-manager.dto';
 import { StorageService } from './storage-manager.service';
-import { DocAiService } from '../doc-classification/doc-ai.service';
+import { DocAiService, ExtractionRequest } from '../doc-ai';
 
 const path = 'files';
 const { prefixRoute, itemRoute } = createPrefixRoute(path);
@@ -90,11 +90,23 @@ const createUploadHandler = withHttp(
         throw new Error('Document classification failed');
       }
 
-      return created(ctx, {
-        message: 'File uploaded and classified successfully',
-        id,
-        url,
-      });
+      // doc-extraction will pick up the document from temp-uploads container
+      const extractionRequest: ExtractionRequest = {
+        blobName: `${container}/${blobName}`,
+        modelId: classificationResult.result?.[0]?.modelId,
+      };
+
+      const extractionResult = await docAiService.extractDocument(extractionRequest, ctx);
+
+      if (!extractionResult) {
+        ctx.error('Document extraction failed', extractionResult);
+        throw new Error('Document extraction failed');
+      }
+
+      console.log('Document classification result:', JSON.stringify(classificationResult, null, 2));
+      console.log('Document extraction result:', JSON.stringify(extractionResult, null, 2));
+
+      return created(ctx, extractionResult);
     } catch (error) {
       ctx.error('File upload failed', error);
       throw new Error('File upload failed');

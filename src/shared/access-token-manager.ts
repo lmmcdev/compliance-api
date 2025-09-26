@@ -1,5 +1,5 @@
 import { ClientSecretCredential } from '@azure/identity';
-import { AzureAdConfig } from '../modules/doc-classification';
+import { AzureAdConfig } from '../modules/doc-ai';
 
 export interface TokenResponse {
   token: string;
