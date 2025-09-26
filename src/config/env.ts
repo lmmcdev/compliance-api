@@ -11,14 +11,6 @@ export const env = {
   APP_TIMESTAMP: new Date().toISOString(),
   API_VERSION: process.env.API_VERSION ?? 'v1',
 
-  // DB SQL azure
-  DB_HOST: process.env.DB_HOST,
-  DB_PORT: parseInt(process.env.DB_PORT ?? '1433', 10),
-  DB_USER: process.env.DB_USER,
-  DB_PASS: process.env.DB_PASS,
-  DB_NAME: process.env.DB_NAME,
-  DB_ENCRYPT: process.env.DB_ENCRYPT,
-
   // DB Cosmos
   COSMOS_ENDPOINT: process.env.COSMOS_ENDPOINT,
   COSMOS_KEY: process.env.COSMOS_KEY,
@@ -28,13 +20,25 @@ export const env = {
 
   // Azure AD Configuration
   AZURE_TENANT_ID: process.env.AZURE_TENANT_ID,
-  AZURE_CLIENT_ID: process.env.AZURE_CLIENT_ID,
-  AZURE_CLIENT_SECRET: process.env.AZURE_CLIENT_SECRET,
+  AZURE_AIXAAI_CLIENT_ID: process.env.AZURE_AIXAAI_CLIENT_ID,
+  AZURE_AIXAAI_CLIENT_SECRET: process.env.AZURE_AIXAAI_CLIENT_SECRET,
 
   // AIXAAI API Configuration
   AIXAAI_API_SCOPE: process.env.AIXAAI_API_SCOPE,
   AIXAAI_EXTRACTION_API_URL: process.env.AIXAAI_EXTRACTION_API_URL,
   AIXAAI_CLASSIFICATION_API_URL: process.env.AIXAAI_CLASSIFICATION_API_URL,
+
+  // storage-manager Configuration
+  STORAGE_MANAGER_API_URL: process.env.STORAGE_MANAGER_API_URL,
+
+  // paths
+  TEMP_PATH: process.env.TEMP_PATH || '/tmp',
+  COMPLIANCE_PATH: process.env.COMPLIANCE_PATH || '/compliance',
+
+  // Azure AD for storage-manager
+  AZURE_MGR_CLIENT_ID: process.env.AZURE_MGR_CLIENT_ID,
+  AZURE_MGR_CLIENT_SECRET: process.env.AZURE_MGR_CLIENT_SECRET,
+  AZURE_MGR_API_SCOPE: process.env.AZURE_MGR_API_SCOPE,
 };
 
 export default env;

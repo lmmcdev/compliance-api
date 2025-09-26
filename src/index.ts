@@ -1,7 +1,6 @@
 import './config/env';
 import './functions/health.route';
-import './modules/doc-classification';
-import './modules/doc-extraction';
+import './modules/doc-ai';
 import './modules/account/account.routes';
 import './modules/business-license/business-license.routes';
 import './modules/healthcare-facility/healthcare-facility.routes';
@@ -12,3 +11,4 @@ import './modules/location-type/location-type.routes';
 import './modules/location/location.routes';
 import './modules/audit-log/audit-log.routes';
 import './modules/zapier-webhook';
+import './modules/storage-manager';

@@ -11,17 +11,17 @@ export interface ModelMapping {
  * Map of classification document types to their corresponding extraction model IDs
  */
 export const CLASSIFICATION_TO_MODEL_MAPPING: Record<string, string> = {
-  'AHCA': 'AHCA',
+  AHCA: 'AHCA',
   'Biomedical Waste': 'BiomedicalWastePermit',
   'Business Tax License': 'Business-Tax-License',
   'Certificate of Use': 'Certificate-of-use',
-  'CLIA': 'CLIA',
-  'DEA': 'DEA',
-  'Elevators': 'elevators',
+  CLIA: 'CLIA',
+  DEA: 'DEA',
+  Elevators: 'elevators',
   'Fire Permit': 'FireDeptAnnualOperatingPermit',
   'HCCE (Dispensary Permits)': 'HCCE',
   'Professional License': 'ProfessionalLicense',
-  'Radiation Permit': 'RadiationMachineRegistration'
+  'Radiation Permit': 'RadiationMachineRegistration',
 };
 
 /**
@@ -65,7 +65,7 @@ export function hasModelMapping(classificationDocType: string): boolean {
  */
 export function getDocTypeForModelId(modelId: string): string | null {
   const entry = Object.entries(CLASSIFICATION_TO_MODEL_MAPPING).find(
-    ([, value]) => value === modelId
+    ([, value]) => value === modelId,
   );
   return entry ? entry[0] : null;
 }

@@ -106,6 +106,8 @@ export const blPatchActiveHandler = withHttp(
   },
 );
 
+// upload license document
+
 // registrations
 app.http('business-licenses-list', {
   methods: ['GET'],
