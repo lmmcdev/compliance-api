@@ -10,5 +10,6 @@ import './modules/address/address.routes';
 import './modules/location-type/location-type.routes';
 import './modules/location/location.routes';
 import './modules/audit-log/audit-log.routes';
+import './modules/incidents';
 import './modules/zapier-webhook';
 import './modules/storage-manager';
