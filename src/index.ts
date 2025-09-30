@@ -13,3 +13,4 @@ import './modules/audit-log/audit-log.routes';
 import './modules/incidents';
 import './modules/zapier-webhook';
 import './modules/storage-manager';
+import './modules/atera-tickets';

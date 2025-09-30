@@ -39,6 +39,9 @@ export const env = {
   AZURE_MGR_CLIENT_ID: process.env.AZURE_MGR_CLIENT_ID,
   AZURE_MGR_CLIENT_SECRET: process.env.AZURE_MGR_CLIENT_SECRET,
   AZURE_MGR_API_SCOPE: process.env.AZURE_MGR_API_SCOPE,
+
+  // Atera Logic App Configuration
+  ATERA_LOGIC_APP_URL: process.env.ATERA_LOGIC_APP_URL,
 };
 
 export default env;
