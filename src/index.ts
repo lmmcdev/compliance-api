@@ -1,6 +1,7 @@
 import './config/env';
 import './functions/health.route';
 import './modules/doc-ai';
+import './modules/openai-query';
 import './modules/account/account.routes';
 import './modules/business-license/business-license.routes';
 import './modules/healthcare-facility/healthcare-facility.routes';
@@ -14,3 +15,4 @@ import './modules/incidents';
 import './modules/zapier-webhook';
 import './modules/storage-manager';
 import './modules/atera-tickets';
+import './modules/openai-query'
