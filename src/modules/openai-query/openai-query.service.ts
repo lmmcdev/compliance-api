@@ -61,7 +61,7 @@ export class OpenAIQueryService {
     console.log('=== OPENAI QUERY API REQUEST DEBUG ===');
     console.log('Request:', JSON.stringify(request, null, 2));
     console.log('API URL:', url);
-    console.log('Access token present:', !!accessToken);
+    console.log('Access token present:', accessToken);
 
     const payload = {
       systemPrompt: request.systemPrompt,

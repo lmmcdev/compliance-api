@@ -9,6 +9,7 @@
     "clean": "rimraf dist",
     "prestart": "npm run clean && npm run build",
     "start": "func start --port 7072",
+    "dev": "tsc -w & func start --port 7073",
     "test": "echo \"No tests yet...\""
   },
   "dependencies": {

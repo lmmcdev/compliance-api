@@ -43,9 +43,10 @@ export interface ExtractionResponse {
 }
 
 export interface ClassificationResponse {
-  result: DocumentClassification[] | null;
-  analyzeResult?: AnalyzeResult;
-  timestamp?: string;
+  results: DocumentClassification[] | null;
+  modelId?: string;
+  apiVersion?: string;
+  success: boolean;
 }
 
 // Azure AD Configuration

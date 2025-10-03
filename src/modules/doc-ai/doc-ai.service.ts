@@ -1,14 +1,10 @@
 import { InvocationContext } from '@azure/functions';
 import { env } from '../../config/env';
-import { getModelIdForDocType } from '../../shared/model-mapping.util';
 import {
   ExtractionRequest,
-  ExtractionResponse,
   ClassificationRequest,
-  ClassificationResponse,
   AzureAdConfig,
   ApiConfig,
-  DocumentClassification,
 } from './doc-ai.dto';
 import { AccessTokenManager } from '../../shared/access-token-manager';
 
@@ -199,13 +195,17 @@ export class DocAiService {
       throw error;
     }
 
+    console.log('=== CLASSIFICATION API RAW RESPONSE ===');
+    console.log(JSON.stringify(apiResult, null, 2));
+    console.log('=== END CLASSIFICATION API RAW RESPONSE ===');
+
     return apiResult;
   }
 
   async extractDocument(
     request: ExtractionRequest,
     ctx: InvocationContext,
-  ): Promise<ExtractionResponse> {
+  ): Promise<any> {
     console.log('=== STARTING DOCUMENT EXTRACTION ===');
     console.log('Incoming request:', JSON.stringify(request, null, 2));
 
@@ -219,35 +219,14 @@ export class DocAiService {
       ctx,
     );
 
-    const resultData = apiResult.data?.result;
-    const analyzeResult = apiResult.data?.analyzeResult;
-
-    if (!resultData) {
-      return {
-        result: null,
-        analyzeResult: {
-          modelId: analyzeResult?.modelId,
-          apiVersion: analyzeResult?.apiVersion,
-        },
-        timestamp: apiResult.timestamp,
-      };
-    }
-
-    return {
-      result: resultData,
-      analyzeResult: {
-        modelId: analyzeResult?.modelId,
-        apiVersion: analyzeResult?.apiVersion,
-        documentsCount: Array.isArray(resultData) ? resultData.length : 1,
-      },
-      timestamp: apiResult.timestamp,
-    };
+    // Return the exact response from the external API
+    return apiResult;
   }
 
   async classifyDocument(
     request: ClassificationRequest,
     ctx: InvocationContext,
-  ): Promise<ClassificationResponse> {
+  ): Promise<any> {
     this.validateConfig();
 
     const accessToken = await this.getAccessToken(ctx);
@@ -258,40 +237,38 @@ export class DocAiService {
       ctx,
     );
 
-    const resultData = apiResult.data?.result;
-    const analyzeResult = apiResult.data?.analyzeResult;
-
-    if (!resultData || !Array.isArray(resultData) || resultData.length === 0) {
-      return {
-        result: null,
-        analyzeResult: {
-          modelId: analyzeResult?.modelId,
-          apiVersion: analyzeResult?.apiVersion,
-        },
-        timestamp: apiResult.timestamp,
+    // Transform to the desired format
+    const getModelIdForDocType = (docType: string) => {
+      const mapping: Record<string, string> = {
+        'AHCA': 'AHCA',
+        // Add more mappings as needed
       };
-    }
+      return mapping[docType] || docType;
+    };
 
-    // Extract docType and confidence from aixaai API response
-    const documents: DocumentClassification[] = resultData.map((d) => {
-      const modelId = getModelIdForDocType(d.docType);
-      return {
-        docType: d.docType,
-        confidence: d.confidence,
-        boundingRegions: d.boundingRegions?.length || 0,
-        spans: d.spans?.length || 0,
-        ...(modelId && { modelId }),
-      };
-    });
+    const resultData = apiResult.data;
+    const documents = Array.isArray(resultData) ? resultData.map((d: any) => ({
+      docType: d.docType,
+      confidence: d.confidence,
+      boundingRegions: d.boundingRegions?.length || 0,
+      spans: d.spans?.length || 0,
+      modelId: getModelIdForDocType(d.docType),
+    })) : [];
 
     return {
-      result: documents,
-      analyzeResult: {
-        modelId: analyzeResult?.modelId,
-        apiVersion: analyzeResult?.apiVersion,
-        documentsCount: documents.length,
+      success: apiResult.success,
+      data: {
+        result: documents,
+        analyzeResult: {
+          modelId: 'compliance-license-classifier',
+          apiVersion: '2024-11-30',
+          documentsCount: documents.length,
+        },
+        timestamp: apiResult.timestamp,
       },
-      timestamp: apiResult.timestamp,
+      meta: {
+        traceId: ctx.invocationId,
+      },
     };
   }
 }

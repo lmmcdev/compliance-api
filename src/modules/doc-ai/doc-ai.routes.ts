@@ -1,5 +1,5 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
-import { createPrefixRoute, ok, fail, withHttp } from '../../http';
+import { createPrefixRoute, fail, withHttp } from '../../http';
 import { HTTP_STATUS } from '../../http/status';
 import { DocAiService } from './doc-ai.service';
 import { ExtractionRequestSchema, ClassificationRequestSchema } from './doc-ai.dto';
@@ -92,7 +92,11 @@ export const docAiExtractionHandler = withHttp(
       }
 
       const result = await docAiService.extractDocument(validationResult.data, ctx);
-      return ok(ctx, result);
+      return {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+        jsonBody: result
+      };
 
     } catch (err: any) {
       return handleDocAiError(ctx, err, 'document extraction');
@@ -117,8 +121,13 @@ export const docAiClassificationHandler = withHttp(
         );
       }
 
-      const result = await docAiService.classifyDocument(validationResult.data, ctx);
-      return ok(ctx, result);
+      const result = await docAiService.classifyDocument(validationResult?.data, ctx);
+      console.log("RESULTA", result)
+      return {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+        jsonBody: result
+      };
 
     } catch (err: any) {
       return handleDocAiError(ctx, err, 'document classification');

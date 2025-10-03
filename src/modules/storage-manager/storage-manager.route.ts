@@ -93,7 +93,7 @@ const createUploadHandler = withHttp(
       // doc-extraction will pick up the document from temp-uploads container
       const extractionRequest: ExtractionRequest = {
         blobName: `${container}/${blobName}`,
-        modelId: classificationResult.result?.[0]?.modelId,
+        modelId: classificationResult.results?.[0]?.modelId,
       };
 
       const extractionResult = await docAiService.extractDocument(extractionRequest, ctx);
