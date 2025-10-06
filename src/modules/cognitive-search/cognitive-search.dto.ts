@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 // Request DTO - accepts any JSON payload
 export const CognitiveSearchRequestSchema = z.object({
-  extractedData: z.record(z.any()).optional(),
+  extractedData: z.record(z.string(), z.any()).optional(),
 }).passthrough(); // Allow any additional properties
 
 export type CognitiveSearchRequest = z.infer<typeof CognitiveSearchRequestSchema>;

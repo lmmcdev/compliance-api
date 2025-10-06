@@ -16,4 +16,5 @@ import './modules/zapier-webhook';
 import './modules/storage-manager';
 import './modules/atera-tickets';
 import './modules/openai-query';
-import './modules/cognitive-search'
+import './modules/cognitive-search';
+import './modules/incident-analytics';
