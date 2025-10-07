@@ -588,6 +588,79 @@ POST /api/v1/patchanalytics
 }
 ```
 
+#### Use Case 7: Site-Specific KB Grouping for October (with Device Details)
+
+```bash
+POST /api/v1/patchanalytics
+```
+
+```json
+{
+  "Site_name": "Hialeah Gardens SPE",
+  "month": "2025-10"
+}
+```
+
+**Response includes additional `patchesBySiteAndKB` field:**
+
+```json
+{
+  "summary": { ... },
+  "complianceByPatchType": [ ... ],
+  "temporalTrend": [ ... ],
+  "complianceBySite": [ ... ],
+  "patchesBySiteAndKB": [
+    {
+      "KB_number": "KB5001234",
+      "devices": [
+        {
+          "Device_name": "HG-PC001",
+          "Patch_status": "Installed"
+        },
+        {
+          "Device_name": "HG-PC002",
+          "Patch_status": "Pending"
+        },
+        {
+          "Device_name": "HG-PC003",
+          "Patch_status": "Installed"
+        }
+      ]
+    },
+    {
+      "KB_number": "KB5002345",
+      "devices": [
+        {
+          "Device_name": "HG-PC001",
+          "Patch_status": "Installed"
+        },
+        {
+          "Device_name": "HG-PC004",
+          "Patch_status": "Failed"
+        }
+      ]
+    }
+  ],
+  "timestamp": "2025-10-07T12:00:00.000Z"
+}
+```
+
+**Note:** When filtering by `Site_name`, the response includes a `patchesBySiteAndKB` array showing all patches grouped by KB number for that site within the selected time period. Each KB entry contains the list of devices and their patch status.
+
+#### Use Case 8: Site-Specific KB Grouping with Date Range
+
+```bash
+POST /api/v1/patchanalytics
+```
+
+```json
+{
+  "Site_name": "Corporate",
+  "startDate": "2025-10-01",
+  "endDate": "2025-10-15"
+}
+```
+
 ---
 
 ## 5. Devices
@@ -822,13 +895,15 @@ POST /api/v1/devices
 ```json
 {
   "Device_monitored": "true",
-  "Inventory_device_type": "Windows PC"
+  "Inventory_device_type": "Windows PC",
+  "Site_name": "Corporate"
 }
 ```
 
 ### Optional Filters
 - `Device_monitored`: "true" | "false" - Filter by monitoring status
 - `Inventory_device_type`: Filter by device type
+- `Site_name`: Filter by specific site/branch name
 
 ### Response
 
@@ -849,12 +924,20 @@ POST /api/v1/devices
       "count": 25
     }
   ],
+  "equipment": [
+    {
+      "Device_name": "HQ-REFER42",
+      "Hostname": "50.172.119.226"
+    }
+  ],
   "filters": {
     "Device_monitored": "true",
     "Inventory_device_type": "Windows PC"
   }
 }
 ```
+
+**Note:** The `equipment` array is only included when filtering by a specific `Site_name`. It contains all devices from that site with their `Device_name` and `Hostname` (if available).
 
 ### Example Use Cases
 
@@ -1071,6 +1154,95 @@ POST /api/v1/devices/count
   ],
   "filters": {
     "Device_monitored": "false"
+  }
+}
+```
+
+#### Use Case 6: Count Devices for Specific Site (with Equipment Details)
+
+```bash
+POST /api/v1/devices/count
+```
+
+```json
+{
+  "Site_name": "Corporate"
+}
+```
+
+**Response:**
+```json
+{
+  "total": 85,
+  "bySite": [
+    {
+      "siteName": "Corporate",
+      "count": 85
+    }
+  ],
+  "equipment": [
+    {
+      "Device_name": "HQ-REFER42",
+      "Hostname": "50.172.119.226"
+    },
+    {
+      "Device_name": "HQ-DESKTOP01",
+      "Hostname": "50.172.119.201"
+    },
+    {
+      "Device_name": "HQ-LAPTOP15"
+    }
+  ],
+  "filters": {
+    "Site_name": "Corporate"
+  }
+}
+```
+
+**Note:** When filtering by `Site_name`, the response includes an `equipment` array with all devices from that site, showing their `Device_name` and `Hostname` (if available).
+
+#### Use Case 7: Count Monitored Windows PCs at Specific Site (with Equipment Details)
+
+```bash
+POST /api/v1/devices/count
+```
+
+```json
+{
+  "Site_name": "Hialeah Gardens SPE",
+  "Device_monitored": "true",
+  "Inventory_device_type": "Windows PC"
+}
+```
+
+**Response:**
+```json
+{
+  "total": 25,
+  "bySite": [
+    {
+      "siteName": "Hialeah Gardens SPE",
+      "count": 25
+    }
+  ],
+  "equipment": [
+    {
+      "Device_name": "HG-PC001",
+      "Hostname": "192.168.1.10"
+    },
+    {
+      "Device_name": "HG-PC002",
+      "Hostname": "192.168.1.11"
+    },
+    {
+      "Device_name": "HG-PC003",
+      "Hostname": "192.168.1.12"
+    }
+  ],
+  "filters": {
+    "Site_name": "Hialeah Gardens SPE",
+    "Device_monitored": "true",
+    "Inventory_device_type": "Windows PC"
   }
 }
 ```

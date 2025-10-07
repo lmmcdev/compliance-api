@@ -5,6 +5,7 @@ import {
   PatchTypeCompliance,
   TemporalTrendEntry,
   SiteComplianceEntry,
+  KBGroupEntry,
 } from './patch-analytics.dto';
 import { WindowsPatchRepository } from './windows-patch.repository';
 import { WindowsPatchDoc } from './windows-patch.doc';
@@ -367,6 +368,28 @@ export class PatchAnalyticsService {
     const uniqueSites = new Set(patches.map((p) => p.Site_name).filter(Boolean)).size;
     const uniqueDevices = new Set(patches.map((p) => p.Device_name).filter(Boolean)).size;
 
+    // If Site_name filter is provided, fetch KB grouping data
+    let patchesBySiteAndKB: KBGroupEntry[] | undefined;
+    if (request?.Site_name) {
+      // Determine date range for KB query
+      let startDate = request.startDate;
+      let endDate = request.endDate;
+      let month = request.month;
+
+      if (request.month && !startDate && !endDate) {
+        month = request.month;
+      }
+
+      patchesBySiteAndKB = await this.patchRepository.getPatchesBySiteAndKB({
+        Site_name: request.Site_name,
+        month,
+        startDate,
+        endDate,
+      });
+
+      console.log(`Fetched KB grouping for site ${request.Site_name}: ${patchesBySiteAndKB.length} KB entries`);
+    }
+
     const response: PatchAnalyticsResponse = {
       summary: {
         totalPatches: patches.length,
@@ -384,6 +407,7 @@ export class PatchAnalyticsService {
       complianceByPatchType,
       temporalTrend,
       complianceBySite,
+      patchesBySiteAndKB,
       timestamp: new Date().toISOString(),
     };
 
@@ -391,6 +415,9 @@ export class PatchAnalyticsService {
     console.log(`Patch types analyzed: ${complianceByPatchType.length}`);
     console.log(`Temporal trend entries: ${temporalTrend.length}`);
     console.log(`Sites analyzed: ${complianceBySite.length}`);
+    if (patchesBySiteAndKB) {
+      console.log(`KB entries for filtered site: ${patchesBySiteAndKB.length}`);
+    }
 
     ctx.log('Patch analytics completed successfully');
 

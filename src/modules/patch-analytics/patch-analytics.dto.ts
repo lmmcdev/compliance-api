@@ -55,6 +55,16 @@ export interface SiteComplianceEntry {
   };
 }
 
+export interface KBDeviceInfo {
+  Device_name: string;
+  Patch_status: string;
+}
+
+export interface KBGroupEntry {
+  KB_number: string;
+  devices: KBDeviceInfo[];
+}
+
 export interface PatchAnalyticsResponse {
   summary: {
     totalPatches: number;
@@ -72,5 +82,6 @@ export interface PatchAnalyticsResponse {
   complianceByPatchType: PatchTypeCompliance[];
   temporalTrend: TemporalTrendEntry[];
   complianceBySite: SiteComplianceEntry[];
+  patchesBySiteAndKB?: KBGroupEntry[]; // Only included when Site_name filter is provided
   timestamp: string;
 }
