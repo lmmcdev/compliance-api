@@ -44,6 +44,7 @@ export interface DeviceGetResponse {
 export const DeviceCountRequestSchema = z.object({
   Device_monitored: z.string().optional(), // "true" or "false"
   Inventory_device_type: z.string().optional(),
+  Site_name: z.string().optional(), // Filter by specific site
 }).optional();
 
 export type DeviceCountRequest = z.infer<typeof DeviceCountRequestSchema>;
@@ -53,11 +54,18 @@ export interface SiteCount {
   count: number;
 }
 
+export interface EquipmentInfo {
+  Device_name: string;
+  Hostname?: string;
+}
+
 export interface DeviceCountResponse {
   total: number;
   bySite: SiteCount[];
+  equipment?: EquipmentInfo[];
   filters?: {
     Device_monitored?: string;
     Inventory_device_type?: string;
+    Site_name?: string;
   };
 }

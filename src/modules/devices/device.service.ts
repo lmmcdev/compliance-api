@@ -64,17 +64,30 @@ export class DeviceService {
     const filters = {
       Device_monitored: request?.Device_monitored,
       Inventory_device_type: request?.Inventory_device_type,
+      Site_name: request?.Site_name,
     };
 
     const total = await this.deviceRepository.count(filters);
     const bySite = await this.deviceRepository.countBySite(filters);
 
+    // If Site_name filter is provided, fetch equipment details
+    let equipment: { Device_name: string; Hostname?: string }[] | undefined;
+    if (request?.Site_name) {
+      equipment = await this.deviceRepository.getDevicesBySite({
+        Site_name: request.Site_name,
+        Device_monitored: request.Device_monitored,
+        Inventory_device_type: request.Inventory_device_type,
+      });
+    }
+
     return {
       total,
       bySite,
+      equipment,
       filters: request ? {
         Device_monitored: request.Device_monitored,
         Inventory_device_type: request.Inventory_device_type,
+        Site_name: request.Site_name,
       } : undefined,
     };
   }

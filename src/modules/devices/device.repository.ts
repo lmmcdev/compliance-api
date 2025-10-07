@@ -109,11 +109,13 @@ export class DeviceRepository {
     doc_type?: string;
     Device_monitored?: string;
     Inventory_device_type?: string;
+    Site_name?: string;
   }): Promise<number> {
     const {
       doc_type = 'lmmc_device',
       Device_monitored,
       Inventory_device_type,
+      Site_name,
     } = opts ?? {};
 
     const filters: string[] = [];
@@ -131,6 +133,11 @@ export class DeviceRepository {
     if (Inventory_device_type) {
       filters.push('c.Inventory_device_type = @Inventory_device_type');
       params.push({ name: '@Inventory_device_type', value: Inventory_device_type });
+    }
+
+    if (Site_name) {
+      filters.push('c.Site_name = @Site_name');
+      params.push({ name: '@Site_name', value: Site_name });
     }
 
     const whereClause = filters.length ? `WHERE ${filters.join(' AND ')}` : '';
@@ -154,11 +161,13 @@ export class DeviceRepository {
     doc_type?: string;
     Device_monitored?: string;
     Inventory_device_type?: string;
+    Site_name?: string;
   }): Promise<{ siteName: string; count: number }[]> {
     const {
       doc_type = 'lmmc_device',
       Device_monitored,
       Inventory_device_type,
+      Site_name,
     } = opts ?? {};
 
     const filters: string[] = [];
@@ -176,6 +185,11 @@ export class DeviceRepository {
     if (Inventory_device_type) {
       filters.push('c.Inventory_device_type = @Inventory_device_type');
       params.push({ name: '@Inventory_device_type', value: Inventory_device_type });
+    }
+
+    if (Site_name) {
+      filters.push('c.Site_name = @Site_name');
+      params.push({ name: '@Site_name', value: Site_name });
     }
 
     const whereClause = filters.length ? `WHERE ${filters.join(' AND ')}` : '';
@@ -201,5 +215,57 @@ export class DeviceRepository {
     });
 
     return sortedResults;
+  }
+
+  async getDevicesBySite(opts: {
+    doc_type?: string;
+    Device_monitored?: string;
+    Inventory_device_type?: string;
+    Site_name: string;
+  }): Promise<{ Device_name: string; Hostname?: string }[]> {
+    const {
+      doc_type = 'lmmc_device',
+      Device_monitored,
+      Inventory_device_type,
+      Site_name,
+    } = opts;
+
+    const filters: string[] = [];
+    const params: { name: string; value: any }[] = [];
+
+    // Always filter by doc_type
+    filters.push('c.doc_type = @doc_type');
+    params.push({ name: '@doc_type', value: doc_type });
+
+    // Site_name is required
+    filters.push('c.Site_name = @Site_name');
+    params.push({ name: '@Site_name', value: Site_name });
+
+    if (Device_monitored !== undefined) {
+      filters.push('c.Device_monitored = @Device_monitored');
+      params.push({ name: '@Device_monitored', value: Device_monitored });
+    }
+
+    if (Inventory_device_type) {
+      filters.push('c.Inventory_device_type = @Inventory_device_type');
+      params.push({ name: '@Inventory_device_type', value: Inventory_device_type });
+    }
+
+    const whereClause = filters.length ? `WHERE ${filters.join(' AND ')}` : '';
+
+    const query: SqlQuerySpec = {
+      query: `SELECT c.Device_name, c.Hostname FROM c ${whereClause}`,
+      parameters: params,
+    };
+
+    const { resources } = await this.container.items.query<{ Device_name: string; Hostname?: string }>(query).fetchAll();
+
+    console.log('Devices by site result:', {
+      siteName: Site_name,
+      deviceCount: resources?.length || 0,
+      filters: opts,
+    });
+
+    return resources || [];
   }
 }
