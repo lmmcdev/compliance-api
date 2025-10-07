@@ -19,3 +19,4 @@ import './modules/openai-query';
 import './modules/cognitive-search';
 import './modules/incident-analytics';
 import './modules/patch-analytics';
+import './modules/devices';
