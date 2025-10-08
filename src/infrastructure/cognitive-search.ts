@@ -2,12 +2,12 @@ import { SearchClient, AzureKeyCredential } from '@azure/search-documents';
 import { env } from '../config/env';
 
 /**
- * Azure Cognitive Search client for indexing patch summaries
+ * Azure Cognitive Search client for indexing documents
  */
 export class CognitiveSearchService {
   private searchClient: SearchClient<any>;
 
-  constructor() {
+  constructor(indexName?: string) {
     if (!env.COGNITIVE_SEARCH_ENDPOINT) {
       throw new Error('COGNITIVE_SEARCH_ENDPOINT is not configured');
     }
@@ -16,17 +16,18 @@ export class CognitiveSearchService {
       throw new Error('COGNITIVE_SEARCH_KEY is not configured');
     }
 
-    const indexName = env.COGNITIVE_SEARCH_WINPATCH_INDEX_NAME;
+    // Use provided index name or default to winpatch index
+    const targetIndexName = indexName || env.COGNITIVE_SEARCH_WINPATCH_INDEX_NAME;
 
     this.searchClient = new SearchClient(
       env.COGNITIVE_SEARCH_ENDPOINT,
-      indexName,
+      targetIndexName,
       new AzureKeyCredential(env.COGNITIVE_SEARCH_KEY)
     );
 
     console.log('Cognitive Search client initialized:', {
       endpoint: env.COGNITIVE_SEARCH_ENDPOINT,
-      indexName,
+      indexName: targetIndexName,
     });
   }
 
