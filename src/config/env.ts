@@ -50,6 +50,7 @@ export const env = {
   COGNITIVE_SEARCH_KEY: process.env.COGNITIVE_SEARCH_KEY,
   COGNITIVE_SEARCH_WINPATCH_INDEX_NAME: process.env.COGNITIVE_SEARCH_WINPATCH_INDEX_NAME ?? 'summary-windows-patch',
   COGNITIVE_SEARCH_INCIDENTS_INDEX_NAME: process.env.COGNITIVE_SEARCH_INCIDENTS_INDEX_NAME ?? 'summary-incidents',
+  COGNITIVE_SEARCH_AVANAN_INDEX_NAME: process.env.COGNITIVE_SEARCH_AVANAN_INDEX_NAME ?? 'summary-avanan',
 };
 
 export default env;

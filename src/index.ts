@@ -22,4 +22,6 @@ import './modules/patch-analytics';
 import './modules/devices';
 import './functions/fn-trigger-patch-summary';
 import './functions/fn-trigger-incident-summary';
+import './functions/fn-summarize-avanan';
+import './functions/fn-trigger-avanan-summary';
 import './functions/fn-parse-csv';
