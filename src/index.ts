@@ -20,3 +20,4 @@ import './modules/cognitive-search';
 import './modules/incident-analytics';
 import './modules/patch-analytics';
 import './modules/devices';
+import './functions/fn-trigger-patch-summary'
