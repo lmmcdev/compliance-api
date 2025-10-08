@@ -44,6 +44,11 @@ export const env = {
 
   // Atera Logic App Configuration
   ATERA_LOGIC_APP_URL: process.env.ATERA_LOGIC_APP_URL,
+
+  // Azure Cognitive Search Configuration
+  COGNITIVE_SEARCH_ENDPOINT: process.env.COGNITIVE_SEARCH_ENDPOINT,
+  COGNITIVE_SEARCH_KEY: process.env.COGNITIVE_SEARCH_KEY,
+  COGNITIVE_SEARCH_WINPATCH_INDEX_NAME: process.env.COGNITIVE_SEARCH_WINPATCH_INDEX_NAME ?? 'summary-windows-patch',
 };
 
 export default env;

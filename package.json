@@ -16,6 +16,7 @@
     "@azure/cosmos": "^4.5.0",
     "@azure/functions": "^4.0.0",
     "@azure/identity": "^4.12.0",
+    "@azure/search-documents": "^12.1.0",
     "@azure/storage-blob": "^12.28.0",
     "dotenv": "^17.2.1",
     "zod": "^4.0.17"
