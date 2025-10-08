@@ -88,7 +88,7 @@ export class IncidentRepository {
       pageSize = 10, // Set smaller default for testing pagination
       token,
       q,
-      doc_type,
+      doc_type = 'it_incident', // Default to it_incident
       Ticket_priority,
       Activity_status,
       Ticket_type,
@@ -102,10 +102,9 @@ export class IncidentRepository {
     const filters: string[] = [];
     const params: { name: string; value: any }[] = [];
 
-    if (doc_type) {
-      filters.push('c.doc_type = @doc_type');
-      params.push({ name: '@doc_type', value: doc_type });
-    }
+    // Always filter by doc_type (defaults to 'it_incident')
+    filters.push('c.doc_type = @doc_type');
+    params.push({ name: '@doc_type', value: doc_type });
 
     if (q) {
       // Search across different fields based on doc_type or general fields
