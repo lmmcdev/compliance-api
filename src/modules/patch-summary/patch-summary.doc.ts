@@ -1,6 +1,6 @@
 // Patch Summary document interface - grouped by Site_name and KB_number
 export interface PatchSummaryDoc {
-  id: string; // Format: "{KB_number}_{SITE_NAME}"
+  id: string; // Format: "{KB_number}_{SITE_NAME}_{YYYY-MM-DD}"
   doc_type: 'windows_patch';
   Patch_name: string;
   Patch_status: string; // Most common status for this KB at this site

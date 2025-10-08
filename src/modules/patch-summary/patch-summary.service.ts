@@ -47,7 +47,7 @@ export class PatchSummaryService {
         // Create one summary document per KB_number
         for (const kbData of kbAggregatedData) {
           const summary: PatchSummaryDoc = {
-            id: `${kbData.KB_number}_${site.toUpperCase().replace(/\s+/g, '_')}`,
+            id: `${kbData.KB_number}_${site.toUpperCase().replace(/\s+/g, '_')}_${date}`,
             doc_type: 'windows_patch',
             Patch_name: kbData.Patch_name,
             Patch_status: kbData.Patch_status,

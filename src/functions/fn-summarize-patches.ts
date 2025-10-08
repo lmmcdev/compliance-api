@@ -31,10 +31,13 @@ export async function fnSummarizePatches(myTimer: Timer, context: InvocationCont
     if (summaries.length > 0) {
       context.log('Indexing summaries to Cognitive Search...');
 
-      // Prepare documents for indexing (remove Cosmos DB internal fields)
+      // Prepare documents for indexing (remove Cosmos DB internal fields and doc_type, add Summary_text)
       const documentsToIndex = summaries.map((summary) => {
-        const { _rid, _self, _etag, _attachments, _ts, ...doc } = summary;
-        return doc;
+        const { _rid, _self, _etag, _attachments, _ts, doc_type, ...doc } = summary;
+        return {
+          ...doc,
+          Summary_text: `KB: ${summary.KB_number}, Patch: ${summary.Patch_name}, Site: ${summary.Site_name}, Date: ${summary.Patch_installation_Date}, Devices: ${summary.Device_count}, Status: ${summary.Patch_status}, Classification: ${summary.Classification}`,
+        };
       });
 
       await cognitiveSearchService.mergeOrUploadDocuments(documentsToIndex);
